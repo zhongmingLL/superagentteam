@@ -121,6 +121,10 @@ operator 在 Hub 中：
   递归 schema 测试。
 - 证据：`docs/reports/2026-11-22-f025-fullstack-e2e.md`、
   `docs/reports/2026-11-22-f025-e2e-evidence.json`、4 张截图。
-- 剩余：非作者 review + merge；multi-mention 多次唤醒的 P3 噪音记入报告后续。
+- 2026-11-22：PR #163 merged `18e16a2ff`；双面 approve @ `ce7edeae6`
+  （砚砚 API/security/data；墨墨 Hub UX/vision）。实现与 E2E 已交付，
+  剩 operator close。
+- 剩余：operator close；P3（catalog 仅 append、multi-mention 多次唤醒、
+  agent 正文夹 raw 工具参数）记入报告后续。
 
 [宪宪/deepseek-flash🐾]

@@ -37,7 +37,7 @@ created: 2026-10-25
 | F022 | W7b thin Hub M1-A — unread/read state（sidebar 未读、per-thread read cursor、跨 tab 收敛） | done (implementation merged `a6ae8e40f`; dual review approve incl. P3 delta `31d982da2`; operator close 2026-11-21) | 宪宪 | [F022](docs/features/F022-thin-hub-m1-unread.md) |
 | F023 | W7b thin Hub M1-B — thread rename（header inline edit、titleSource=user、sidebar 同步） | done (implementation merged `15d8ab9f5`; dual review approve @ `4aee2a75c`; operator close 2026-11-21) | 宪宪 | [F023](docs/features/F023-thin-hub-m1-rename.md) |
 | F024 | W7b thin Hub M1-C — failed-invocation retry（failed/interrupted 回复重试、复用 requestRetry） | done (implementation merged `fffc32685`; P3 fix `cb5ef44d4`; dual review approve; operator close 2026-11-21; abandon/running cancel deferred to platform track) | 宪宪 | [F024](docs/features/F024-thin-hub-m1-retry.md) |
-| F025 | Full-stack A2A E2E — Hub agent management + real-provider chain（多 agent 创建、同/跨 thread A2A、multi-mention、真实 provider） | review (E2E passed 2026-11-22: 3 agents, thread1 A→B→A, multi-mention B+C, thread2 2 rounds, cross-thread 2-way; real kimi-coding) | 宪宪 | [F025](docs/features/F025-fullstack-a2a-e2e.md) |
+| F025 | Full-stack A2A E2E — Hub agent management + real-provider chain（多 agent 创建、同/跨 thread A2A、multi-mention、真实 provider） | implemented (merged `18e16a2f`; E2E passed 2026-11-22: 3 agents, thread1 A→B→A, multi-mention B+C, thread2 2 rounds, cross-thread 2-way; dual review approve @ `ce7edeae6`; pending operator close) | 宪宪 | [F025](docs/features/F025-fullstack-a2a-e2e.md) |
 
 > Naming (F019): new and active docs use `superagentteam/Fxxx`; F001–F018 retain
 > `codeteam/Fxxx` for history. Package/env/data/CLI/tool names use `superagentteam*`

@@ -23,7 +23,7 @@ const TARGET_SCHEMA = {
 	additionalProperties: false,
 	required: ["kind", "id"],
 	properties: {
-		kind: { const: "agent" },
+		kind: { type: "string", const: "agent" },
 		id: { type: "string", minLength: 1 },
 	},
 } as const;
@@ -74,6 +74,7 @@ export const A2A_V1_TOOL_SPECS: readonly A2A_V1ToolSpec[] = [
 				callbackTo: { type: "string", minLength: 1 },
 				timeoutMinutes: { type: "integer", minimum: 3, maximum: 20 },
 				triggerType: {
+					type: "string",
 					enum: ["high-impact", "cross-domain", "uncertain", "info-gap", "recon"],
 				},
 				searchEvidenceRefs: { type: "array", items: { type: "string", minLength: 1 } },

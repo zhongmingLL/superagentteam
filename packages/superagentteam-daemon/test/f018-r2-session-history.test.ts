@@ -593,6 +593,40 @@ describe("buildThreadPrompt (0020 R2)", () => {
 		expect(prompt).toContain("hi from a2");
 		expect(prompt).not.toContain("# Task");
 	});
+
+	it("renders the enabled-agent roster for A2A target discovery", () => {
+		const w = makeWorld();
+		const thread = w.threads.get("t1")!;
+		const prompt = buildThreadPrompt({
+			thread,
+			participants: ["a1"],
+			rows: [],
+			selfAgentId: "a1",
+			knownAgents: [
+				{ id: "a1", displayName: "Agent A", mentionPatterns: ["@a1"] },
+				{ id: "a2", displayName: 'Agent "B"', mentionPatterns: ["@a2", "@bee"] },
+			],
+		});
+		expect(prompt).toContain("Available agents:");
+		expect(prompt).toContain('id=a1 displayName="Agent A" mentions=@a1');
+		expect(prompt).toContain('id=a2 displayName="Agent \\"B\\"" mentions=@a2, @bee');
+	});
+
+	it("marks cross-thread messages with their source thread", () => {
+		const w = makeWorld();
+		appendMsg(w.messages, {
+			from: { kind: "agent", agentId: "a2" },
+			content: "from another thread",
+			extra: { crossPost: { sourceThreadId: "t0" } },
+		});
+		const prompt = buildThreadPrompt({
+			thread: w.threads.get("t1")!,
+			participants: ["a1", "a2"],
+			rows: w.messages.getByThread("t1", 10),
+			selfAgentId: "a1",
+		});
+		expect(prompt).toContain("agent:a2 (cross-thread from t0): from another thread");
+	});
 });
 
 // ------------------------------------------------------------------

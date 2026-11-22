@@ -107,13 +107,27 @@ export interface BuildThreadPromptInput {
 	participants: readonly string[];
 	rows: readonly StoredMessage[];
 	selfAgentId: string;
+	/** Enabled agents the caller may target; ids/names only, no secrets. */
+	knownAgents?: readonly PromptAgent[];
 	/** Approximate character budget for the rendered body (token trim). */
 	maxChars?: number;
 }
 
+export interface PromptAgent {
+	id: string;
+	displayName: string;
+	mentionPatterns: readonly string[];
+}
+
 function renderSender(message: StoredMessage): string {
 	if (message.from.kind === "user") return `user:${message.from.userId}`;
-	if (message.from.kind === "agent") return `agent:${message.from.agentId}`;
+	if (message.from.kind === "agent") {
+		const cross = message.extra?.crossPost as { sourceThreadId?: unknown } | undefined;
+		const sourceThreadId = typeof cross?.sourceThreadId === "string" ? cross.sourceThreadId : null;
+		return sourceThreadId
+			? `agent:${message.from.agentId} (cross-thread from ${sourceThreadId})`
+			: `agent:${message.from.agentId}`;
+	}
 	return `system:${message.from.service}`;
 }
 
@@ -124,13 +138,25 @@ function renderSender(message: StoredMessage): string {
  * boundary (boundary is decided in loadHistory).
  */
 export function buildThreadPrompt(input: BuildThreadPromptInput): string {
-	const { thread, participants, rows, selfAgentId, maxChars } = input;
+	const { thread, participants, rows, selfAgentId, knownAgents, maxChars } = input;
+	const rosterLines =
+		knownAgents && knownAgents.length > 0
+			? [
+					"Available agents:",
+					...knownAgents.map(
+						(agent) =>
+							`- id=${agent.id} displayName=${JSON.stringify(agent.displayName)} mentions=${agent.mentionPatterns.join(", ")}`,
+					),
+					"",
+				]
+			: [];
 	const header = [
 		`# Thread: ${thread.title ?? thread.id}`,
 		`Project: ${thread.projectPath}`,
 		`Participants: ${participants.map((id) => `@${id}`).join(", ")}`,
 		`You are @${selfAgentId}.`,
 		"",
+		...rosterLines,
 		"## Recent messages",
 	].join("\n");
 	const lines: string[] = [];

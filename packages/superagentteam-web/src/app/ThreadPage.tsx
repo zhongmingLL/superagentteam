@@ -1,5 +1,5 @@
 import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { Composer } from "@/components/chat/Composer";
 import { MessageList } from "@/components/chat/MessageList";
@@ -15,7 +15,9 @@ import { usePolling } from "@/lib/polling";
 
 export function ThreadPage() {
 	const { threadId } = useParams<{ threadId: string }>();
+	const navigate = useNavigate();
 	const detail = useThreadStore((state) => state.detail);
+	const threadList = useThreadStore((state) => state.threads);
 	const listThread = useThreadStore((state) => state.threads.find((item) => item.id === threadId));
 	const listStatus = useThreadStore((state) => state.status);
 	const detailStatus = useThreadStore((state) => state.detailStatus);
@@ -277,6 +279,10 @@ export function ThreadPage() {
 				onResumeLatest={() => void resumeLatest()}
 				liveInvocations={a2aMatches ? a2aLive : []}
 				agentLabel={(agentId) => agents.find((agent) => agent.id === agentId)?.displayName ?? agentId}
+				threadLabel={(sourceThreadId) =>
+					threadList.find((item) => item.id === sourceThreadId)?.title ?? sourceThreadId
+				}
+				onOpenThread={(sourceThreadId) => navigate(`/thread/${encodeURIComponent(sourceThreadId)}`)}
 			/>
 			{a2aMatches && (a2aStatus === "error" || a2aError !== undefined) ? (
 				<p className="st-a2a-degraded" role="status">

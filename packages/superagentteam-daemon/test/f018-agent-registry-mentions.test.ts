@@ -2,7 +2,7 @@ import type { AccountConfig, AgentCatalog } from "@superagentteam/shared/types";
 import { describe, expect, it } from "vitest";
 
 import { computeExclusionSpans, parseOperatorMentions, scanOperatorMentions } from "../src/domains/agent/mentions.ts";
-import { buildRegistry, CatalogError, resolveExplicitTarget } from "../src/domains/agent/registry.ts";
+import { buildRegistry, CatalogError, reloadRegistry, resolveExplicitTarget } from "../src/domains/agent/registry.ts";
 
 function makeCatalog(): { catalog: AgentCatalog; accounts: AccountConfig[] } {
 	const accounts: AccountConfig[] = [
@@ -161,5 +161,32 @@ describe("AgentRegistry (0008 §6)", () => {
 		expect(resolveExplicitTarget(registry, "砚砚")).toEqual({ kind: "ok", agentId: "yanyan" });
 		expect(resolveExplicitTarget(registry, "@宪宪")).toEqual({ kind: "agent_disabled", pattern: "@宪宪" });
 		expect(resolveExplicitTarget(registry, "@nobody")).toEqual({ kind: "agent_not_found", pattern: "@nobody" });
+	});
+
+	it("reloadRegistry swaps maps in place and keeps the old registry on invalid input", () => {
+		const { catalog, accounts } = makeCatalog();
+		const registry = buildRegistry(catalog, accounts);
+		const revision = registry.revision;
+		const added = {
+			...catalog.agents[0]!,
+			id: "newbie",
+			mentionPatterns: ["@newbie"],
+			displayName: "Newbie",
+			enabled: true,
+		};
+		const next = { version: 1 as const, agents: [...catalog.agents, added] };
+		expect(reloadRegistry(registry, next, accounts)).toBe(registry);
+		expect(registry.agents.get("newbie")?.displayName).toBe("Newbie");
+		expect(registry.mentionIndex.get("@newbie")).toBe("newbie");
+		expect(registry.revision).toBeGreaterThan(revision);
+
+		expect(() =>
+			reloadRegistry(
+				registry,
+				{ version: 1, agents: [catalog.agents[0]!, { ...added, mentionPatterns: ["@yanyan"] }] },
+				accounts,
+			),
+		).toThrow(CatalogError);
+		expect(registry.agents.get("newbie")?.displayName).toBe("Newbie");
 	});
 });

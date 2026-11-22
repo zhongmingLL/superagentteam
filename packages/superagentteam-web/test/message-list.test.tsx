@@ -240,4 +240,57 @@ describe("message list", () => {
 
 		expect(screen.queryByRole("button", { name: "重试" })).not.toBeInTheDocument();
 	});
+
+	it("labels agent messages with the display name", () => {
+		renderList({
+			messages: [
+				message({
+					id: "msg:agent",
+					type: "assistant",
+					from: { kind: "agent", agentId: "a1" },
+					content: "hello from a1",
+				}),
+			],
+			agentLabel: (agentId) => (agentId === "a1" ? "Agent A1" : agentId),
+		});
+		expect(screen.getByText("Agent A1")).toBeInTheDocument();
+		expect(screen.queryByText("a1")).not.toBeInTheDocument();
+	});
+
+	it("shows cross-thread provenance and opens the source thread", () => {
+		const onOpenThread = vi.fn();
+		renderList({
+			messages: [
+				message({
+					id: "msg:cross",
+					type: "assistant",
+					from: { kind: "agent", agentId: "a1" },
+					content: "cross posted",
+					extra: { crossPost: { sourceThreadId: "thread:0" } },
+				}),
+			],
+			threadLabel: (threadId) => (threadId === "thread:0" ? "Source thread" : threadId),
+			onOpenThread,
+		});
+		expect(screen.getByText("跨线程来自")).toBeInTheDocument();
+		fireEvent.click(screen.getByRole("button", { name: "Source thread" }));
+		expect(onOpenThread).toHaveBeenCalledWith("thread:0");
+	});
+
+	it("marks multi-mention aggregates and operator mentions", () => {
+		renderList({
+			messages: [
+				message({
+					id: "msg:multi",
+					type: "system",
+					from: { kind: "system", service: "multi_mention" },
+					content: "aggregate",
+					extra: { multiMention: { status: "done", targetAgentIds: ["a1", "a2"] } },
+					mentionsUser: true,
+				}),
+			],
+		});
+		expect(screen.getByText("multi-mention · done · 2 targets")).toBeInTheDocument();
+		expect(screen.getByText("提到了你")).toBeInTheDocument();
+	});
 });

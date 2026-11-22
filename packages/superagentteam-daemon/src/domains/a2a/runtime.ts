@@ -139,6 +139,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		: null;
 	const runAgentTurn = new RunAgentTurn({
 		db,
+		registry: deps.registry,
 		assembler,
 		pool,
 		attempts,

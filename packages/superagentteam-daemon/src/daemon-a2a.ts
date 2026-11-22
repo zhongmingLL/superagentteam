@@ -62,6 +62,8 @@ function resolvePiCliPath(): string {
 
 export class A2ADaemonControlPlane {
 	readonly dataDir: string;
+	readonly catalogPath: string;
+	readonly accountsPath: string;
 	readonly database: F018Database;
 	readonly registry: AgentRegistry;
 	readonly runtime: A2ARuntime;
@@ -85,6 +87,8 @@ export class A2ADaemonControlPlane {
 
 	constructor(options: A2ADaemonControlPlaneOptions) {
 		this.dataDir = options.dataDir;
+		this.catalogPath = options.catalogPath ?? join(options.dataDir, "agent-catalog.json");
+		this.accountsPath = options.accountsPath ?? join(options.dataDir, "accounts.json");
 		this.clock = options.clock ?? Date.now;
 		this.changeBus = options.changeBus;
 		this.pollIntervalMs = Math.max(options.pollIntervalMs ?? 250, 25);
@@ -96,8 +100,8 @@ export class A2ADaemonControlPlane {
 				options.registry ??
 				loadRegistryFromFiles(
 					{
-						catalogPath: options.catalogPath ?? join(options.dataDir, "agent-catalog.json"),
-						accountsPath: options.accountsPath ?? join(options.dataDir, "accounts.json"),
+						catalogPath: this.catalogPath,
+						accountsPath: this.accountsPath,
 					},
 					options.defaultAgentId,
 				);

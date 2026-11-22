@@ -1,6 +1,7 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { AgentStreamEvent } from "@superagentteam/shared/types";
 import { runInTransaction } from "../../infrastructure/db/database.ts";
+import type { AgentRegistry } from "../agent/registry.ts";
 import type { InvocationCredentialStore } from "../auth/store.ts";
 import { buildThreadPrompt, type HistoryAssembler } from "../history/assembler.ts";
 import { RouteResponseCommitter, TurnExecutionLifecycle } from "../invocation/settlement.ts";
@@ -23,6 +24,7 @@ import type { WorkerPoolKey } from "../worker/store.ts";
 
 export interface RunAgentTurnDeps {
 	db: DatabaseSync;
+	registry: AgentRegistry;
 	assembler: HistoryAssembler;
 	pool: WorkerPool;
 	attempts: InvocationAttemptStore;
@@ -111,6 +113,13 @@ export class RunAgentTurn implements DispatchTargetPort {
 				participants: this.deps.threads.listParticipants(prepared.threadId),
 				rows: window.rows,
 				selfAgentId: prepared.agentId,
+				knownAgents: [...this.deps.registry.agents.values()]
+					.filter((agent) => agent.enabled)
+					.map((agent) => ({
+						id: agent.id,
+						displayName: agent.displayName,
+						mentionPatterns: agent.mentionPatterns,
+					})),
 			});
 
 			const sink = new ResponseEventSink({

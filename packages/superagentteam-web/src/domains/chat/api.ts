@@ -24,7 +24,17 @@ export interface MessageView {
 	timestamp: number;
 	updatedAt: number;
 	thinking?: string;
-	extra?: { rich?: RichMessageExtra } & Record<string, unknown>;
+	extra?: {
+		rich?: RichMessageExtra;
+		crossPost?: { sourceThreadId: string; sourceTriggerMessageId?: string };
+		multiMention?: {
+			requestId?: string;
+			status?: string;
+			targetAgentIds?: string[];
+			allFailed?: boolean;
+		};
+		targetAgentIds?: string[];
+	} & Record<string, unknown>;
 }
 
 export interface MessageWindow {

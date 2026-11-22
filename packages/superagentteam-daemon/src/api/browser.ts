@@ -34,7 +34,12 @@ export interface BrowserApiOptions {
 	changeBus?: ChangeBus;
 	eventHeartbeatMs?: number;
 	sessionStore?: SessionStore;
-	a2a?: { runtime: A2ARuntime; registry: AgentRegistry };
+	a2a?: {
+		runtime: A2ARuntime;
+		registry: AgentRegistry;
+		catalogPath?: string;
+		accountsPath?: string;
+	};
 }
 
 export interface BrowserApi {
@@ -58,7 +63,13 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 		? createInvocationRoutes({ runtime: options.a2a.runtime, changeBus: options.changeBus })
 		: null;
 	const agentRoutes: AgentRoutes | null = options.a2a
-		? createAgentRoutes({ registry: options.a2a.registry, tracker: options.a2a.runtime.tracker, clock })
+		? createAgentRoutes({
+				registry: options.a2a.registry,
+				tracker: options.a2a.runtime.tracker,
+				catalogPath: options.a2a.catalogPath,
+				accountsPath: options.a2a.accountsPath,
+				clock,
+			})
 		: null;
 	const eventRoutes: EventRoutes | null =
 		options.a2a && options.changeBus
@@ -173,7 +184,7 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 			if (queueRoutes?.handle(request, response, url, context)) return true;
 			if (liveRoutes?.handle(request, response, url, context)) return true;
 			if (messageRoutes && (await messageRoutes.handle(request, response, url, context))) return true;
-			if (agentRoutes?.handle(request, response, url)) return true;
+			if (agentRoutes && (await agentRoutes.handle(request, response, url, context))) return true;
 			if (legacyRoutes?.handle(request, response, url, context)) return true;
 			if (
 				!threadRoutes ||

@@ -52,8 +52,12 @@ export function validateCatalog(catalog: AgentCatalog, accounts: readonly Accoun
 	if (!catalog || !Array.isArray(catalog.agents)) {
 		throw new CatalogError("catalog_invalid_shape", "catalog.agents must be an array");
 	}
+	if (!Array.isArray(accounts)) {
+		throw new CatalogError("catalog_invalid_shape", "accounts must be an array");
+	}
+	const typedAccounts = accounts as readonly AccountConfig[];
 	const accountModels = new Map<string, ReadonlySet<string>>();
-	for (const account of accounts) {
+	for (const account of typedAccounts) {
 		if (!account.ref) throw new CatalogError("catalog_invalid_shape", "account.ref empty");
 		if (!Array.isArray(account.models) || account.models.length === 0) {
 			throw new CatalogError("account_models_empty", `account ${account.ref} has no models`);
@@ -137,6 +141,28 @@ export function buildRegistry(
 	defaultAgentId?: string,
 ): AgentRegistry {
 	validateCatalog(catalog, accounts);
+	const maps = buildRegistryMaps(catalog, accounts, defaultAgentId);
+	return {
+		agents: maps.agents,
+		mentionIndex: maps.mentionIndex,
+		accounts: maps.accounts,
+		defaultAgentId: maps.defaultAgentId,
+		revision: ++registryRevisionCounter,
+	};
+}
+
+interface RegistryMaps {
+	agents: Map<string, AgentConfig>;
+	mentionIndex: Map<string, string>;
+	accounts: Map<string, AccountConfig>;
+	defaultAgentId: string | null;
+}
+
+function buildRegistryMaps(
+	catalog: AgentCatalog,
+	accounts: readonly AccountConfig[],
+	defaultAgentId?: string,
+): RegistryMaps {
 	const agents = new Map<string, AgentConfig>();
 	const mentionIndex = new Map<string, string>();
 	for (const agent of catalog.agents) {
@@ -152,8 +178,32 @@ export function buildRegistry(
 		mentionIndex,
 		accounts: new Map(accounts.map((a) => [a.ref, a])),
 		defaultAgentId: resolvedDefault,
-		revision: ++registryRevisionCounter,
 	};
+}
+
+/**
+ * Rebuild a registry IN PLACE. All runtime consumers hold the same registry
+ * object, so hot catalog updates must not swap object identity. Validation
+ * runs before any mutation: a rejected catalog leaves the old registry intact.
+ */
+export function reloadRegistry(
+	registry: AgentRegistry,
+	catalog: AgentCatalog,
+	accounts: readonly AccountConfig[],
+	defaultAgentId?: string,
+): AgentRegistry {
+	validateCatalog(catalog, accounts);
+	const maps = buildRegistryMaps(catalog, accounts, defaultAgentId);
+	const target = registry as unknown as RegistryMaps & { revision: number };
+	target.agents.clear();
+	for (const [id, agent] of maps.agents) target.agents.set(id, agent);
+	target.mentionIndex.clear();
+	for (const [pattern, id] of maps.mentionIndex) target.mentionIndex.set(pattern, id);
+	target.accounts.clear();
+	for (const [ref, account] of maps.accounts) target.accounts.set(ref, account);
+	target.defaultAgentId = maps.defaultAgentId;
+	target.revision = ++registryRevisionCounter;
+	return registry;
 }
 
 export interface CatalogPaths {
@@ -162,6 +212,24 @@ export interface CatalogPaths {
 }
 
 export function loadRegistryFromFiles(paths: CatalogPaths, defaultAgentId?: string): AgentRegistry {
+	const { catalog, accounts } = readRegistryInputs(paths);
+	return buildRegistry(catalog, accounts, defaultAgentId);
+}
+
+/** Re-read catalog/accounts and apply them to an existing registry in place. */
+export function reloadRegistryFromFiles(
+	registry: AgentRegistry,
+	paths: CatalogPaths,
+	defaultAgentId?: string,
+): AgentRegistry {
+	const { catalog, accounts } = readRegistryInputs(paths);
+	return reloadRegistry(registry, catalog, accounts, defaultAgentId);
+}
+
+export function readRegistryInputs(paths: CatalogPaths): {
+	catalog: AgentCatalog;
+	accounts: AccountConfig[];
+} {
 	let catalogRaw: unknown;
 	let accountsRaw: unknown;
 	try {
@@ -174,7 +242,7 @@ export function loadRegistryFromFiles(paths: CatalogPaths, defaultAgentId?: stri
 	} catch (error) {
 		throw new CatalogError("catalog_invalid_json", `accounts: ${(error as Error).message}`);
 	}
-	return buildRegistry(catalogRaw as AgentCatalog, accountsRaw as AccountConfig[], defaultAgentId);
+	return { catalog: catalogRaw as AgentCatalog, accounts: accountsRaw as AccountConfig[] };
 }
 
 /**

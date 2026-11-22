@@ -12,13 +12,34 @@ export interface AgentView {
 	status?: AgentStatus;
 }
 
-export interface AgentApi {
-	list(): Promise<{ agents: AgentView[] }>;
+export interface AccountView {
+	ref: string;
+	provider: string;
+	models: string[];
 }
 
-export function createAgentApi(client: Pick<ApiClient, "get">): AgentApi {
+export interface CreateAgentInput {
+	id: string;
+	displayName: string;
+	mentionPatterns: string[];
+	accountRef: string;
+	defaultModel: string;
+	roleId: string;
+	roleDescription?: string;
+	enabled?: boolean;
+}
+
+export interface AgentApi {
+	list(): Promise<{ agents: AgentView[] }>;
+	accounts(): Promise<{ accounts: AccountView[] }>;
+	create(input: CreateAgentInput): Promise<{ agent: AgentView }>;
+}
+
+export function createAgentApi(client: Pick<ApiClient, "get" | "post">): AgentApi {
 	return {
 		list: () => client.get<{ agents: AgentView[] }>("/api/agents"),
+		accounts: () => client.get<{ accounts: AccountView[] }>("/api/accounts"),
+		create: (input) => client.post<{ agent: AgentView }>("/api/agents", input),
 	};
 }
 

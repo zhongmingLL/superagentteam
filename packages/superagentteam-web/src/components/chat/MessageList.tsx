@@ -22,15 +22,17 @@ export interface MessageListProps {
 	pendingUserMessages: PendingUserMessageView[];
 	liveInvocations?: LiveInvocationView[];
 	agentLabel?: (agentId: string) => string;
+	threadLabel?: (threadId: string) => string;
+	onOpenThread?: (threadId: string) => void;
 	onLoadOlder: () => void;
 	onRetry: () => void;
 	onRetryInvocation?: (invocationId: string) => Promise<void>;
 	onResumeLatest: () => void;
 }
 
-function senderLabel(message: MessageView): string {
+function senderLabel(message: MessageView, agentLabel?: (agentId: string) => string): string {
 	if (message.from.kind === "user") return "你";
-	if (message.from.kind === "agent") return message.from.agentId;
+	if (message.from.kind === "agent") return agentLabel?.(message.from.agentId) ?? message.from.agentId;
 	return message.from.service;
 }
 
@@ -56,10 +58,16 @@ function MessageRow({
 	message,
 	onRetryInvocation,
 	liveParentIds,
+	agentLabel,
+	threadLabel,
+	onOpenThread,
 }: {
 	message: MessageView;
 	onRetryInvocation?: (invocationId: string) => Promise<void>;
 	liveParentIds: ReadonlySet<string>;
+	agentLabel?: (agentId: string) => string;
+	threadLabel?: (threadId: string) => string;
+	onOpenThread?: (threadId: string) => void;
 }) {
 	const sender = message.from.kind;
 	const processing = isProcessing(message);
@@ -68,6 +76,8 @@ function MessageRow({
 	const [retrying, setRetrying] = useState(false);
 	const [retryState, setRetryState] = useState<"idle" | "queued" | "error">("idle");
 	const [retryError, setRetryError] = useState<string | undefined>();
+	const crossPost = message.extra?.crossPost;
+	const multiMention = message.extra?.multiMention;
 	const retry = async (): Promise<void> => {
 		if (!invocationId || retrying || !onRetryInvocation) return;
 		setRetrying(true);
@@ -85,9 +95,35 @@ function MessageRow({
 	return (
 		<article className={`st-message is-${sender}`} data-message-id={message.id}>
 			<div className="st-message-meta">
-				<span className="st-message-sender">{senderLabel(message)}</span>
+				<span className="st-message-sender">{senderLabel(message, agentLabel)}</span>
 				<time dateTime={new Date(message.timestamp).toISOString()}>{formatRelative(message.timestamp)}</time>
 			</div>
+			{crossPost || multiMention || message.mentionsUser ? (
+				<div className="st-message-badges">
+					{crossPost ? (
+						<span className="st-message-badge is-cross">
+							跨线程来自{" "}
+							{onOpenThread ? (
+								<button
+									type="button"
+									className="st-link-button"
+									onClick={() => onOpenThread(crossPost.sourceThreadId)}
+								>
+									{threadLabel?.(crossPost.sourceThreadId) ?? crossPost.sourceThreadId}
+								</button>
+							) : (
+								<code>{threadLabel?.(crossPost.sourceThreadId) ?? crossPost.sourceThreadId}</code>
+							)}
+						</span>
+					) : null}
+					{multiMention ? (
+						<span className="st-message-badge is-multi">
+							multi-mention · {multiMention.status ?? "done"} · {multiMention.targetAgentIds?.length ?? 0} targets
+						</span>
+					) : null}
+					{message.mentionsUser ? <span className="st-message-badge is-mention">提到了你</span> : null}
+				</div>
+			) : null}
 			{message.content !== "" ? <MessageContent content={message.content} /> : null}
 			{processing ? <p className="st-message-processing">正在回复…</p> : null}
 			{terminal ? <p className={`st-message-terminal is-${terminal.status}`}>{terminal.label}</p> : null}
@@ -124,6 +160,8 @@ export function MessageList({
 	pendingUserMessages,
 	liveInvocations = [],
 	agentLabel,
+	threadLabel,
+	onOpenThread,
 	onLoadOlder,
 	onRetry,
 	onRetryInvocation,
@@ -240,6 +278,9 @@ export function MessageList({
 					message={message}
 					onRetryInvocation={onRetryInvocation}
 					liveParentIds={liveParentIds}
+					agentLabel={agentLabel}
+					threadLabel={threadLabel}
+					onOpenThread={onOpenThread}
 				/>
 			))}
 			{pendingUserMessages.map((pending) => (

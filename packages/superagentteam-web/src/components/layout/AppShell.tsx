@@ -31,6 +31,11 @@ export function AppShell() {
 	const agents = useAgentStore((state) => state.agents);
 	const agentStatus = useAgentStore((state) => state.status);
 	const agentError = useAgentStore((state) => state.error);
+	const accounts = useAgentStore((state) => state.accounts);
+	const accountsStatus = useAgentStore((state) => state.accountsStatus);
+	const accountsError = useAgentStore((state) => state.accountsError);
+	const loadAccounts = useAgentStore((state) => state.loadAccounts);
+	const createAgent = useAgentStore((state) => state.create);
 	const a2aThreadId = useA2AStore((state) => state.threadId);
 	const a2aLive = useA2AStore((state) => state.live);
 	const location = useLocation();
@@ -88,6 +93,11 @@ export function AppShell() {
 							status={agentStatus}
 							error={agentError}
 							onRetry={() => void loadAgents()}
+							accounts={accounts}
+							accountsStatus={accountsStatus}
+							accountsError={accountsError}
+							onLoadAccounts={() => void loadAccounts()}
+							onCreate={createAgent}
 						/>
 					</div>
 				</header>

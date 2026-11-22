@@ -330,7 +330,14 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 		secureCookies: options.secureCookies ?? false,
 		changeBus,
 		eventHeartbeatMs: options.eventHeartbeatMs,
-		a2a: a2aControlPlane ? { runtime: a2aControlPlane.runtime, registry: a2aControlPlane.registry } : undefined,
+		a2a: a2aControlPlane
+			? {
+					runtime: a2aControlPlane.runtime,
+					registry: a2aControlPlane.registry,
+					catalogPath: a2aControlPlane.catalogPath,
+					accountsPath: a2aControlPlane.accountsPath,
+				}
+			: undefined,
 	});
 
 	let stopPromise: Promise<void> | null = null;

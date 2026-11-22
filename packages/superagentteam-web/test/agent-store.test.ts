@@ -8,6 +8,8 @@ describe("agent store", () => {
 			list: vi.fn(async () => ({
 				agents: [{ id: "a1", displayName: "Agent A1", enabled: true, status: "idle" as const }],
 			})),
+			accounts: vi.fn(async () => ({ accounts: [] })),
+			create: vi.fn(),
 		};
 		const store = createAgentStore({ api });
 
@@ -23,6 +25,8 @@ describe("agent store", () => {
 				.fn()
 				.mockResolvedValueOnce({ agents: [{ id: "a1", displayName: "Agent A1", enabled: true }] })
 				.mockRejectedValueOnce(new Error("daemon down")),
+			accounts: vi.fn(async () => ({ accounts: [] })),
+			create: vi.fn(),
 		};
 		const store = createAgentStore({ api });
 		await store.getState().load();
@@ -31,5 +35,40 @@ describe("agent store", () => {
 
 		expect(store.getState().agents).toHaveLength(1);
 		expect(store.getState()).toMatchObject({ status: "ready", error: "daemon down" });
+	});
+
+	it("loads accounts and creates an agent, then refreshes the list", async () => {
+		const api = {
+			list: vi
+				.fn()
+				.mockResolvedValueOnce({ agents: [] })
+				.mockResolvedValueOnce({
+					agents: [{ id: "a1", displayName: "Agent A1", enabled: true, status: "idle" as const }],
+				}),
+			accounts: vi.fn(async () => ({
+				accounts: [{ ref: "main", provider: "kimi-coding", models: ["kimi-for-coding"] }],
+			})),
+			create: vi.fn(async () => ({
+				agent: { id: "a1", displayName: "Agent A1", enabled: true, status: "idle" as const },
+			})),
+		};
+		const store = createAgentStore({ api });
+		await store.getState().load();
+		await store.getState().loadAccounts();
+
+		const created = await store.getState().create({
+			id: "a1",
+			displayName: "Agent A1",
+			mentionPatterns: ["@a1"],
+			accountRef: "main",
+			defaultModel: "kimi-for-coding",
+			roleId: "worker",
+		});
+
+		expect(created.id).toBe("a1");
+		expect(store.getState().accounts).toHaveLength(1);
+		expect(store.getState().agents).toHaveLength(1);
+		expect(api.create).toHaveBeenCalledTimes(1);
+		expect(api.list).toHaveBeenCalledTimes(2);
 	});
 });

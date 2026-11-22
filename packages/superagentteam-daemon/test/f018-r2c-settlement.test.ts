@@ -141,6 +141,7 @@ function makeWorld(agents: AgentConfig[] = [agentConfig("a1"), agentConfig("a2")
 	const streamEvents: AgentStreamEvent[] = [];
 	const runAgentTurn = new RunAgentTurn({
 		db: db.db,
+		registry,
 		assembler,
 		pool,
 		attempts,

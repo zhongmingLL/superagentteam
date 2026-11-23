@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-
+import { operatorCredentialPaths } from "../auth/operator.ts";
 import type { A2ARuntime } from "../domains/a2a/runtime.ts";
 import type { AgentRegistry } from "../domains/agent/registry.ts";
 import type { ChangeBus } from "../domains/events/bus.ts";
@@ -15,6 +15,7 @@ import { createMessageRoutes, type MessageRoutes } from "./routes/messages.ts";
 import { createQueueRoutes, type QueueRoutes } from "./routes/queue.ts";
 import { createThreadRoutes } from "./routes/threads.ts";
 import {
+	type BrowserSession,
 	hasForbiddenIdentityHeaders,
 	isAllowedOrigin,
 	readSessionId,
@@ -34,6 +35,8 @@ export interface BrowserApiOptions {
 	changeBus?: ChangeBus;
 	eventHeartbeatMs?: number;
 	sessionStore?: SessionStore;
+	/** Dev-only: create a loopback operator session when no cookie is present. */
+	devAutoLogin?: boolean;
 	a2a?: {
 		runtime: A2ARuntime;
 		registry: AgentRegistry;
@@ -50,6 +53,7 @@ export interface BrowserApi {
 export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 	const clock = options.clock ?? Date.now;
 	const sessions = options.sessionStore ?? new SessionStore({ clock });
+	const devAutoLogin = options.devAutoLogin ?? false;
 	const nonces = new Map<string, number>();
 	const threadRoutes = options.a2a
 		? createThreadRoutes({ runtime: options.a2a.runtime, clock, changeBus: options.changeBus })
@@ -87,6 +91,23 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 		sendJson(response, 401, { error: "unauthorized", message, relogin_hint: RELOGIN_HINT });
 	}
 
+	function isLoopbackRequest(request: IncomingMessage): boolean {
+		const address = request.socket.remoteAddress;
+		return address === "127.0.0.1" || address === "::1" || address === "::ffff:127.0.0.1";
+	}
+
+	function createDevSession(response: ServerResponse): BrowserSession {
+		let userId = "operator:local-dev";
+		try {
+			userId = `operator:${operatorCredentialPaths(options.dataDir).fingerprint}`;
+		} catch {
+			// Keep a stable local identity if the operator key is not initialized.
+		}
+		const session = sessions.create(userId, clock());
+		response.setHeader("set-cookie", serializeSessionCookie(session.id, { secure: options.secureCookies ?? false }));
+		return session;
+	}
+
 	function consumeNonce(nonce: string, expiresAt: number, now: number): boolean {
 		for (const [value, expiry] of nonces) {
 			if (expiry <= now) nonces.delete(value);
@@ -109,11 +130,17 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 		}
 		const sessionId = readSessionId(request.headers);
 		if (!sessionId) {
+			if (devAutoLogin && isLoopbackRequest(request)) {
+				return { session: createDevSession(response), origin };
+			}
 			sendUnauthorized(response, "missing browser session");
 			return null;
 		}
 		const session = sessions.get(sessionId, clock());
 		if (!session) {
+			if (devAutoLogin && isLoopbackRequest(request)) {
+				return { session: createDevSession(response), origin };
+			}
 			sendUnauthorized(response, "browser session expired");
 			return null;
 		}

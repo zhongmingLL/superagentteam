@@ -81,6 +81,7 @@ updated: 2026-11-18
 | [`features/F023-thin-hub-m1-rename.md`](features/F023-thin-hub-m1-rename.md) | F023：W7b thin Hub M1-B — thread rename（header inline edit、titleSource=user、sidebar 同步） |
 | [`features/F024-thin-hub-m1-retry.md`](features/F024-thin-hub-m1-retry.md) | F024：W7b thin Hub M1-C — failed-invocation retry（failed/interrupted 回复重试、复用 requestRetry） |
 | [`features/F025-fullstack-a2a-e2e.md`](features/F025-fullstack-a2a-e2e.md) | F025：Full-stack A2A E2E（Hub 创建多 agent、同/跨 thread A2A、multi-mention、真实 provider） |
+| [`features/F026-local-dev-auto-login.md`](features/F026-local-dev-auto-login.md) | F026：Local dev auto-login（loopback 直接访问，保留 CSRF；生产默认关闭） |
 | [`plans/0015-w6c-observability-trajectory.md`](plans/0015-w6c-observability-trajectory.md) | W6c observability/trajectory 实施计划与 AC 映射 |
 | [`plans/0018-f016a-a2a-ingress-e2e.md`](plans/0018-f016a-a2a-ingress-e2e.md) | F016a：8 类 ingress × scenario real RPC E2E、P0 工具面、withdraw/parallel/loop guard |
 | [`plans/0020-f018-thread-first-runtime.md`](plans/0020-f018-thread-first-runtime.md) | F018：A2A runtime v1 R0-R5、AgentConfig/Registry、schema/migration、same/cross-thread post、multi_mention fan-out、验收与回滚 |

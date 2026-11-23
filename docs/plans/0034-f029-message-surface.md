@@ -1,7 +1,7 @@
 ---
 title: "F029 execution plan — Hub message surface parity"
 doc_kind: plan
-status: accepted
+status: done
 created: 2026-11-24
 updated: 2026-11-24
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -47,6 +47,9 @@ related: [features/F029-message-surface-parity.md, reuse/hub-action-surface.md, 
 
 状态（2026-11-24）：F029.1–F029.4 完成；24 files / 99 tests pass，build 与
 doc-index pass。富块生产端工具与 interactive action 留 Phase 2。
+
+2026-11-24：PR #172 merged as `493aa01c3`（墨墨 approve @ `e44825788`，
+CI 5/5）。F029.5 merge gate 完成。
 
 ## 测试矩阵
 

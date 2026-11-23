@@ -6,6 +6,7 @@ import type {
 	MessageLifecycle,
 	QueueTarget,
 	StoredMessage,
+	StoredToolEvent,
 } from "@superagentteam/shared/types";
 
 // Typed owner error (review P3): callers can branch on code without parsing strings.
@@ -261,7 +262,7 @@ export class MessageStore {
 	 */
 	updateResponseContent(
 		id: string,
-		payload: { content: string; thinking: string | null; toolEvents: readonly unknown[] },
+		payload: { content: string; thinking: string | null; toolEvents: readonly StoredToolEvent[] },
 		now: number,
 	): boolean {
 		return (

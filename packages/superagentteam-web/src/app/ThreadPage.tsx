@@ -1,4 +1,4 @@
-import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { Composer } from "@/components/chat/Composer";
@@ -10,6 +10,7 @@ import { useA2AStore } from "@/domains/a2a/store";
 import { useAgentStore } from "@/domains/agent/store";
 import { useChatStore } from "@/domains/chat/store";
 import type { ChangeTopic } from "@/domains/events/client";
+import { useExecutionStore } from "@/domains/events/execution-store";
 import { useEventStore } from "@/domains/events/store";
 import { useThreadEvents } from "@/domains/events/use-thread-events";
 import { useThreadStore } from "@/domains/thread/store";
@@ -52,6 +53,7 @@ export function ThreadPage() {
 	const retryInvocation = useA2AStore((state) => state.retryInvocation);
 	const resetA2A = useA2AStore((state) => state.reset);
 	const agents = useAgentStore((state) => state.agents);
+	const liveExecutions = useExecutionStore((state) => state.turns);
 	const resolvedThread = detail?.id === threadId ? detail : listThread;
 	const markRead = useThreadStore((state) => state.markRead);
 	const refreshThreads = useThreadStore((state) => state.refresh);
@@ -80,7 +82,18 @@ export function ThreadPage() {
 		},
 		[refresh, refreshA2A, loadDetail, refreshThreads, threadId],
 	);
-	useThreadEvents({ threadId: resolvedThread?.id, onRefresh: handleEventRefresh });
+	useLayoutEffect(() => {
+		if (!threadId) return;
+		useExecutionStore.getState().begin(threadId);
+		return () => {
+			useExecutionStore.getState().reset();
+		};
+	}, [threadId]);
+	useThreadEvents({
+		threadId: resolvedThread?.id,
+		onRefresh: handleEventRefresh,
+		onStream: (event) => useExecutionStore.getState().apply(event.threadId, event.event),
+	});
 	const realtimeStatus = useEventStore((state) => (state.threadId === threadId ? state.status : "idle"));
 	const realtimeLive = realtimeStatus === "live";
 
@@ -322,6 +335,7 @@ export function ThreadPage() {
 				onRetryInvocation={(invocationId) => retryInvocation(invocationId)}
 				onResumeLatest={() => void resumeLatest()}
 				liveInvocations={a2aMatches ? a2aLive : []}
+				liveExecutions={liveExecutions}
 				agentLabel={(agentId) => agents.find((agent) => agent.id === agentId)?.displayName ?? agentId}
 				threadLabel={(sourceThreadId) =>
 					threadList.find((item) => item.id === sourceThreadId)?.title ?? sourceThreadId

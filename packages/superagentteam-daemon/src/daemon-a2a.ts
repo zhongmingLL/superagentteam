@@ -39,7 +39,7 @@ export interface A2ADaemonControlPlaneOptions {
 	readonly env?: Record<string, string | undefined>;
 	readonly clock?: () => number;
 	readonly processStartedAt?: number;
-	readonly onStreamEvent?: (event: AgentStreamEvent) => void;
+	readonly onStreamEvent?: (event: AgentStreamEvent, threadId: string) => void;
 	readonly changeBus?: ChangeBus;
 }
 

@@ -33,7 +33,7 @@ export interface A2ARuntimeDeps {
 	db: DatabaseSync;
 	registry: AgentRegistry;
 	spawn: WorkerSpawnPort;
-	onStreamEvent?: (event: AgentStreamEvent) => void;
+	onStreamEvent?: (event: AgentStreamEvent, threadId: string) => void;
 	changeBus?: ChangeBus;
 	clock?: () => number;
 	processStartedAt?: number;

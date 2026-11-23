@@ -58,12 +58,14 @@ export function createEventRoutes(options: EventRoutesOptions): EventRoutes {
 		let closed = false;
 		let timer: ReturnType<typeof setInterval> | undefined;
 		let unsubscribe: (() => void) | undefined;
+		let unsubscribeStream: (() => void) | undefined;
 
 		const cleanup = (): void => {
 			if (closed) return;
 			closed = true;
 			if (timer !== undefined) clearInterval(timer);
 			unsubscribe?.();
+			unsubscribeStream?.();
 			if (!response.writableEnded) response.end();
 		};
 
@@ -71,6 +73,15 @@ export function createEventRoutes(options: EventRoutesOptions): EventRoutes {
 			if (closed) return;
 			try {
 				writeSse(response, "change", event);
+			} catch {
+				cleanup();
+			}
+		});
+
+		unsubscribeStream = options.bus.subscribeStream(threadId, (event) => {
+			if (closed) return;
+			try {
+				writeSse(response, "stream", event);
 			} catch {
 				cleanup();
 			}

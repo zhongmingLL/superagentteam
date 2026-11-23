@@ -77,7 +77,7 @@ interface DraftRecord {
   agentId: string;
 
   content: string;            // streamed plain text body
-  toolEvents: unknown[];      // execution replay；T2 可据此重建 contentBlocks
+  toolEvents: StoredToolEvent[]; // execution replay；merged by provider toolCallId (F028)
   thinking: string | null;
 
   createdAt: number;
@@ -86,8 +86,9 @@ interface DraftRecord {
 ```
 
 不存 `userId`、`rich`、`metadata`、`extra`、message `seq`、draft `seq`、
-`contentBlocks`。`contentBlocks` 是最终 R 的语义内容，由 T2 从最终 text + toolEvents
-生成；draft 只保存恢复所需的最小现场。draft 不是 message history。
+`contentBlocks`。F028 收敛：T2 把最终 text 写成 text-only `contentBlocks`；
+`toolEvents` 单独承载 execution replay（merged record），不再声称由它重建语义
+contentBlocks。draft 只保存恢复所需的最小现场。draft 不是 message history。
 
 ## 4. Store interface
 

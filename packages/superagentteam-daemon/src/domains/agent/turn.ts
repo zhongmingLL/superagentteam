@@ -36,7 +36,7 @@ export interface RunAgentTurnDeps {
 	credentials: InvocationCredentialStore;
 	readState: AgentReadStateStore;
 	messages: MessageStore;
-	onStreamEvent?: (event: AgentStreamEvent) => void;
+	onStreamEvent?: (event: AgentStreamEvent, threadId: string) => void;
 	clock?: () => number;
 	promptTimeoutMs?: number;
 }
@@ -130,7 +130,7 @@ export class RunAgentTurn implements DispatchTargetPort {
 				threadId: prepared.threadId,
 				agentId: prepared.agentId,
 				createdAt: now,
-				onStreamEvent: this.deps.onStreamEvent,
+				onStreamEvent: (event) => this.deps.onStreamEvent?.(event, prepared.threadId),
 				onFirstVisibleOutput: () => {
 					runInTransaction(this.deps.db, () => {
 						this.deps.sessions.recordUserVisibleOutput(

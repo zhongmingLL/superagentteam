@@ -52,10 +52,12 @@ describe("useThreadEvents", () => {
 	it("goes live on ready, debounces changes, and refetches all topics", async () => {
 		const sources: MockEventSource[] = [];
 		const onRefresh = vi.fn();
+		const onStream = vi.fn();
 		renderHook(() =>
 			useThreadEvents({
 				threadId: "thread:1",
 				onRefresh,
+				onStream,
 				createSource: () => {
 					const source = new MockEventSource();
 					sources.push(source);
@@ -70,6 +72,21 @@ describe("useThreadEvents", () => {
 		sources[0]?.emit("ready");
 		expect(useEventStore.getState().status).toBe("live");
 		expect(onRefresh).toHaveBeenLastCalledWith(["messages", "queue", "live", "thread"]);
+		sources[0]?.emit(
+			"stream",
+			JSON.stringify({
+				threadId: "thread:1",
+				event: {
+					type: "thinking",
+					seq: 1,
+					agentId: "a1",
+					turnExecutionId: "turn:1",
+					content: "hm",
+					timestamp: 1,
+				},
+			}),
+		);
+		expect(onStream).toHaveBeenCalledTimes(1);
 
 		sources[0]?.emit("change", JSON.stringify({ threadId: "thread:1", topics: ["messages"], at: 1 }));
 		sources[0]?.emit("change", JSON.stringify({ threadId: "thread:1", topics: ["queue", "live"], at: 2 }));

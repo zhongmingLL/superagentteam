@@ -1,3 +1,5 @@
+import type { AgentStreamEvent } from "@superagentteam/shared/types";
+
 export const CHANGE_TOPICS = ["messages", "queue", "live", "thread"] as const;
 export type ChangeTopic = (typeof CHANGE_TOPICS)[number];
 
@@ -7,9 +9,16 @@ export interface ThreadChangeEvent {
 	at: number;
 }
 
+/** F028: ephemeral provider stream event, thread-scoped by the server envelope. */
+export interface ThreadStreamEvent {
+	threadId: string;
+	event: AgentStreamEvent;
+}
+
 export interface ThreadEventHandlers {
 	onReady: () => void;
 	onChange: (event: ThreadChangeEvent) => void;
+	onStream?: (event: ThreadStreamEvent) => void;
 	onError: () => void;
 }
 
@@ -44,6 +53,33 @@ export function parseChangeEvent(data: unknown): ThreadChangeEvent | null {
 	return { threadId: value.threadId, topics, at: value.at };
 }
 
+export function parseStreamEvent(data: unknown): ThreadStreamEvent | null {
+	if (typeof data !== "string") return null;
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(data) as unknown;
+	} catch {
+		return null;
+	}
+	if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return null;
+	const value = parsed as Record<string, unknown>;
+	const event = value.event;
+	if (typeof value.threadId !== "string" || typeof event !== "object" || event === null || Array.isArray(event)) {
+		return null;
+	}
+	const record = event as Record<string, unknown>;
+	if (
+		typeof record.type !== "string" ||
+		typeof record.seq !== "number" ||
+		typeof record.agentId !== "string" ||
+		typeof record.turnExecutionId !== "string" ||
+		typeof record.timestamp !== "number"
+	) {
+		return null;
+	}
+	return { threadId: value.threadId, event: event as AgentStreamEvent };
+}
+
 function browserEventSource(url: string): EventSourceLike {
 	const source = new EventSource(url);
 	return {
@@ -74,16 +110,23 @@ export function connectThreadEvents(
 		const change = parseChangeEvent((event as MessageEvent).data);
 		if (change && change.threadId === threadId) handlers.onChange(change);
 	};
+	const onStream = (event: Event): void => {
+		if (closed) return;
+		const stream = parseStreamEvent((event as MessageEvent).data);
+		if (stream && stream.threadId === threadId) handlers.onStream?.(stream);
+	};
 	const onError = (): void => {
 		if (!closed) handlers.onError();
 	};
 	source.addEventListener("ready", onReady);
 	source.addEventListener("change", onChange);
+	source.addEventListener("stream", onStream);
 	source.onerror = onError;
 	return () => {
 		closed = true;
 		source.removeEventListener("ready", onReady);
 		source.removeEventListener("change", onChange);
+		source.removeEventListener("stream", onStream);
 		source.close();
 	};
 }

@@ -1,47 +1,60 @@
 :root {
-	--st-canvas: #fffbf6;
-	--st-surface-1: #fcf7f0;
-	--st-surface-2: #f7f2ea;
-	--st-surface-3: #efe9e3;
-	--st-hairline: #e5dfd5;
-	--st-hairline-strong: #d8d1c6;
-	--st-ink: #141413;
-	--st-body: #3d3d3a;
-	--st-muted: #5f5d57;
-	--st-primary: #b05f45;
-	--st-primary-active: #8f4730;
-	--st-primary-soft: #f3e3da;
+	--st-canvas: #f8fbff;
+	--st-surface-1: #ffffff;
+	--st-surface-2: #f1f5f9;
+	--st-surface-3: #e8eef7;
+	--st-hairline: #e2e8f0;
+	--st-hairline-strong: #cbd5e1;
+	--st-ink: #0f172a;
+	--st-body: #334155;
+	--st-muted: #64748b;
+	--st-primary: #2563eb;
+	--st-primary-active: #1d4ed8;
+	--st-primary-soft: #dbeafe;
 	--st-on-primary: #ffffff;
-	--st-focus: #b05f45;
+	--st-focus: #2563eb;
+	--st-success: #16a34a;
+	--st-warning: #d97706;
+	--st-info: #0284c7;
+	--st-danger: #dc2626;
 	--st-radius-sm: 6px;
 	--st-radius-md: 8px;
 	--st-radius-lg: 12px;
-	--st-font-display: "Source Serif 4", "Songti SC", "Noto Serif CJK SC", Georgia, serif;
+	--st-radius-xl: 16px;
+	--st-font-display: Inter, "PingFang SC", "Noto Sans CJK SC", sans-serif;
 	--st-font-body: Inter, -apple-system, "PingFang SC", "Noto Sans CJK SC", sans-serif;
 	--st-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+	--st-agent-1: #2563eb;
+	--st-agent-2: #0891b2;
+	--st-agent-3: #7c3aed;
+	--st-agent-4: #b45309;
+	--st-agent-5: #15803d;
+	--st-agent-6: #be185d;
 }
 
 [data-theme="dark"] {
-	--st-canvas: #181715;
-	--st-surface-1: #1f1e1b;
-	--st-surface-2: #252320;
-	--st-surface-3: #2d2b27;
-	--st-hairline: #34322d;
-	--st-hairline-strong: #45423c;
-	--st-ink: #faf9f5;
-	--st-body: #d8d4cb;
-	--st-muted: #a09d96;
-	--st-primary: #cc785c;
-	--st-primary-active: #e08d70;
-	--st-primary-soft: #3a2a24;
-	--st-on-primary: #181715;
-	--st-focus: #cc785c;
-}
-
-:root {
-	--st-danger: #c64545;
-}
-
-[data-theme="dark"] {
-	--st-danger: #e06b6b;
+	--st-canvas: #0b1220;
+	--st-surface-1: #0f172a;
+	--st-surface-2: #111c30;
+	--st-surface-3: #1a2740;
+	--st-hairline: #22314d;
+	--st-hairline-strong: #33456b;
+	--st-ink: #f8fafc;
+	--st-body: #cbd5e1;
+	--st-muted: #94a3b8;
+	--st-primary: #3b82f6;
+	--st-primary-active: #60a5fa;
+	--st-primary-soft: #172554;
+	--st-on-primary: #ffffff;
+	--st-focus: #60a5fa;
+	--st-success: #4ade80;
+	--st-warning: #fbbf24;
+	--st-info: #38bdf8;
+	--st-danger: #f87171;
+	--st-agent-1: #60a5fa;
+	--st-agent-2: #22d3ee;
+	--st-agent-3: #a78bfa;
+	--st-agent-4: #fbbf24;
+	--st-agent-5: #4ade80;
+	--st-agent-6: #f472b6;
 }

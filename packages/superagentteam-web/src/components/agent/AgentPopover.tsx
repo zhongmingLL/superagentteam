@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 
 import type { AccountView, AgentView, CreateAgentInput } from "@/domains/agent/api";
 import { agentStatusLabel } from "@/domains/agent/labels";
+import { Icon } from "@/components/ui/Icon";
 
 export interface AgentPopoverProps {
 	agents: AgentView[];
@@ -13,6 +14,7 @@ export interface AgentPopoverProps {
 	accountsError?: string;
 	onLoadAccounts?: () => void;
 	onCreate?: (input: CreateAgentInput) => Promise<AgentView>;
+	openSignal?: number;
 }
 
 function splitPatterns(value: string): string[] {
@@ -33,6 +35,7 @@ export function AgentPopover({
 	accountsError,
 	onLoadAccounts,
 	onCreate,
+	openSignal = 0,
 }: AgentPopoverProps) {
 	const [open, setOpen] = useState(false);
 	const [showCreate, setShowCreate] = useState(false);
@@ -63,6 +66,10 @@ export function AgentPopover({
 			document.removeEventListener("mousedown", onPointer);
 		};
 	}, [open]);
+
+	useEffect(() => {
+		if (openSignal > 0) setOpen(true);
+	}, [openSignal]);
 
 	useEffect(() => {
 		if (!open || !showCreate) return;
@@ -128,7 +135,9 @@ export function AgentPopover({
 				aria-haspopup="dialog"
 				onClick={() => setOpen((value) => !value)}
 			>
-				Agents {agents.length > 0 ? <span className="st-agent-count">{agents.length}</span> : null}
+				<Icon name="agents" size={14} />
+				<span>Agents</span>
+				{agents.length > 0 ? <span className="st-agent-count">{agents.length}</span> : null}
 			</button>
 			{open ? (
 				<div className="st-agent-panel" role="dialog" aria-label="Agents">

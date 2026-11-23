@@ -39,8 +39,8 @@ created: 2026-10-25
 | F024 | W7b thin Hub M1-C — failed-invocation retry（failed/interrupted 回复重试、复用 requestRetry） | done (implementation merged `fffc32685`; P3 fix `cb5ef44d4`; dual review approve; operator close 2026-11-21; abandon/running cancel deferred to platform track) | 宪宪 | [F024](docs/features/F024-thin-hub-m1-retry.md) |
 | F025 | Full-stack A2A E2E — Hub agent management + real-provider chain（多 agent 创建、同/跨 thread A2A、multi-mention、真实 provider） | implemented (merged `18e16a2f`; E2E passed 2026-11-22: 3 agents, thread1 A→B→A, multi-mention B+C, thread2 2 rounds, cross-thread 2-way; dual review approve @ `ce7edeae6`; pending operator close) | 宪宪 | [F025](docs/features/F025-fullstack-a2a-e2e.md) |
 | F026 | Local dev auto-login — Clowder-compatible localhost UX（loopback 直接访问，保留 CSRF；生产默认关闭） | implemented (merged `055182d6`; security review approve @ `4d0d24172`; Windows 3101 direct access verified; pending operator close) | 宪宪 | [F026](docs/features/F026-local-dev-auto-login.md) |
-| F028 | Assistant execution record — thinking/tool calls 折叠 + live 中间结果（SSE；F018 merged toolEvents canonical） | in-progress | 宪宪 | [F028](docs/features/F028-assistant-execution-record.md) |
 | F027 | Hub visual refresh — 浅蓝理性工作台（nav rail + thread sidebar + 桌面/移动布局；保留 A2A 行为） | implemented (merged `de9e18061`; 墨墨 P2/P3 closed @ `6ff10c9ba`; operator 2026-11-23 approved merge; pending operator close) | 宪宪 | [F027](docs/features/F027-hub-visual-refresh.md) |
+| F028 | Assistant execution record — thinking/tool calls 折叠 + live 中间结果（SSE；F018 merged toolEvents canonical） | in-progress | 宪宪 | [F028](docs/features/F028-assistant-execution-record.md) |
 
 > Naming (F019): new and active docs use `superagentteam/Fxxx`; F001–F018 retain
 > `codeteam/Fxxx` for history. Package/env/data/CLI/tool names use `superagentteam*`

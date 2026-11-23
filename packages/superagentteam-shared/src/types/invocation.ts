@@ -1,4 +1,4 @@
-import type { MessageSender, QueueTarget } from "./message.ts";
+import type { MessageSender, QueueTarget, StoredToolEvent } from "./message.ts";
 
 // F018 v1 shared contract types — invocation/queue/turn family
 // (0007 §3.1/§3.2/§3.3/§3.6, 0011). Dual-generation rule applies.
@@ -295,7 +295,7 @@ export interface DraftRecord {
 	threadId: string;
 	agentId: string;
 	content: string;
-	toolEvents: unknown[];
+	toolEvents: StoredToolEvent[];
 	thinking: string | null;
 	createdAt: number;
 	updatedAt: number;

@@ -50,6 +50,33 @@ function renderList(overrides: Partial<React.ComponentProps<typeof MessageList>>
 }
 
 describe("message list", () => {
+	it("renders the execution record above the final answer", () => {
+		renderList({
+			messages: [
+				message({
+					type: "assistant",
+					from: { kind: "agent", agentId: "agent:1" },
+					content: "final answer",
+					thinking: "check first",
+					toolEvents: [
+						{
+							toolCallId: "tool:1",
+							name: "Read",
+							status: "completed",
+							at: 1,
+							endedAt: 2,
+							result: { ok: true },
+						},
+					],
+				}),
+			],
+		});
+
+		const record = screen.getByTestId("message-execution-record");
+		const answer = screen.getByText("final answer");
+		expect(record.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+	});
+
 	it("renders message text without interpreting HTML", () => {
 		const { container } = renderList({
 			messages: [message({ content: '<script>alert("x")</script>' })],

@@ -35,7 +35,7 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 | A3-1 `ball-custody` | approved | `0004 W5` custody/wait | ✅ | F167/F233/F280；DP-A3-1 A/A/A |
 | A3-2 `memory` | approved | `0004 W6` 6A | ✅ | file evidence subset；DP-MEM A/A/A |
 | A3-3 `observability` | approved | `0004 W6` 6E；`0004 W7` 只读面 | ✅ | DP-OBS A/A/B；F150/F130 parity |
-| Wave B `bubble-pipeline` | approved | `0002 W1` messages identity；`0004 W7` timeline/live-hydration | ✅（本轮补） | DP-BUBBLE-1=A：W1 identity 冻结；W7 approved-for-direction |
+| Wave B `bubble-pipeline` | approved | `0002 W1` messages identity；`0004 W7` timeline/live-hydration | ✅（本轮补） | DP-BUBBLE-1=A：W1 identity 冻结；W7 approved-for-direction。2026-11-23 thread-first 重基：W1/W7 为历史标签，current mapping = F018/F020/F027/F028；R1 不变 |
 | Wave B `github-signals` | approved | `0004 W8` + 2026-10-25 hardening + GS-1..GS-10 实施切片 | ✅ | DP-GH A/A；`pr_merged` 外部观察；GS review `8290c9ca…` 烁烁 accept、砚砚/墨墨 accept-with-modify，P2/P3 已回写 |
 | Wave B `plugin` | approved | `0002 W0` 2b curated skill surface；`0003 W4` skill surface | ✅ | DP-PLUGIN A/A |
 | Wave B `harness-eval` | approved | `0001 W6` + `0004 W6` 6F | ✅（本轮补） | DP-HE A/A/A；P0 envelope/finding/lifecycle |

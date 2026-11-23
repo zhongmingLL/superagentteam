@@ -64,6 +64,13 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 
 > P0 依据：`dispatch` / `bubble-pipeline` / `identity-session` / `callback-auth` / `managed-work` / `plugin` / `runtime-deployment` 属核心基础设施；`ball-custody` / `approval-index` / `harness-eval` 属 SOP 闭环。只有阻塞 W0–W4 首个代码 agent 闭环的才进 P0。
 
+> **2026-11-23 thread-first revalidation**：本矩阵签于 2026-10-24，早于
+> 2026-11-04 的 F018 thread-first pivot。`bubble-pipeline` 的 R1 决策保留，
+> 但卡中的 `W1/W7`、`runs`、`dispatch_refs_json`、`rich_blocks_json` 是
+> task-first 历史坐标；current mapping 已重基为 F018
+> `messages`/`drafts`/`turn_executions` + F020/F027/F028 Hub 投影。其他引用
+> 旧 task-first 坐标的 P0 卡，复用前也需要同样的 revalidation。
+
 > **P0 slice：`sop-bulletin`**（跨 `hub-action-surface` + `managed-work`，不新增 ownership cell）。卡在 `reuse/sop-bulletin.md`，覆盖 `WorkflowSop` / `BacklogItem` 数据契约、CAS、`codeteam_update_workflow` / `get_workflow_sop`；board/rich-block UI 仍归 `hub-action-surface` 的 P1-active。F073 的主题归属仍是 `managed-work`，但 SOP 契约本体由这张 P0 卡负责。
 
 ### P1-active（非首个闭环阻塞，10 个 cell）

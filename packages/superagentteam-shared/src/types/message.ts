@@ -46,19 +46,24 @@ export interface RichMessageExtra {
 	blocks: Array<{ id: string; kind: RichBlockKind; v: 1; [key: string]: unknown }>;
 }
 
-/** execution replay; content-level, distinct from contentBlocks. */
+/**
+ * Execution replay; content-level, distinct from contentBlocks.
+ *
+ * F028 canonical shape: the daemon's response sink merges provider
+ * tool_execution_start/end events by provider toolCallId. The earlier
+ * flat tool_use/tool_result declaration (and the equivalent Clowder shape)
+ * is intentionally not used by v1; see F028 feature doc.
+ */
 export interface StoredToolEvent {
-	id: string;
-	executionRef?: string;
-	type: "tool_use" | "tool_result";
-	label: string;
-	detail?: string;
-	timestamp: number;
-	toolUseId?: string;
-	status?: "ok" | "error" | "unknown";
-	startTimeMs?: number;
-	endTimeMs?: number;
-	toolName?: string;
+	toolCallId: string;
+	name: string;
+	status: "running" | "completed";
+	/** Start timestamp (ms). */
+	at: number;
+	/** Completion timestamp (ms); absent while running. */
+	endedAt?: number;
+	args?: unknown;
+	result?: unknown;
 }
 
 export type QueueTarget = { kind: "agent"; id: string };

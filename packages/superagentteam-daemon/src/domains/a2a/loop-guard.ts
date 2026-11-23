@@ -1,4 +1,4 @@
-import type { DraftRecord, StoredMessage, StoredToolEvent } from "@superagentteam/shared/types";
+import type { DraftRecord, StoredMessage } from "@superagentteam/shared/types";
 import type { TurnExecutionStore } from "../invocation/store.ts";
 import type { MessageStore } from "../message/store.ts";
 import type { ResponseDraftStore } from "../response/store.ts";
@@ -30,15 +30,12 @@ export function isSubstantiveTool(toolName: string): boolean {
 
 function hasSubstantiveTool(events: readonly unknown[] | undefined): boolean {
 	return (events ?? []).some((event) => {
-		const toolEvent = event as Partial<StoredToolEvent> & { name?: unknown };
-		// Legacy StoredToolEvent shape (messages/tests).
+		const toolEvent = event as { type?: unknown; name?: unknown; toolName?: unknown; label?: unknown };
+		// F028 canonical merged record: { toolCallId, name, status, at }.
+		if (typeof toolEvent.name === "string") return isSubstantiveTool(toolEvent.name);
+		// Defensive read for pre-F028 rows that may still contain the old flat pair.
 		if (toolEvent.type === "tool_use") {
 			return isSubstantiveTool(String(toolEvent.toolName ?? toolEvent.label ?? ""));
-		}
-		// F018 ResponseEventSink ToolEventRecord shape (draft + T2 messages):
-		// { toolCallId, name, status, at } — no `type`/`label`.
-		if (typeof toolEvent.name === "string") {
-			return isSubstantiveTool(toolEvent.name);
 		}
 		return false;
 	});

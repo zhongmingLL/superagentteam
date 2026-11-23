@@ -1,4 +1,4 @@
-import type { AgentStreamEvent } from "@superagentteam/shared/types";
+import type { AgentStreamEvent, StoredToolEvent } from "@superagentteam/shared/types";
 
 import type { RpcEvent } from "../../workers/rpc-client.ts";
 import type { ResponseDraftStore } from "./store.ts";
@@ -24,22 +24,11 @@ export interface ResponseEventSinkDeps {
 	clock?: () => number;
 }
 
-/** Merged per-toolCall record (0017 §5.2): start creates, end updates status/result. */
-export interface ToolEventRecord {
-	toolCallId: string;
-	name: string;
-	status: "running" | "completed";
-	at: number;
-	endedAt?: number;
-	args?: unknown;
-	result?: unknown;
-}
-
 export interface ResponseSummary {
 	content: string;
 	thinking: string | null;
 	usage: Record<string, unknown> | null;
-	toolEvents: ToolEventRecord[];
+	toolEvents: StoredToolEvent[];
 	errorMessage: string | null;
 }
 
@@ -52,7 +41,7 @@ export class ResponseEventSink {
 	private readonly clock: () => number;
 	private text = "";
 	private thinking: string | null = null;
-	private toolEvents: ToolEventRecord[] = [];
+	private toolEvents: StoredToolEvent[] = [];
 	private seqCounter = 0;
 	private lateFlushDropped = 0;
 	private usage: Record<string, unknown> | null = null;

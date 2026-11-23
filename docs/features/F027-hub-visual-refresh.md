@@ -77,6 +77,9 @@ Pencil 画布当前帧：
 - [live-thread-390.png](../design/F027/live-thread-390.png)
 - [live-drawer-390.png](../design/F027/live-drawer-390.png)
 - [live-thread-390-dark.png](../design/F027/live-thread-390-dark.png)
+- [live-light-1440.png](../design/F027/live-light-1440.png)（live 行 + unread 徽标）
+- [live-dark-1440.png](../design/F027/live-dark-1440.png)（dark + live + unread）
+- [live-dark-390-drawer.png](../design/F027/live-dark-390-drawer.png)（dark 抽屉 live/unread）
 
 关键 token：
 
@@ -101,6 +104,7 @@ Pencil 画布当前帧：
 - [x] 现有功能测试不回退：thread list/search/unread、rename、retry、
   cross-thread、multi-mention、composer send、401 relogin。
 - [x] 浏览器 1440/390 截图作为验收证据。
+- [x] sidebar live presence 保留可见「执行中」文字，不靠颜色单独表达。
 - [ ] 非作者 review（视觉 + 代码面）通过。
 
 ## 进展
@@ -113,3 +117,8 @@ Pencil 画布当前帧：
 - 2026-11-23：验证：web typecheck + 88 tests + production build 全绿；
   Playwright 1440 / 390 / 390-dark 实测，无横向溢出、无 console error；
   composer @ 插入、主题切换、Agents 面板、移动抽屉均可用。
+- 2026-11-23：墨墨 vision/UX review `changes_requested @ ea1b10d43`，唯一 P2
+  为 sidebar live presence 被 visually-hidden 成只剩蓝点。已修：live 行显示
+  「执行中」文字；空间不足时让时间戳让位，不让状态文字让位。P3-2 同步去掉
+  header meta 与 pinned context 的重复成员计数。P3-1 补 live+unread 的
+  light/dark 1440 与 dark 390 抽屉截图。

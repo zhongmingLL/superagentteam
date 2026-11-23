@@ -528,6 +528,8 @@ svg {
 	align-items: center;
 	gap: 4px;
 	color: var(--st-primary);
+	font-weight: 500;
+	white-space: nowrap;
 }
 
 .st-thread-live-dot,

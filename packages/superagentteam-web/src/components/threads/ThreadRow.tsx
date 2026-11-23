@@ -24,7 +24,7 @@ export function ThreadRow({ thread }: { thread: ThreadView }) {
 				</span>
 			</span>
 			<span className="st-thread-meta">
-				<span>{formatRelative(thread.lastActiveAt)}</span>
+				{live ? null : <span>{formatRelative(thread.lastActiveAt)}</span>}
 				<span className="st-thread-status">
 					{thread.unreadCount && thread.unreadCount > 0 ? (
 						<span className="st-thread-unread" role="status" aria-label={`${thread.unreadCount} 条未读`}>
@@ -34,7 +34,7 @@ export function ThreadRow({ thread }: { thread: ThreadView }) {
 					{live ? (
 						<span className="st-thread-live" title="执行中">
 							<span className="st-thread-live-dot" aria-hidden="true" />
-							<span className="st-visually-hidden">执行中</span>
+							<span>执行中</span>
 						</span>
 					) : null}
 				</span>

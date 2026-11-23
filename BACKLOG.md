@@ -41,7 +41,7 @@ created: 2026-10-25
 | F026 | Local dev auto-login — Clowder-compatible localhost UX（loopback 直接访问，保留 CSRF；生产默认关闭） | implemented (merged `055182d6`; security review approve @ `4d0d24172`; Windows 3101 direct access verified; pending operator close) | 宪宪 | [F026](docs/features/F026-local-dev-auto-login.md) |
 | F027 | Hub visual refresh — 浅蓝理性工作台（nav rail + thread sidebar + 桌面/移动布局；保留 A2A 行为） | implemented (merged `de9e18061`; 墨墨 P2/P3 closed @ `6ff10c9ba`; operator 2026-11-23 approved merge; pending operator close) | 宪宪 | [F027](docs/features/F027-hub-visual-refresh.md) |
 | F028 | Assistant execution record — thinking/tool calls 折叠 + live 中间结果（SSE；F018 merged toolEvents canonical） | implemented (merged `5615173fe`; 墨墨 vision/UX approve + 砚砚 contract/SSE approve @ `677ca2e50`; CI 5/5 @ `9ffec881d`; pending operator close) | 宪宪 | [F028](docs/features/F028-assistant-execution-record.md) |
-| F029 | Hub message surface parity — agent nameplate 宽度、A2A 收件人归属、rich blocks 展示 | in-progress | 宪宪 | [F029](docs/features/F029-message-surface-parity.md) |
+| F029 | Hub message surface parity — agent nameplate 宽度、A2A 收件人归属、rich blocks 展示 | implemented (merged `493aa01c3`; 墨墨 vision/UX approve @ `e44825788`; CI 5/5; pending operator close) | 宪宪 | [F029](docs/features/F029-message-surface-parity.md) |
 
 > Naming (F019): new and active docs use `superagentteam/Fxxx`; F001–F018 retain
 > `codeteam/Fxxx` for history. Package/env/data/CLI/tool names use `superagentteam*`

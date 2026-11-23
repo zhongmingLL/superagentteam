@@ -142,11 +142,6 @@ function MessageRow({
 						{message.mentionsUser ? <span className="st-message-badge is-mention">提到了你</span> : null}
 					</div>
 				) : null}
-				{message.content !== "" ? (
-					<MessageContent content={message.content} />
-				) : liveText ? (
-					<MessageContent content={liveText} />
-				) : null}
 				{agentId !== null && (message.thinking || (message.toolEvents?.length ?? 0) > 0 || live) ? (
 					<MessageExecutionRecord
 						thinking={message.thinking}
@@ -154,6 +149,11 @@ function MessageRow({
 						live={processing ? live : undefined}
 						state={processing ? "processing" : "terminal"}
 					/>
+				) : null}
+				{message.content !== "" ? (
+					<MessageContent content={message.content} />
+				) : liveText ? (
+					<MessageContent content={liveText} />
 				) : null}
 				{processing ? <p className="st-message-processing">正在回复…</p> : null}
 				{terminal ? <p className={`st-message-terminal is-${terminal.status}`}>{terminal.label}</p> : null}
@@ -368,8 +368,8 @@ export function MessageList({
 								<span className="st-message-sender">{agentLabel?.(invocation.agentId) ?? invocation.agentId}</span>
 								<span>已受理</span>
 							</div>
-							{live?.text ? <MessageContent content={live.text} /> : null}
 							<MessageExecutionRecord live={live} state="processing" />
+							{live?.text ? <MessageContent content={live.text} /> : null}
 							<p className="st-message-processing">正在处理… · {formatElapsed(invocation.startedAt)}</p>
 						</div>
 						</article>

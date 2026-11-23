@@ -17,7 +17,7 @@ related: [features/F028-assistant-execution-record.md, plans/0033-f028-execution
   response draft / message store / `/api/messages` / web `MessageView` 对齐。
 - **History UI**：assistant 消息内新增 `MessageExecutionRecord`：Thinking
   折叠/展开 + tool 执行记录折叠/展开 + 单工具 args/result 详情；默认折叠，
-  大字段截断，敏感键脱敏。
+  大字段截断，敏感键脱敏；执行记录位于最终正文上方（operator 2026-11-23 要求）。
 - **Live transport**：`AgentStreamEvent` 经 `ChangeBus.publishStream` 发到
   `/api/events` 的 `stream` SSE 事件；thread-scoped，复用现有 session/thread
   ownership 校验。
@@ -50,7 +50,8 @@ Agent A 的 real provider 回合（`superagentteam_thread_context`）：
 - UI 在 terminal 前出现 `执行记录 · 正在调用 superagentteam_thread_context`、
   运行中 spinner 和 topbar live pill。
 - terminal 后 durable assistant message 显示答案、Thinking 折叠态和
-  `执行记录 · 1 次工具调用`；展开后能看到 tool 行与 args/result。
+  `执行记录 · 1 次工具调用`；执行记录在正文上方，展开后能看到 tool 行与
+  args/result。
 
 ### Screenshots
 
@@ -60,7 +61,7 @@ Agent A 的 real provider 回合（`superagentteam_thread_context`）：
 - [history-tool-detail-1440.png](../design/F028/history-tool-detail-1440.png)
 - [history-390.png](../design/F028/history-390.png)
 - [history-390-dark.png](../design/F028/history-390-dark.png)
-- [live-running-1440.png](../design/F028/live-running-1440.png)
+- [live-running-390.png](../design/F028/live-running-390.png)
 
 ## Known follow-ups
 

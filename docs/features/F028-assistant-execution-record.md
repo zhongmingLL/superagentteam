@@ -28,7 +28,8 @@ operator 明确要求：**F028 历史态和 live 中间结果一起做**。
 
 ## 用户结果
 
-- assistant 回复先显示正文；正文下方是一条「执行记录」inset，不抢正文层级。
+- assistant 回复先显示一条默认折叠的「执行记录」inset，其下是正文；执行记录
+  不抢正文层级。operator 2026-11-23 明确要求这个顺序。
 - Thinking：折叠态显示 `› 思考` + 前 60 字预览；展开显示完整 thinking。
 - Tool calls：折叠态显示 `执行记录 · N 次工具调用 · 时长`；展开是每个工具一行
   （状态 icon、工具名、耗时）；点单行看 args/result 详情。
@@ -131,6 +132,7 @@ data: { threadId, event: AgentStreamEvent }
 
 - [x] shared/daemon/web 的 `toolEvents` 类型与真实 `/api/messages` 数据一致。
 - [x] 历史 message：thinking 可折叠/展开；tool record 可折叠/展开；单工具详情可展开；错误状态可见。
+- [x] 执行记录位于最终正文上方（history 与 live 同序）。
 - [x] live：processing response bubble 在 terminal 前显示 thinking/tool 中间结果；tool 记录自动展开，done 后收回。
 - [x] `seq` 去重；重复/乱序事件不重复渲染；重连后 terminal message 覆盖 live 记录。
 - [x] SSE 只对 thread owner 可见；跨 thread 不泄漏；无 session 时 401。
@@ -168,3 +170,5 @@ data: { threadId, event: AgentStreamEvent }
   - 真实 Kimi agent 回合在 terminal 前显示「正在调用」tool 记录；
   - daemon 132 files / 887 tests、web 24 files / 95 tests、build 全绿；
   - 证据报告：`docs/reports/2026-11-23-f028-live-execution-record.md`。
+- 2026-11-23：operator 要求把 thinking/tool 执行记录放到最终内容上方；已调整
+  `MessageList` 的 history/live 顺序，并更新 1440/390 截图与回归测试。

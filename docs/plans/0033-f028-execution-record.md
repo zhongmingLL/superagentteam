@@ -50,7 +50,8 @@ thinking / tool calls 默认折叠、可展开；live 中间结果通过 thread 
 
 - `packages/superagentteam-web/src/components/chat/MessageExecutionRecord.tsx`：
   thinking panel + tool record panel + tool row detail。
-- `MessageList.tsx`：assistant 消息内渲染执行记录；历史 `thinking/toolEvents` 传入。
+- `MessageList.tsx`：assistant 消息内渲染执行记录，位于最终正文上方；历史
+  `thinking/toolEvents` 传入。
 - `global.css`：F027 token 下的 inset/折叠/工具行样式。
 - 单消息 disclosure state；默认 collapsed；错误/空状态。
 - `lib/tool-display.ts`：工具名、状态、耗时、args/result 格式化 + 截断 + 脱敏。

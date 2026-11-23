@@ -9,6 +9,7 @@ import { formatElapsed, formatRelative } from "@/lib/time";
 import { Icon } from "@/components/ui/Icon";
 import { MessageExecutionRecord } from "./MessageExecutionRecord";
 import { MessageContent } from "./MessageContent";
+import { RichBlocks } from "./RichBlocks";
 
 export interface PendingUserMessageView {
 	messageId: string;
@@ -59,6 +60,41 @@ function retryableInvocationId(message: MessageView): string | null {
 	return message.lifecycle.parentInvocationId;
 }
 
+function DispatchTargets({
+	message,
+	agentLabel,
+}: {
+	message: MessageView;
+	agentLabel?: (agentId: string) => string;
+}) {
+	const refs = message.lifecycle?.kind === "input" ? message.lifecycle.dispatchRefs : [];
+	const targets = [
+		...(message.extra?.targetAgentIds ?? []),
+		...refs.map((ref) => ref.target.id),
+	].filter((targetId, index, all) => all.indexOf(targetId) === index);
+	if (message.from.kind !== "agent" || targets.length === 0) return null;
+	const phases = targets.map((targetId) => refs.find((ref) => ref.target.id === targetId)?.phase);
+	const settled = phases.filter((phase) => phase === "settled").length;
+	const stateLabel = settled === targets.length ? "已回复" : settled > 0 ? "部分已回复" : "已送达";
+	return (
+		<div className="st-message-dispatch" data-testid="message-dispatch-targets">
+			<span className="st-dispatch-caption">发送给</span>
+			{targets.map((targetId) => {
+				const label = agentLabel?.(targetId) ?? targetId;
+				return (
+					<span className="st-dispatch-target" key={targetId}>
+						<span className={`st-dispatch-avatar tone-${toneFor(targetId)}`} aria-hidden="true">
+							{initialForName(label)}
+						</span>
+						<span>{label}</span>
+					</span>
+				);
+			})}
+			<span className="st-dispatch-state">{stateLabel}</span>
+		</div>
+	);
+}
+
 function MessageRow({
 	message,
 	onRetryInvocation,
@@ -103,7 +139,10 @@ function MessageRow({
 		}
 	};
 	return (
-		<article className={`st-message is-${sender}`} data-message-id={message.id}>
+		<article
+			className={`st-message is-${sender}${sender === "agent" ? " is-nameplate" : ""}`}
+			data-message-id={message.id}
+		>
 			{agentId !== null ? (
 				<span className={`st-message-avatar tone-${toneFor(agentId)}`} aria-hidden="true">
 					{initialForName(senderName)}
@@ -142,6 +181,7 @@ function MessageRow({
 						{message.mentionsUser ? <span className="st-message-badge is-mention">提到了你</span> : null}
 					</div>
 				) : null}
+				<DispatchTargets message={message} agentLabel={agentLabel} />
 				{agentId !== null && (message.thinking || (message.toolEvents?.length ?? 0) > 0 || live) ? (
 					<MessageExecutionRecord
 						thinking={message.thinking}
@@ -155,6 +195,7 @@ function MessageRow({
 				) : liveText ? (
 					<MessageContent content={liveText} />
 				) : null}
+				<RichBlocks extra={message.extra?.rich} />
 				{processing ? <p className="st-message-processing">正在回复…</p> : null}
 				{terminal ? <p className={`st-message-terminal is-${terminal.status}`}>{terminal.label}</p> : null}
 				{terminal && invocationId && onRetryInvocation && !liveParentIds.has(invocationId) ? (

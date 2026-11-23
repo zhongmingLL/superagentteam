@@ -84,6 +84,7 @@ updated: 2026-11-23
 | [`features/F026-local-dev-auto-login.md`](features/F026-local-dev-auto-login.md) | F026：Local dev auto-login（loopback 直接访问，保留 CSRF；生产默认关闭） |
 | [`features/F027-hub-visual-refresh.md`](features/F027-hub-visual-refresh.md) | F027：Hub visual refresh（浅蓝理性工作台、nav rail + thread sidebar、桌面/移动布局；保留 A2A 行为） |
 | [`features/F028-assistant-execution-record.md`](features/F028-assistant-execution-record.md) | F028：Assistant execution record（thinking/tool calls 可折叠、live SSE、merged toolEvents canonical） |
+| [`features/F029-message-surface-parity.md`](features/F029-message-surface-parity.md) | F029：Hub message surface parity（agent nameplate 宽度、A2A 收件人归属、rich blocks 展示） |
 | [`plans/0015-w6c-observability-trajectory.md`](plans/0015-w6c-observability-trajectory.md) | W6c observability/trajectory 实施计划与 AC 映射 |
 | [`plans/0018-f016a-a2a-ingress-e2e.md`](plans/0018-f016a-a2a-ingress-e2e.md) | F016a：8 类 ingress × scenario real RPC E2E、P0 工具面、withdraw/parallel/loop guard |
 | [`plans/0020-f018-thread-first-runtime.md`](plans/0020-f018-thread-first-runtime.md) | F018：A2A runtime v1 R0-R5、AgentConfig/Registry、schema/migration、same/cross-thread post、multi_mention fan-out、验收与回滚 |

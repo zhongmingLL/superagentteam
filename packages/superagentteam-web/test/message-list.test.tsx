@@ -320,4 +320,87 @@ describe("message list", () => {
 		expect(screen.getByText("multi-mention · done · 2 targets")).toBeInTheDocument();
 		expect(screen.getByText("提到了你")).toBeInTheDocument();
 	});
+
+	it("renders agent messages as nameplates and keeps user messages as bubbles", () => {
+		const { container } = renderList({
+			messages: [
+				message({ id: "msg:agent", type: "assistant", from: { kind: "agent", agentId: "a1" }, content: "short" }),
+				message({ id: "msg:user", content: "hi" }),
+			],
+		});
+		const agent = container.querySelector('article[data-message-id="msg:agent"]');
+		const user = container.querySelector('article[data-message-id="msg:user"]');
+		expect(agent?.className).toContain("is-nameplate");
+		expect(user?.className).not.toContain("is-nameplate");
+	});
+
+	it("shows A2A recipients and dispatch phase on agent input messages", () => {
+		renderList({
+			messages: [
+				message({
+					id: "msg:a2a",
+					type: "assistant",
+					from: { kind: "agent", agentId: "a1" },
+					content: "Agent B: please answer",
+					extra: { targetAgentIds: ["a2"] },
+					lifecycle: {
+						kind: "input",
+						dispatchRefs: [
+							{
+								target: { kind: "agent", id: "a2" },
+								queueEntryId: "q:1",
+								attempt: 1,
+								phase: "settled",
+								at: 2,
+							},
+						],
+					},
+				}),
+			],
+			agentLabel: (agentId) => (agentId === "a2" ? "Agent B" : agentId),
+		});
+		const dispatch = screen.getByTestId("message-dispatch-targets");
+		expect(dispatch).toHaveTextContent("发送给");
+		expect(dispatch).toHaveTextContent("Agent B");
+		expect(dispatch).toHaveTextContent("已回复");
+	});
+
+	it("renders rich blocks and a visible fallback for unknown kinds", () => {
+		const { container } = renderList({
+			messages: [
+				message({
+					id: "msg:rich",
+					type: "assistant",
+					from: { kind: "agent", agentId: "a1" },
+					content: "see below",
+					extra: {
+						rich: {
+							v: 1,
+							blocks: [
+								{
+									id: "b1",
+									v: 1,
+									kind: "card",
+									title: "Status",
+									bodyMarkdown: '<script>alert("x")</script>',
+									tone: "success",
+									fields: [{ label: "CI", value: "5/5" }],
+								},
+								{ id: "b2", v: 1, kind: "checklist", items: [{ id: "i1", text: "done", checked: true }] },
+								{ id: "b3", v: 1, kind: "diff", filePath: "a.ts", diff: "@@ -1 +1 @@\n-old\n+new" },
+								{ id: "b4", v: 1, kind: "mystery" as never },
+							],
+						},
+					},
+				}),
+			],
+		});
+		expect(screen.getByText("Status")).toBeInTheDocument();
+		expect(screen.getByText('<script>alert("x")</script>')).toBeInTheDocument();
+		expect(container.querySelector(".st-rich-card script")).toBeNull();
+		expect(screen.getByText("done")).toBeInTheDocument();
+		expect(container.querySelector(".st-diff-line.is-del")).toHaveTextContent("-old");
+		expect(container.querySelector(".st-diff-line.is-add")).toHaveTextContent("+new");
+		expect(screen.getByText(/无法展示 mystery/)).toBeInTheDocument();
+	});
 });

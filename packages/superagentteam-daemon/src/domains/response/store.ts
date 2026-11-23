@@ -1,6 +1,6 @@
 import type { DatabaseSync } from "node:sqlite";
 
-import type { DraftRecord } from "@superagentteam/shared/types";
+import type { DraftRecord, StoredToolEvent } from "@superagentteam/shared/types";
 
 // F018 R1-c ResponseDraftStore (0017 §4-§7): one DraftRecord per attempt/
 // turn; full-snapshot upsert; deletion is final (late flush returns null and
@@ -27,7 +27,7 @@ function mapDraft(row: DraftRow): DraftRecord {
 		threadId: row.thread_id,
 		agentId: row.agent_id,
 		content: row.content,
-		toolEvents: JSON.parse(row.tool_events_json) as unknown[],
+		toolEvents: JSON.parse(row.tool_events_json) as StoredToolEvent[],
 		thinking: row.thinking,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,

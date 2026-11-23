@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from "react";
 
 import type { LiveInvocationView } from "@/domains/a2a/api";
 import type { MessageView } from "@/domains/chat/api";
+import type { LiveExecutionMap, LiveExecutionState } from "@/domains/events/execution-store";
 import type { ThreadView } from "@/domains/thread/api";
 import { initialForName, toneFor } from "@/lib/identity";
 import { formatElapsed, formatRelative } from "@/lib/time";
 import { Icon } from "@/components/ui/Icon";
+import { MessageExecutionRecord } from "./MessageExecutionRecord";
 import { MessageContent } from "./MessageContent";
 
 export interface PendingUserMessageView {
@@ -23,6 +25,7 @@ export interface MessageListProps {
 	followingLatest: boolean;
 	pendingUserMessages: PendingUserMessageView[];
 	liveInvocations?: LiveInvocationView[];
+	liveExecutions?: LiveExecutionMap;
 	agentLabel?: (agentId: string) => string;
 	threadLabel?: (threadId: string) => string;
 	onOpenThread?: (threadId: string) => void;
@@ -63,6 +66,7 @@ function MessageRow({
 	agentLabel,
 	threadLabel,
 	onOpenThread,
+	live,
 }: {
 	message: MessageView;
 	onRetryInvocation?: (invocationId: string) => Promise<void>;
@@ -70,6 +74,7 @@ function MessageRow({
 	agentLabel?: (agentId: string) => string;
 	threadLabel?: (threadId: string) => string;
 	onOpenThread?: (threadId: string) => void;
+	live?: LiveExecutionState;
 }) {
 	const sender = message.from.kind;
 	const processing = isProcessing(message);
@@ -82,6 +87,7 @@ function MessageRow({
 	const multiMention = message.extra?.multiMention;
 	const senderName = senderLabel(message, agentLabel);
 	const agentId = message.from.kind === "agent" ? message.from.agentId : null;
+	const liveText = processing && message.content === "" ? live?.text : undefined;
 	const retry = async (): Promise<void> => {
 		if (!invocationId || retrying || !onRetryInvocation) return;
 		setRetrying(true);
@@ -136,7 +142,19 @@ function MessageRow({
 						{message.mentionsUser ? <span className="st-message-badge is-mention">提到了你</span> : null}
 					</div>
 				) : null}
-				{message.content !== "" ? <MessageContent content={message.content} /> : null}
+				{message.content !== "" ? (
+					<MessageContent content={message.content} />
+				) : liveText ? (
+					<MessageContent content={liveText} />
+				) : null}
+				{agentId !== null && (message.thinking || (message.toolEvents?.length ?? 0) > 0 || live) ? (
+					<MessageExecutionRecord
+						thinking={message.thinking}
+						toolEvents={message.toolEvents}
+						live={processing ? live : undefined}
+						state={processing ? "processing" : "terminal"}
+					/>
+				) : null}
 				{processing ? <p className="st-message-processing">正在回复…</p> : null}
 				{terminal ? <p className={`st-message-terminal is-${terminal.status}`}>{terminal.label}</p> : null}
 				{terminal && invocationId && onRetryInvocation && !liveParentIds.has(invocationId) ? (
@@ -172,6 +190,7 @@ export function MessageList({
 	followingLatest,
 	pendingUserMessages,
 	liveInvocations = [],
+	liveExecutions = {},
 	agentLabel,
 	threadLabel,
 	onOpenThread,
@@ -223,6 +242,20 @@ export function MessageList({
 		observer.observe(element);
 		return () => observer.disconnect();
 	}, []);
+
+	useEffect(() => {
+		const onLayoutChanged = (): void => {
+			const element = scrollRef.current;
+			if (element && pinnedRef.current) element.scrollTop = element.scrollHeight;
+		};
+		window.addEventListener("superagentteam:chat-layout-changed", onLayoutChanged);
+		return () => window.removeEventListener("superagentteam:chat-layout-changed", onLayoutChanged);
+	}, []);
+
+	useEffect(() => {
+		const element = scrollRef.current;
+		if (element && pinnedRef.current) element.scrollTop = element.scrollHeight;
+	}, [liveExecutions]);
 
 	const showLatest = !followingLatest || !pinned;
 	const liveParentIds = new Set(
@@ -303,6 +336,11 @@ export function MessageList({
 					agentLabel={agentLabel}
 					threadLabel={threadLabel}
 					onOpenThread={onOpenThread}
+					live={
+						message.lifecycle?.kind === "response" && message.lifecycle.status === "processing"
+							? liveExecutions[message.lifecycle.turnExecutionId]
+							: undefined
+					}
 				/>
 			))}
 			{pendingUserMessages.map((pending) => (
@@ -318,8 +356,10 @@ export function MessageList({
 			))}
 			{liveInvocations
 				.filter((invocation) => invocation.responseStatus === "missing")
-				.map((invocation) => (
-					<article className="st-message is-agent is-live" key={invocation.turnExecutionId}>
+				.map((invocation) => {
+					const live = liveExecutions[invocation.turnExecutionId];
+					return (
+						<article className="st-message is-agent is-live" key={invocation.turnExecutionId}>
 						<span className={`st-message-avatar tone-${toneFor(invocation.agentId)}`} aria-hidden="true">
 							{initialForName(agentLabel?.(invocation.agentId) ?? invocation.agentId)}
 						</span>
@@ -328,10 +368,13 @@ export function MessageList({
 								<span className="st-message-sender">{agentLabel?.(invocation.agentId) ?? invocation.agentId}</span>
 								<span>已受理</span>
 							</div>
+							{live?.text ? <MessageContent content={live.text} /> : null}
+							<MessageExecutionRecord live={live} state="processing" />
 							<p className="st-message-processing">正在处理… · {formatElapsed(invocation.startedAt)}</p>
 						</div>
-					</article>
-				))}
+						</article>
+					);
+				})}
 			{showLatest ? (
 				<div className="st-latest-anchor">
 					<button type="button" className="st-button st-button-secondary" onClick={scrollToLatest}>

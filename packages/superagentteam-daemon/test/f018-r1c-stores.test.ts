@@ -209,13 +209,13 @@ describe("ResponseDraftStore (0017)", () => {
 			threadId: "t1",
 			agentId: "a1",
 			content: "hello world",
-			toolEvents: [{ id: "e1" }],
+			toolEvents: [{ toolCallId: "tool-1", name: "read", status: "completed", at: 5 }],
 			thinking: "hm",
 			createdAt: 1,
 			updatedAt: 5,
 		})!;
 		expect(upserted.content).toBe("hello world");
-		expect(upserted.toolEvents).toEqual([{ id: "e1" }]);
+		expect(upserted.toolEvents).toEqual([{ toolCallId: "tool-1", name: "read", status: "completed", at: 5 }]);
 		world.drafts.delete(seeded.turnId);
 		expect(world.drafts.getByTurn("te1")).toBeNull();
 		expect(

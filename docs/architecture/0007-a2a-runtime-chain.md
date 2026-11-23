@@ -480,19 +480,19 @@ interface RichMessageExtra {
   blocks: Array<{ id: string; kind: RichBlockKind; v: 1; [key: string]: unknown }>;
 }
 
-/** execution replay；与 contentBlocks 的语义内容分开 */
+/**
+ * execution replay；与 contentBlocks 的语义内容分开。
+ * F028 canonical：provider tool_execution_start/end 在 ResponseEventSink 内
+ * 按 toolCallId 合并成一条 record；不再持久化 flat tool_use/tool_result。
+ */
 interface StoredToolEvent {
-  id: string;
-  executionRef?: string;             // turnExecutionId
-  type: "tool_use" | "tool_result";
-  label: string;
-  detail?: string;
-  timestamp: number;
-  toolUseId?: string;
-  status?: "ok" | "error" | "unknown";
-  startTimeMs?: number;
-  endTimeMs?: number;
-  toolName?: string;
+  toolCallId: string;
+  name: string;
+  status: "running" | "completed";
+  at: number;                         // start timestamp (ms)
+  endedAt?: number;                   // completion timestamp (ms)
+  args?: unknown;
+  result?: unknown;
 }
 
 /** storage：v1 唯一消息记录；不再定义 domain Message */

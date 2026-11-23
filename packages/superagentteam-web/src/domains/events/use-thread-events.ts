@@ -8,6 +8,7 @@ import {
 	connectThreadEvents,
 	type EventSourceFactory,
 	type ThreadChangeEvent,
+	type ThreadStreamEvent,
 } from "./client.ts";
 import { useEventStore } from "./store.ts";
 
@@ -19,6 +20,7 @@ const DEFAULT_DEBOUNCE_MS = 100;
 export interface UseThreadEventsOptions {
 	threadId?: string;
 	onRefresh: (topics: readonly ChangeTopic[]) => void;
+	onStream?: (event: ThreadStreamEvent) => void;
 	createSource?: EventSourceFactory;
 	probeSession?: () => Promise<"ok" | "unauthorized" | "unavailable">;
 	reconnectBaseMs?: number;
@@ -32,6 +34,7 @@ export function useThreadEvents(options: UseThreadEventsOptions): void {
 	const {
 		threadId,
 		onRefresh,
+		onStream,
 		createSource,
 		probeSession = defaultProbe,
 		reconnectBaseMs = DEFAULT_RECONNECT_BASE_MS,
@@ -40,6 +43,8 @@ export function useThreadEvents(options: UseThreadEventsOptions): void {
 	} = options;
 	const refreshRef = useRef(onRefresh);
 	refreshRef.current = onRefresh;
+	const streamRef = useRef(onStream);
+	streamRef.current = onStream;
 	const begin = useEventStore((state) => state.begin);
 	const setStatus = useEventStore((state) => state.setStatus);
 	const reset = useEventStore((state) => state.reset);
@@ -109,6 +114,9 @@ export function useThreadEvents(options: UseThreadEventsOptions): void {
 					onChange(event: ThreadChangeEvent) {
 						for (const topic of event.topics) pending.add(topic);
 						scheduleFlush();
+					},
+					onStream(event: ThreadStreamEvent) {
+						if (!disposed) streamRef.current?.(event);
 					},
 					onError() {
 						if (disposed) return;

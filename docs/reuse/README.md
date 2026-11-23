@@ -41,6 +41,9 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 | 10 | `runtime-deployment` | R1 | P0 | W0/W5 | [`runtime-deployment.md`](runtime-deployment.md) | [x] 已签 |
 | 11 | `sop-bulletin`（P0 slice） | R0 | P0 | W1/W4 | [`sop-bulletin.md`](sop-bulletin.md) | [x] 已签 |
 
+> **2026-11-23**：`bubble-pipeline` 已按 F018 thread-first 重基；R1 不变，
+> 表中的 `W1/W7` 是 2026-10-24 历史标签，current mapping 见该卡。
+
 ## 使用方式（开发前）
 
 1. 先在 `REUSE-MATRIX.md` 找到对应 cell 和 decision（R0 / R1 / R2 / N1 / N2）。

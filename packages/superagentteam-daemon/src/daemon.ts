@@ -202,10 +202,15 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 					options.a2aControlPlane === undefined || options.a2aControlPlane === false
 						? {}
 						: options.a2aControlPlane;
+				const injectedStream = a2aOptions.onStreamEvent;
 				a2aControlPlane = new A2ADaemonControlPlane({
 					...a2aOptions,
 					dataDir: paths.dataDir,
 					changeBus,
+					onStreamEvent: (event, threadId) => {
+						injectedStream?.(event, threadId);
+						changeBus.publishStream(threadId, event);
+					},
 				});
 				await a2aControlPlane.start();
 			} else {

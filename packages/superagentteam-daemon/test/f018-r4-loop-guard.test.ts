@@ -148,7 +148,7 @@ function addDraft(
 		toolEvents: options.sinkToolName
 			? [{ toolCallId: "tool-1", name: options.sinkToolName, status: "completed", at: 5 }]
 			: options.toolName
-				? [{ id: "e1", type: "tool_use", label: options.toolName, toolName: options.toolName, timestamp: 5 }]
+				? [{ toolCallId: "tool-1", name: options.toolName, status: "completed", at: 5 }]
 				: [],
 		thinking: null,
 		createdAt: 5,

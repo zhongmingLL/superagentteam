@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { connectThreadEvents, type EventSourceLike, parseChangeEvent } from "@/domains/events/client";
+import { connectThreadEvents, type EventSourceLike, parseChangeEvent, parseStreamEvent } from "@/domains/events/client";
 
 class MockEventSource implements EventSourceLike {
 	readonly listeners = new Map<string, Set<(event: Event) => void>>();
@@ -40,7 +40,7 @@ class MockEventSource implements EventSourceLike {
 describe("thread event client", () => {
 	it("connects to the active thread, parses ready/change, and closes cleanly", () => {
 		let source: MockEventSource | undefined;
-		const handlers = { onReady: vi.fn(), onChange: vi.fn(), onError: vi.fn() };
+		const handlers = { onReady: vi.fn(), onChange: vi.fn(), onStream: vi.fn(), onError: vi.fn() };
 		const close = connectThreadEvents("thread:1", handlers, (url) => {
 			source = new MockEventSource(url);
 			return source;
@@ -50,7 +50,36 @@ describe("thread event client", () => {
 		source?.emit("ready");
 		source?.emit("change", JSON.stringify({ threadId: "thread:1", topics: ["messages", "queue"], at: 1 }));
 		source?.emit("change", JSON.stringify({ threadId: "thread:2", topics: ["live"], at: 1 }));
+		source?.emit(
+			"stream",
+			JSON.stringify({
+				threadId: "thread:1",
+				event: {
+					type: "thinking",
+					seq: 1,
+					agentId: "a1",
+					turnExecutionId: "turn:1",
+					content: "hm",
+					timestamp: 1,
+				},
+			}),
+		);
+		source?.emit(
+			"stream",
+			JSON.stringify({
+				threadId: "thread:2",
+				event: {
+					type: "thinking",
+					seq: 1,
+					agentId: "a1",
+					turnExecutionId: "turn:1",
+					content: "foreign",
+					timestamp: 1,
+				},
+			}),
+		);
 		source?.emit("change", "not-json");
+		source?.emit("stream", "not-json");
 		source?.fail();
 		close();
 
@@ -61,6 +90,18 @@ describe("thread event client", () => {
 			at: 1,
 		});
 		expect(handlers.onChange).toHaveBeenCalledTimes(1);
+		expect(handlers.onStream).toHaveBeenCalledWith({
+			threadId: "thread:1",
+			event: {
+				type: "thinking",
+				seq: 1,
+				agentId: "a1",
+				turnExecutionId: "turn:1",
+				content: "hm",
+				timestamp: 1,
+			},
+		});
+		expect(handlers.onStream).toHaveBeenCalledTimes(1);
 		expect(handlers.onError).toHaveBeenCalledTimes(1);
 		expect(source?.closed).toBe(true);
 	});
@@ -74,5 +115,25 @@ describe("thread event client", () => {
 		expect(parseChangeEvent(JSON.stringify({ threadId: "t", topics: ["bogus"], at: 1 }))).toBeNull();
 		expect(parseChangeEvent(JSON.stringify({ threadId: 1, topics: ["messages"], at: 1 }))).toBeNull();
 		expect(parseChangeEvent("not-json")).toBeNull();
+	});
+
+	it("validates stream envelopes and rejects foreign/malformed events", () => {
+		const event = {
+			type: "tool_result",
+			seq: 3,
+			agentId: "a1",
+			turnExecutionId: "turn:1",
+			toolId: "tool:1",
+			name: "Read",
+			result: { ok: true },
+			timestamp: 2,
+		};
+		expect(parseStreamEvent(JSON.stringify({ threadId: "thread:1", event }))).toEqual({
+			threadId: "thread:1",
+			event,
+		});
+		expect(parseStreamEvent(JSON.stringify({ threadId: "thread:1" }))).toBeNull();
+		expect(parseStreamEvent(JSON.stringify({ threadId: "thread:1", event: { type: "thinking" } }))).toBeNull();
+		expect(parseStreamEvent("not-json")).toBeNull();
 	});
 });

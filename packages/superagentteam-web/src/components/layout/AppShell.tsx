@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 
-import { LivePill } from "@/components/a2a/LivePill";
 import { AgentPopover } from "@/components/agent/AgentPopover";
 import { useThreadStore } from "@/domains/thread/store";
 import { useNewThreadDialog } from "@/domains/thread/dialog-store";
-import { useA2AStore } from "@/domains/a2a/store";
 import { useAgentStore } from "@/domains/agent/store";
 import { applyTheme, readTheme, type Theme } from "@/lib/theme";
 import { ThreadSidebar } from "@/components/threads/ThreadSidebar";
 import { NewThreadDialog } from "@/components/threads/NewThreadDialog";
+import { NavRail } from "@/components/layout/NavRail";
+import { Icon } from "@/components/ui/Icon";
 import { usePolling } from "@/lib/polling";
 
 function threadIdFromPath(pathname: string): string | undefined {
@@ -36,17 +36,15 @@ export function AppShell() {
 	const accountsError = useAgentStore((state) => state.accountsError);
 	const loadAccounts = useAgentStore((state) => state.loadAccounts);
 	const createAgent = useAgentStore((state) => state.create);
-	const a2aThreadId = useA2AStore((state) => state.threadId);
-	const a2aLive = useA2AStore((state) => state.live);
 	const location = useLocation();
 	const navigate = useNavigate();
 	const dialogOpen = useNewThreadDialog((state) => state.open);
 	const hideDialog = useNewThreadDialog((state) => state.hide);
 	const [sidebarOpen, setSidebarOpen] = useState(() => !window.matchMedia("(max-width: 900px)").matches);
+	const [agentSignal, setAgentSignal] = useState(0);
 	const [theme, setTheme] = useState<Theme>(() => readTheme());
 	const activeThreadId = threadIdFromPath(location.pathname);
 	const activeThread = detail?.id === activeThreadId ? detail : threads.find((thread) => thread.id === activeThreadId);
-	const showLive = activeThreadId !== undefined && a2aThreadId === activeThreadId;
 
 	usePolling(refresh, { intervalMs: 10_000 });
 	usePolling(refreshAgents, { intervalMs: 10_000 });
@@ -70,23 +68,51 @@ export function AppShell() {
 
 	return (
 		<div className="st-shell">
-			<ThreadSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-			{sidebarOpen ? <button type="button" className="st-sidebar-backdrop" aria-label="收起侧栏" onClick={() => setSidebarOpen(false)} /> : null}
+			<NavRail
+				onAgents={() => setAgentSignal((value) => value + 1)}
+				theme={theme}
+				onToggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
+			/>
+			<ThreadSidebar
+				open={sidebarOpen}
+				onClose={() => setSidebarOpen(false)}
+				onAgents={() => {
+					setSidebarOpen(false);
+					setAgentSignal((value) => value + 1);
+				}}
+			/>
+			{sidebarOpen ? (
+				<button
+					type="button"
+					className="st-sidebar-backdrop"
+					aria-label="关闭对话列表遮罩"
+					onClick={() => setSidebarOpen(false)}
+				/>
+			) : null}
 			<main className="st-main">
 				<header className="st-topbar">
 					<button type="button" className="st-icon-button st-menu-button" onClick={() => setSidebarOpen(true)} aria-label="打开侧栏">
-						☰
+						<Icon name="menu" size={18} />
 					</button>
-					<span className="st-topbar-title">{activeThread?.title ?? "对话"}</span>
+					<div className="st-topbar-crumb">
+						<Link className="st-topbar-root" to="/">
+							Threads
+						</Link>
+						{activeThread ? (
+							<>
+								<Icon name="chevron" size={12} />
+								<span className="st-topbar-title">{activeThread.title ?? "未命名对话"}</span>
+							</>
+						) : null}
+					</div>
 					<div className="st-topbar-actions">
-						{showLive ? <LivePill live={a2aLive} agents={agents} /> : null}
 						<button
 							type="button"
 							className="st-icon-button st-theme-button"
 							aria-label={theme === "dark" ? "切换浅色主题" : "切换深色主题"}
 							onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
 						>
-							{theme === "dark" ? "☀" : "☾"}
+							<Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
 						</button>
 						<AgentPopover
 							agents={agents}
@@ -98,6 +124,7 @@ export function AppShell() {
 							accountsError={accountsError}
 							onLoadAccounts={() => void loadAccounts()}
 							onCreate={createAgent}
+							openSignal={agentSignal}
 						/>
 					</div>
 				</header>

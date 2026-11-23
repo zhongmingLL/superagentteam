@@ -3,7 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import type { LiveInvocationView } from "@/domains/a2a/api";
 import type { MessageView } from "@/domains/chat/api";
 import type { ThreadView } from "@/domains/thread/api";
+import { initialForName, toneFor } from "@/lib/identity";
 import { formatElapsed, formatRelative } from "@/lib/time";
+import { Icon } from "@/components/ui/Icon";
 import { MessageContent } from "./MessageContent";
 
 export interface PendingUserMessageView {
@@ -78,6 +80,8 @@ function MessageRow({
 	const [retryError, setRetryError] = useState<string | undefined>();
 	const crossPost = message.extra?.crossPost;
 	const multiMention = message.extra?.multiMention;
+	const senderName = senderLabel(message, agentLabel);
+	const agentId = message.from.kind === "agent" ? message.from.agentId : null;
 	const retry = async (): Promise<void> => {
 		if (!invocationId || retrying || !onRetryInvocation) return;
 		setRetrying(true);
@@ -94,57 +98,66 @@ function MessageRow({
 	};
 	return (
 		<article className={`st-message is-${sender}`} data-message-id={message.id}>
-			<div className="st-message-meta">
-				<span className="st-message-sender">{senderLabel(message, agentLabel)}</span>
-				<time dateTime={new Date(message.timestamp).toISOString()}>{formatRelative(message.timestamp)}</time>
+			{agentId !== null ? (
+				<span className={`st-message-avatar tone-${toneFor(agentId)}`} aria-hidden="true">
+					{initialForName(senderName)}
+				</span>
+			) : null}
+			<div className="st-message-body">
+				<div className="st-message-meta">
+					<span className="st-message-sender">{senderName}</span>
+					<time dateTime={new Date(message.timestamp).toISOString()}>{formatRelative(message.timestamp)}</time>
+				</div>
+				{crossPost || multiMention || message.mentionsUser ? (
+					<div className="st-message-badges">
+						{crossPost ? (
+							<span className="st-message-badge is-cross">
+								<Icon name="cross" size={11} />
+								跨线程来自{" "}
+								{onOpenThread ? (
+									<button
+										type="button"
+										className="st-link-button"
+										onClick={() => onOpenThread(crossPost.sourceThreadId)}
+									>
+										{threadLabel?.(crossPost.sourceThreadId) ?? crossPost.sourceThreadId}
+									</button>
+								) : (
+									<code>{threadLabel?.(crossPost.sourceThreadId) ?? crossPost.sourceThreadId}</code>
+								)}
+							</span>
+						) : null}
+						{multiMention ? (
+							<span className="st-message-badge is-multi">
+								<Icon name="agents" size={11} />
+								multi-mention · {multiMention.status ?? "done"} · {multiMention.targetAgentIds?.length ?? 0} targets
+							</span>
+						) : null}
+						{message.mentionsUser ? <span className="st-message-badge is-mention">提到了你</span> : null}
+					</div>
+				) : null}
+				{message.content !== "" ? <MessageContent content={message.content} /> : null}
+				{processing ? <p className="st-message-processing">正在回复…</p> : null}
+				{terminal ? <p className={`st-message-terminal is-${terminal.status}`}>{terminal.label}</p> : null}
+				{terminal && invocationId && onRetryInvocation && !liveParentIds.has(invocationId) ? (
+					<div className="st-message-actions">
+						{retryState === "queued" ? (
+							<span className="st-message-retry-state" role="status">
+								已重新排队
+							</span>
+						) : (
+							<button type="button" className="st-link-button" onClick={() => void retry()} disabled={retrying}>
+								{retrying ? "重试中…" : "重试"}
+							</button>
+						)}
+						{retryState === "error" ? (
+							<span className="st-error" role="alert">
+								{retryError ?? "重试失败"}
+							</span>
+						) : null}
+					</div>
+				) : null}
 			</div>
-			{crossPost || multiMention || message.mentionsUser ? (
-				<div className="st-message-badges">
-					{crossPost ? (
-						<span className="st-message-badge is-cross">
-							跨线程来自{" "}
-							{onOpenThread ? (
-								<button
-									type="button"
-									className="st-link-button"
-									onClick={() => onOpenThread(crossPost.sourceThreadId)}
-								>
-									{threadLabel?.(crossPost.sourceThreadId) ?? crossPost.sourceThreadId}
-								</button>
-							) : (
-								<code>{threadLabel?.(crossPost.sourceThreadId) ?? crossPost.sourceThreadId}</code>
-							)}
-						</span>
-					) : null}
-					{multiMention ? (
-						<span className="st-message-badge is-multi">
-							multi-mention · {multiMention.status ?? "done"} · {multiMention.targetAgentIds?.length ?? 0} targets
-						</span>
-					) : null}
-					{message.mentionsUser ? <span className="st-message-badge is-mention">提到了你</span> : null}
-				</div>
-			) : null}
-			{message.content !== "" ? <MessageContent content={message.content} /> : null}
-			{processing ? <p className="st-message-processing">正在回复…</p> : null}
-			{terminal ? <p className={`st-message-terminal is-${terminal.status}`}>{terminal.label}</p> : null}
-			{terminal && invocationId && onRetryInvocation && !liveParentIds.has(invocationId) ? (
-				<div className="st-message-actions">
-					{retryState === "queued" ? (
-						<span className="st-message-retry-state" role="status">
-							已重新排队
-						</span>
-					) : (
-						<button type="button" className="st-link-button" onClick={() => void retry()} disabled={retrying}>
-							{retrying ? "重试中…" : "重试"}
-						</button>
-					)}
-					{retryState === "error" ? (
-						<span className="st-error" role="alert">
-							{retryError ?? "重试失败"}
-						</span>
-					) : null}
-				</div>
-			) : null}
 		</article>
 	);
 }
@@ -224,6 +237,10 @@ export function MessageList({
 		const element = scrollRef.current;
 		if (element) element.scrollTop = element.scrollHeight;
 	};
+	const dayLabel =
+		messages.length > 0
+			? new Date(messages[0]!.timestamp).toLocaleDateString("zh-CN", { month: "long", day: "numeric" })
+			: "今天";
 
 	return (
 		<div
@@ -272,6 +289,11 @@ export function MessageList({
 					<p className="st-thread-empty-hint">在下面发第一条消息。</p>
 				</div>
 			) : null}
+			{messages.length > 0 ? (
+				<div className="st-day-separator">
+					<span>{dayLabel}</span>
+				</div>
+			) : null}
 			{messages.map((message) => (
 				<MessageRow
 					key={message.id}
@@ -285,22 +307,29 @@ export function MessageList({
 			))}
 			{pendingUserMessages.map((pending) => (
 				<article className="st-message is-user is-pending" key={pending.messageId}>
-					<div className="st-message-meta">
-						<span className="st-message-sender">你</span>
-						<span>发送中…</span>
+					<div className="st-message-body">
+						<div className="st-message-meta">
+							<span className="st-message-sender">你</span>
+							<span>发送中…</span>
+						</div>
+						<MessageContent content={pending.content} />
 					</div>
-					<MessageContent content={pending.content} />
 				</article>
 			))}
 			{liveInvocations
 				.filter((invocation) => invocation.responseStatus === "missing")
 				.map((invocation) => (
 					<article className="st-message is-agent is-live" key={invocation.turnExecutionId}>
-						<div className="st-message-meta">
-							<span className="st-message-sender">{agentLabel?.(invocation.agentId) ?? invocation.agentId}</span>
-							<span>已受理</span>
+						<span className={`st-message-avatar tone-${toneFor(invocation.agentId)}`} aria-hidden="true">
+							{initialForName(agentLabel?.(invocation.agentId) ?? invocation.agentId)}
+						</span>
+						<div className="st-message-body">
+							<div className="st-message-meta">
+								<span className="st-message-sender">{agentLabel?.(invocation.agentId) ?? invocation.agentId}</span>
+								<span>已受理</span>
+							</div>
+							<p className="st-message-processing">正在处理… · {formatElapsed(invocation.startedAt)}</p>
 						</div>
-						<p className="st-message-processing">正在处理… · {formatElapsed(invocation.startedAt)}</p>
 					</article>
 				))}
 			{showLatest ? (

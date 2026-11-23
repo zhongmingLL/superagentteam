@@ -3,7 +3,9 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { Composer } from "@/components/chat/Composer";
 import { MessageList } from "@/components/chat/MessageList";
+import { LivePill } from "@/components/a2a/LivePill";
 import { QueueStrip } from "@/components/a2a/QueueStrip";
+import { Icon } from "@/components/ui/Icon";
 import { useA2AStore } from "@/domains/a2a/store";
 import { useAgentStore } from "@/domains/agent/store";
 import { useChatStore } from "@/domains/chat/store";
@@ -11,6 +13,7 @@ import type { ChangeTopic } from "@/domains/events/client";
 import { useEventStore } from "@/domains/events/store";
 import { useThreadEvents } from "@/domains/events/use-thread-events";
 import { useThreadStore } from "@/domains/thread/store";
+import { initialForName, toneFor } from "@/lib/identity";
 import { usePolling } from "@/lib/polling";
 
 export function ThreadPage() {
@@ -202,6 +205,10 @@ export function ThreadPage() {
 		}
 	};
 	const a2aMatches = a2aThreadId === threadId;
+	const memberViews = thread.participants.map((id) => ({
+		id,
+		name: agents.find((agent) => agent.id === id)?.displayName ?? id,
+	}));
 	return (
 		<section className="st-thread-page" aria-busy={!chatMatches || chatStatus === "loading"}>
 			<header className="st-thread-header">
@@ -251,19 +258,56 @@ export function ThreadPage() {
 								重命名
 							</button>
 						) : null}
+						{memberViews.length > 0 ? (
+							<div className="st-thread-members" aria-label={`${memberViews.length} 位成员`}>
+								{memberViews.slice(0, 4).map((member) => (
+									<span
+										key={member.id}
+										className={`st-member-avatar tone-${toneFor(member.id)}`}
+										title={member.name}
+									>
+										{initialForName(member.name)}
+									</span>
+								))}
+								<span className="st-thread-members-count">{memberViews.length} 位成员</span>
+							</div>
+						) : null}
 					</div>
 				)}
 				<div className="st-thread-header-meta">
 					<code title={thread.projectPath}>{thread.projectPath}</code>
-					<span>{thread.participants.length > 0 ? `${thread.participants.length} 位成员` : "还没有成员"}</span>
 				</div>
 			</header>
 			{deleted ? <p className="st-thread-deleted">这个对话已删除，历史只读。</p> : null}
+			{a2aMatches && (a2aLive.length > 0 || a2aQueue.length > 0) ? (
+				<div className="st-thread-status-row">
+					<LivePill live={a2aLive} agents={agents} />
+					{a2aQueue.length > 0 ? (
+						<span className="st-status-pill">
+							队列 {a2aQueue.length}
+							{a2aCap === undefined ? "" : ` / ${a2aCap}`}
+						</span>
+					) : null}
+				</div>
+			) : null}
 			{realtimeStatus === "fallback" ? (
 				<p className="st-realtime-note" role="status">
 					实时更新不可用，正在使用轮询。
 				</p>
 			) : null}
+			<div className="st-thread-context">
+				<Icon name="sparkles" size={13} />
+				<span>线程上下文</span>
+				<span className="st-thread-context-dim">·</span>
+				{thread.participants.length === 0 ? (
+					<>
+						<span>还没有成员</span>
+						<span className="st-thread-context-dim">·</span>
+					</>
+				) : null}
+				<span>本页 {chatMatches ? messages.length : 0} 条消息</span>
+				<span className="st-thread-context-tag">pinned context</span>
+			</div>
 			<MessageList
 				thread={thread}
 				messages={chatMatches ? messages : []}

@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F027]
 related_features: [superagentteam/F020, superagentteam/F025, superagentteam/F026]
 title: "F027: Hub visual refresh — light-blue rational workspace"
-status: in-progress
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [墨墨 (Qwen 3.8 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -105,7 +105,7 @@ Pencil 画布当前帧：
   cross-thread、multi-mention、composer send、401 relogin。
 - [x] 浏览器 1440/390 截图作为验收证据。
 - [x] sidebar live presence 保留可见「执行中」文字，不靠颜色单独表达。
-- [ ] 非作者 review（视觉 + 代码面）通过。
+- [x] 非作者 review（视觉 + 代码面）通过。
 
 ## 进展
 
@@ -122,3 +122,6 @@ Pencil 画布当前帧：
   「执行中」文字；空间不足时让时间戳让位，不让状态文字让位。P3-2 同步去掉
   header meta 与 pinned context 的重复成员计数。P3-1 补 live+unread 的
   light/dark 1440 与 dark 390 抽屉截图。
+- 2026-11-23：operator 确认先合 F027；PR #167 merged as `de9e18061`。
+  墨墨 P2/P3 已在 `6ff10c9ba` 全部闭合；CI 5/5 绿。状态更新为 implemented，
+  等 operator close。

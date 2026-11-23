@@ -98,7 +98,22 @@ function BlockDiff({ block }: { block: Record<string, unknown> }) {
 		<section className="st-rich-diff">
 			{filePath ? <div className="st-rich-diff-path">{filePath}</div> : null}
 			<pre>
-				<code>{diff}</code>
+				<code>
+					{diff.split("\n").map((line, index) => {
+						const tone = line.startsWith("@@")
+							? "is-hunk"
+							: line.startsWith("+")
+								? "is-add"
+								: line.startsWith("-")
+									? "is-del"
+									: "";
+						return (
+							<span className={`st-diff-line${tone ? ` ${tone}` : ""}`} key={index}>
+								{line === "" ? " " : line}
+							</span>
+						);
+					})}
+				</code>
 			</pre>
 		</section>
 	);

@@ -387,7 +387,8 @@ describe("message list", () => {
 									fields: [{ label: "CI", value: "5/5" }],
 								},
 								{ id: "b2", v: 1, kind: "checklist", items: [{ id: "i1", text: "done", checked: true }] },
-								{ id: "b3", v: 1, kind: "mystery" as never },
+								{ id: "b3", v: 1, kind: "diff", filePath: "a.ts", diff: "@@ -1 +1 @@\n-old\n+new" },
+								{ id: "b4", v: 1, kind: "mystery" as never },
 							],
 						},
 					},
@@ -398,6 +399,8 @@ describe("message list", () => {
 		expect(screen.getByText('<script>alert("x")</script>')).toBeInTheDocument();
 		expect(container.querySelector(".st-rich-card script")).toBeNull();
 		expect(screen.getByText("done")).toBeInTheDocument();
+		expect(container.querySelector(".st-diff-line.is-del")).toHaveTextContent("-old");
+		expect(container.querySelector(".st-diff-line.is-add")).toHaveTextContent("+new");
 		expect(screen.getByText(/无法展示 mystery/)).toBeInTheDocument();
 	});
 });

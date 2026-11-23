@@ -1317,6 +1317,28 @@ svg {
 	line-height: 1.5;
 }
 
+.st-diff-line {
+	display: block;
+	min-height: 1.5em;
+	padding: 0 4px;
+	border-radius: 2px;
+	white-space: pre;
+}
+
+.st-diff-line.is-add {
+	background: color-mix(in srgb, var(--st-success) 12%, transparent);
+	color: var(--st-success);
+}
+
+.st-diff-line.is-del {
+	background: color-mix(in srgb, var(--st-danger) 12%, transparent);
+	color: var(--st-danger);
+}
+
+.st-diff-line.is-hunk {
+	color: var(--st-muted);
+}
+
 .st-rich-checklist ul {
 	display: grid;
 	gap: 4px;

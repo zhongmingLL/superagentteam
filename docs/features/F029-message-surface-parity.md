@@ -4,7 +4,7 @@ related_features: [superagentteam/F018, superagentteam/F020, superagentteam/F027
 title: "F029: Hub message surface parity — nameplate width, A2A dispatch attribution, rich blocks"
 status: in-progress
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
-reviewers: []
+reviewers: [墨墨 (Qwen 3.8 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-24
 updated: 2026-11-24
@@ -81,6 +81,8 @@ F027/F028 之后，operator 实机查看 Hub 提出三条消息面问题：
   html_widget / interactive（只读），未知 kind 有 fallback。
 - 验证：web typecheck pass；24 files / 99 tests pass；production build pass；
   doc-index pass。截图见 `docs/design/F029/`。
+- 2026-11-24：墨墨 vision/UX approve @ `79d400546`，P3（diff 行级红绿染色）
+  已补：`+` / `-` / `@@` 行分别着色，并加回归断言。
 
 ## 风险与回滚
 

@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F028]
 related_features: [superagentteam/F018, superagentteam/F020, superagentteam/F027]
 title: "F028: Assistant execution record — thinking/tool calls, live and collapsible"
-status: in-progress
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [墨墨 (Qwen 3.8 Flash), 砚砚 (GLM 5.3 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -30,7 +30,7 @@ operator 明确要求：**F028 历史态和 live 中间结果一起做**。
 
 - assistant 回复先显示一条默认折叠的「执行记录」inset，其下是正文；执行记录
   不抢正文层级。operator 2026-11-23 明确要求这个顺序。
-- Thinking：折叠态显示 `› 思考` + 前 60 字预览；展开显示完整 thinking。
+- Thinking：折叠态显示 `› 思考` + 前 72 字预览；展开显示完整 thinking。
 - Tool calls：折叠态显示 `执行记录 · N 次工具调用 · 时长`；展开是每个工具一行
   （状态 icon、工具名、耗时）；点单行看 args/result 详情。
 - 流式：tool 记录自动展开并显示当前工具；thinking 预览实时更新；结束后
@@ -139,7 +139,7 @@ data: { threadId, event: AgentStreamEvent }
 - [x] light/dark、1440/390 截图；无横向溢出、无 console error。
 - [x] web typecheck/tests/build、daemon 相关 tests、doc-index 全绿。
 - [x] 现有 F027/A2A 行为不回退：未读、rename、retry、live/queue、cross-thread、multi-mention、草稿。
-- [ ] 非作者 review（视觉 + 代码/安全面）通过。
+- [x] 非作者 review（视觉 + 代码/安全面）通过。
 
 ## 非目标
 
@@ -172,3 +172,7 @@ data: { threadId, event: AgentStreamEvent }
   - 证据报告：`docs/reports/2026-11-23-f028-live-execution-record.md`。
 - 2026-11-23：operator 要求把 thinking/tool 执行记录放到最终内容上方；已调整
   `MessageList` 的 history/live 顺序，并更新 1440/390 截图与回归测试。
+- 2026-11-23：F028 合入 `5615173fe`（PR #169）。墨墨 vision/UX approve、
+  砚砚契约/SSE/安全 approve，均 @ `677ca2e50`；同步 base 后 CI 5/5 绿
+  @ `9ffec881d`。状态更新为 implemented，等 operator close。thinking
+  折叠预览文案按实现（72 字）对齐。

@@ -1,7 +1,7 @@
 ---
 title: "F028 execution plan — assistant execution record (history + live)"
 doc_kind: plan
-status: in-progress
+status: done
 created: 2026-11-23
 updated: 2026-11-23
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -126,3 +126,5 @@ thinking / tool calls 默认折叠、可展开；live 中间结果通过 thread 
 
 - 2026-11-23：F028.1–F028.4 完成；F028.5 等非作者 review 和 merge gate。
   证据见 `docs/reports/2026-11-23-f028-live-execution-record.md`。
+- 2026-11-23：F028.5 merge gate 完成；PR #169 merged as `5615173fe`。
+  双审 approve @ `677ca2e50`，同步 base 后 CI 5/5 绿 @ `9ffec881d`。

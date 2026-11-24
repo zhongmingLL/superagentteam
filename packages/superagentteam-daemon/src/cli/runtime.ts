@@ -1,0 +1,146 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { ControlError } from "../control/errors.ts";
+import { LinuxProcessIdentityProvider } from "../lifecycle/process.ts";
+import { RealProcessSignalSender } from "../lifecycle/signal.ts";
+import { defaultRuntimeEnvFile, resolveRuntimeEnv } from "../runtime/env.ts";
+import {
+	assertBuilt,
+	gitHead,
+	HttpRuntimeHealth,
+	isPortFree,
+	RealRuntimeSpawner,
+	readDaemonBootId,
+	resolveRuntimeWorktree,
+	syncWorktree,
+} from "../runtime/real.ts";
+import { RuntimeService } from "../runtime/service.ts";
+import { flag, numberOption, option, type ParsedArgs } from "./args.ts";
+import type { CliCommandContext } from "./context.ts";
+import { writeJson, writeLine } from "./output.ts";
+
+const DEFAULT_WEB_PORT = 3005;
+const DEFAULT_DAEMON_PORT = 3014;
+const DEFAULT_HUB_ORIGIN = "http://localhost:3103";
+const DEFAULT_WINDOWS_PORT = 3103;
+const DEFAULT_SYNC_REF = "origin/superagentteam-work";
+
+function service(context: CliCommandContext): RuntimeService {
+	return new RuntimeService({
+		dataDir: context.dataDir,
+		spawner: new RealRuntimeSpawner(context.dataDir),
+		processProvider: new LinuxProcessIdentityProvider(),
+		signalSender: new RealProcessSignalSender(),
+		health: new HttpRuntimeHealth(),
+		isPortFree,
+		readDaemonBootId,
+	});
+}
+
+function portOption(args: ParsedArgs, name: string, fallback: number): number {
+	return numberOption(args, name) ?? fallback;
+}
+
+async function start(args: ParsedArgs, context: CliCommandContext, restart: boolean): Promise<number> {
+	const runtime = service(context);
+	if (restart) {
+		const ended = await runtime.end();
+		if (ended.state === "degraded") {
+			throw new ControlError(
+				"runtime_end_incomplete",
+				"runtime did not fully end; inspect `superagentteam runtime status` before restarting",
+			);
+		}
+	}
+	const worktree = resolveRuntimeWorktree(option(args, "worktree"));
+	if (!existsSync(join(context.dataDir, "accounts.json"))) {
+		throw new ControlError(
+			"runtime_data_uninitialized",
+			`data dir ${context.dataDir} has no accounts.json; initialize it before starting the runtime`,
+		);
+	}
+	if (flag(args, "sync")) syncWorktree(worktree, option(args, "sync-ref") ?? DEFAULT_SYNC_REF);
+	assertBuilt(worktree);
+	const head = gitHead(worktree);
+	const envFile = option(args, "env-file") ?? (existsSync(defaultRuntimeEnvFile()) ? defaultRuntimeEnvFile() : null);
+	const resolved = resolveRuntimeEnv({ dataDir: context.dataDir, envFile, inherited: process.env });
+	if (resolved.missingEnvNames.length > 0) {
+		throw new ControlError(
+			"runtime_env_missing",
+			`missing required environment: ${resolved.missingEnvNames.join(", ")}; add them to ${envFile ?? defaultRuntimeEnvFile()} (mode 0600)`,
+		);
+	}
+	const webPort = portOption(args, "web-port", DEFAULT_WEB_PORT);
+	const windowsPort =
+		numberOption(args, "windows-port") ?? (webPort === DEFAULT_WEB_PORT ? DEFAULT_WINDOWS_PORT : null);
+	const result = await runtime.start({
+		worktree,
+		head,
+		dataDir: context.dataDir,
+		webPort,
+		daemonPort: portOption(args, "daemon-port", DEFAULT_DAEMON_PORT),
+		hubOrigin: option(args, "hub-origin") ?? DEFAULT_HUB_ORIGIN,
+		windowsPort,
+		envFile,
+		env: resolved.env,
+		requiredEnvNames: resolved.requiredEnvNames,
+	});
+	if (context.json) writeJson(result);
+	else {
+		writeLine(result.started ? "runtime started" : "runtime already running");
+		writeLine(`state: ${result.status.state}`);
+		writeLine(`worktree: ${result.status.worktree ?? worktree}`);
+		writeLine(`head: ${result.status.head ?? head}`);
+		writeLine(`web: http://127.0.0.1:${result.status.webPort}`);
+		writeLine(`daemon: http://127.0.0.1:${result.status.daemonPort}`);
+		writeLine(`windows: http://localhost:${result.status.windowsPort} (${result.status.windowsProxy})`);
+		writeLine(`state file: ${result.status.stateFile}`);
+	}
+	return 0;
+}
+
+async function status(context: CliCommandContext): Promise<number> {
+	const report = await service(context).status();
+	if (context.json) writeJson(report);
+	else {
+		writeLine(`state: ${report.state}`);
+		if (report.worktree) writeLine(`worktree: ${report.worktree}`);
+		if (report.head) writeLine(`head: ${report.head}`);
+		if (report.webPort !== undefined) writeLine(`web: http://127.0.0.1:${report.webPort}`);
+		if (report.daemonPort !== undefined) writeLine(`daemon: http://127.0.0.1:${report.daemonPort}`);
+		if (report.windowsPort !== undefined)
+			writeLine(`windows: http://localhost:${report.windowsPort} (${report.windowsProxy})`);
+		if (report.daemon)
+			writeLine(
+				`daemon pid: ${report.daemon.pid || "-"} alive=${report.daemon.alive} verified=${report.daemon.identityVerified}`,
+			);
+		if (report.web)
+			writeLine(
+				`web pid: ${report.web.pid || "-"} alive=${report.web.alive} verified=${report.web.identityVerified}`,
+			);
+		if (report.health) writeLine(`health: daemon=${report.health.daemon} web=${report.health.web}`);
+		if (report.lastError) writeLine(`last error: ${report.lastError.code}: ${report.lastError.message}`);
+		writeLine(`state file: ${report.stateFile}`);
+	}
+	return 0;
+}
+
+async function end(context: CliCommandContext): Promise<number> {
+	const result = await service(context).end();
+	if (context.json) writeJson(result);
+	else {
+		writeLine(`runtime ${result.state}`);
+		if (result.signaled.length > 0) writeLine(`signaled: ${result.signaled.join(", ")}`);
+		if (result.mismatched.length > 0) writeLine(`identity mismatch (not signaled): ${result.mismatched.join(", ")}`);
+	}
+	return result.state === "degraded" ? 1 : 0;
+}
+
+export async function runRuntimeCommand(args: ParsedArgs, context: CliCommandContext): Promise<number> {
+	const subcommand = args.positionals[0];
+	if (subcommand === "start") return start(args, context, false);
+	if (subcommand === "restart") return start(args, context, true);
+	if (subcommand === "status") return status(context);
+	if (subcommand === "end") return end(context);
+	throw new ControlError("invalid_input", "usage: superagentteam runtime <start|status|end|restart>");
+}

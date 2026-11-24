@@ -45,6 +45,21 @@ export type ControlErrorCode =
 	| "process_tree_unreadable"
 	| "command_failed"
 	| "legacy_engine_retired"
+	| "runtime_state_invalid"
+	| "runtime_worktree_missing"
+	| "runtime_worktree_invalid"
+	| "runtime_sync_failed"
+	| "runtime_data_uninitialized"
+	| "runtime_already_running"
+	| "runtime_env_missing"
+	| "runtime_port_in_use"
+	| "runtime_process_identity_unavailable"
+	| "runtime_daemon_unhealthy"
+	| "runtime_web_unhealthy"
+	| "runtime_start_failed"
+	| "runtime_identity_mismatch"
+	| "runtime_end_timeout"
+	| "runtime_end_incomplete"
 	| "legacy_command_retired";
 
 export class ControlError extends Error {

@@ -68,6 +68,7 @@ W0b upstream/CI 治理：与 W1–W4 并行，W5 前完成
 | [`0036-f031-rich-block-producer.md`](0036-f031-rich-block-producer.md) | F031 计划：producer tool、draft rich blocks、settlement 落最终消息、rich-messaging skill、真实 E2E | 砚砚（credential/control/migration）+ 墨墨（skill/呈现/E2E） |
 | [`0037-f032-legacy-retirement.md`](0037-f032-legacy-retirement.md) | F032 计划：archive tag、legacy inventory、入口退场、删除 runtime/shims/tests、历史留存、full verification | 砚砚（CLI/安全/删除边界）+ 墨墨（文案/历史文档可读性） |
 | [`0038-f033-runtime-startup-worktrees.md`](0038-f033-runtime-startup-worktrees.md) | F033 计划：worktree 角色、managed runtime state、port registry、supervisor、Windows proxy、runbook | 砚砚（state/安全/端口）+ 墨墨（runbook/operator 文案） |
+| [`0039-f033-phase-b-execution.md`](0039-f033-phase-b-execution.md) | F033 Phase B 执行计划：runtime state + 入口/状态/收尾 + 固定端口 + env 注入 + 旧栈迁移 | 砚砚（state/identity/端口）+ 墨墨（operator 文案/迁移说明） |
 
 ## W0–W8 一览
 

@@ -3,12 +3,18 @@ title: "codeteam Task-first legacy inventory"
 doc_kind: architecture
 status: legacy-inventory
 created: 2026-11-04
-updated: 2026-11-18
+updated: 2026-11-24
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 related_features: [codeteam/F017, codeteam/F018]
 ---
 
 # codeteam Task-first legacy inventory
+
+> **F032 archive（2026-11-24）：** 最后一个包含 legacy runtime 的 commit 是
+> `dd29e1cabbcf7907ee001c6c9440164697d0747e`，tag 为 `archive/task-first-v1`。
+> 删除计划见 `docs/plans/0037-f032-legacy-retirement.md`；inventory 见
+> `docs/reports/2026-11-24-f032-legacy-inventory.md`。本文从此只作
+> non-normative 历史入口；新开发只以 `0005-thread-first-runtime.md` / F018 为准。
 
 > **用途：阻止旧 Task-first 实现误导新开发。** 2026-11-04 operator 选择 C：
 > v1 = 纯 A2A runtime。现有 Task-first code delivery/custody 实现不是新架构的

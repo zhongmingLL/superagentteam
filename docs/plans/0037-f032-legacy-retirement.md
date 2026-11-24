@@ -1,7 +1,7 @@
 ---
 title: "F032 execution plan — task-first legacy retirement"
 doc_kind: plan
-status: draft
+status: in-progress
 created: 2026-11-24
 updated: 2026-11-24
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -96,5 +96,13 @@ NODE_ENV=development npm test -w @superagentteam/skills
 - 砚砚：CLI/daemon auth、删除边界、legacy path 不可回流、无隐藏数据读取。
 - 墨墨：operator 可读的 help/错误文案、历史文档 non-normative 标记。
 - 作者不能自审；full build/check/test + E2E 证据随 PR。
+
+## 进展
+
+- 2026-11-24：F032.0 完成。tag `archive/task-first-v1` 已推送，指向
+  `dd29e1cabbcf7907ee001c6c9440164697d0747e`；inventory 报告
+  `docs/reports/2026-11-24-f032-legacy-inventory.md` 已落。
+- 下一步：F032.1 移除 `--engine legacy` / `controlPlane` / legacy-only CLI，
+  再进 F032.2 删除运行时。
 
 [宪宪/deepseek-flash🐾]

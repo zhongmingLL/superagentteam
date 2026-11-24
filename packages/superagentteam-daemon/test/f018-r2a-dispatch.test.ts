@@ -764,7 +764,8 @@ describe("QueueProcessor (0007 §3.2)", () => {
 		expect(attempt?.deliveryState).toBe("canceled");
 		expect(attempt?.terminalReason).toBe("operator_canceled");
 		expect(w.turns.get(attempt!.turnExecutionId!)?.status).toBe("canceled");
-		expect(w.messages.get(`resp:${attempt!.turnExecutionId}`)?.lifecycle?.status).toBe("canceled");
+		const responseMessage = w.messages.get(`resp:${attempt!.turnExecutionId}`);
+		expect(responseMessage?.lifecycle).toMatchObject({ kind: "response", status: "canceled" });
 		expect(w.queue.listQueued("t1")).toHaveLength(0);
 		expect(w.records.get(invocationId)?.status).toBe("canceled");
 	});

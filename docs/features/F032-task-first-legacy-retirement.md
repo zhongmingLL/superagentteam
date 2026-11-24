@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F032]
 related_features: [superagentteam/F018, superagentteam/F019, superagentteam/F031]
 title: "F032: Task-first legacy retirement — archive reference, delete runtime"
-status: in_progress
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -87,7 +87,7 @@ legacy control-plane 入口。operator 已确认：**没有真实 legacy 使用�
 - [x] AC-3：legacy code/shim/tests/allowlist 条目删除；无活跃 import。
 - [x] AC-4：历史文档保留且明确 non-normative；F032 删除报告记录文件清单与验证命令。
 - [x] AC-5：没有删除用户数据；旧 control.db 按“无读取需求”归档说明处理。
-- [ ] AC-6：full build/check/test + A2A E2E 绿；boundary guard negative test 生效。
+- [x] AC-6：full build/check/test + A2A E2E 绿；boundary guard negative test 生效。
 
 ## 进展
 
@@ -111,6 +111,11 @@ legacy control-plane 入口。operator 已确认：**没有真实 legacy 使用�
   boundary guard 增加负向自测。为消除“保留模块失去覆盖”，删除只服务 legacy
   control.db 的 `memory/digest.ts` 与 `memory/sources/control.ts`，memory 变为纯
   file-source；memory CLI 的 `digest` 子命令移除。剩余 F032.4 full gate。
+- 2026-11-24：F032.2/3 合入 `520929940`（PR #184，双审覆盖到 `531e8e6e6`；
+  CI 5/5 绿）。F032.4 完成：`npm run build:offline` / `npm run check` / daemon
+  469 tests / web 99 / skills 15 全绿；CLI A2A smoke 只生成 `f018.db`；
+  boundary guard 自测 + allowlist `{}` 生效。F032 进入 `implemented`，等 operator
+  close。
 
 ## 非目标
 

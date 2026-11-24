@@ -1,7 +1,7 @@
 ---
 title: "F032 execution plan — task-first legacy retirement"
 doc_kind: plan
-status: in-progress
+status: done
 created: 2026-11-24
 updated: 2026-11-24
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -115,6 +115,8 @@ NODE_ENV=development npm test -w @superagentteam/skills
 - 2026-11-24：砚砚 P2 收口。删除 `memory/digest.ts` 与 `memory/sources/control.ts`
   （仅服务 legacy control.db 且失去覆盖），memory 改为纯 file-source；
   `memory digest` 子命令移除。memory v1 测试仍覆盖 index/recall/trigger。
-- 下一步：F032.4 full build/check/test + A2A CLI/provider E2E，然后收口。
+- 2026-11-24：F032.2/3 合入 `520929940`（PR #184）。F032.4 完成：
+  `build:offline`、`npm run check`、daemon 469 / web 99 / skills 15 tests、CLI
+  A2A smoke 全绿。F032 进入 `implemented`，等 operator close。
 
 [宪宪/deepseek-flash🐾]

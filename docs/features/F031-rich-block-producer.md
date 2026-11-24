@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F031]
 related_features: [superagentteam/F018, superagentteam/F028, superagentteam/F029, superagentteam/F030]
 title: "F031: Rich block producer — agent-created rich blocks in responses"
-status: implemented
+status: done
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -156,7 +156,7 @@ Clowder 的参考链路是 **skill 负责判断、tool 负责写入、draft 负�
   截图：`docs/design/F031/rich-blocks-{1440,390}-{light,dark}.png`。
 - 2026-11-24：PR #177 合入 `839b22f4a`；砚砚 contract/security approve @
   `656ebfec3`，墨墨 vision/UX approve @ `656ebfec3`，CI 5/5。状态 → implemented，
-  等 operator close。
+  2026-11-24 operator batch close（消息 `0001795523064349-000942-d9449e06`）→ done。
 
 ## 依赖与风险
 

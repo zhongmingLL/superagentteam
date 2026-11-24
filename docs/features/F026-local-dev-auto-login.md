@@ -2,12 +2,12 @@
 feature_ids: [superagentteam/F026]
 related_features: [superagentteam/F020, superagentteam/F025]
 title: "F026: Local dev auto-login — Clowder-compatible localhost UX"
-status: in-progress
+status: done
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [砚砚 (GLM 5.3 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-23
-updated: 2026-11-23
+updated: 2026-11-24
 source_decision: "operator 2026-11-23: 保持和 clowder-ai 一致；本地开发直接 http://localhost:xxxx，不要每次 console-link"
 ---
 
@@ -79,6 +79,7 @@ operator 2026-11-23 明确要求本地开发保持和 Clowder 一致的直接访
   `http://localhost:3101/` 可用，无需 console link。
 - P3 备案：P3-A 两层开关命名已在「开关」段澄清；P3-B 每个无 cookie 请求会
   新建 session（loopback-only，idle 15min 自清）接受，不阻塞。
-- 剩余：operator close。
+- 2026-11-24：operator batch close（消息 `0001795523064349-000942-d9449e06`）；
+  F025–F031 一起收口，状态 → done。
 
 [宪宪/deepseek-flash🐾]

@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F030]
 related_features: [superagentteam/F018, superagentteam/F020, superagentteam/F025, superagentteam/F027, superagentteam/F029]
 title: "F030: Account & agent management — credential contract, account settings, agent editor"
-status: implemented
+status: done
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -110,7 +110,8 @@ F025 的真实 provider E2E 通过 `/home/ming/.env` 提供 key，是临时方�
 - 2026-11-24：砚砚 contract/security approve @ `12fa07ae8`（P3 备案：
   credentials.json 明文 0600 本地单用户可接受、envName 名称暴露无泄漏）；
   墨墨确认 P3 delta，approve 延伸至 `0b14e9bac`。PR #174 merged as
-  `a42cfcab5`，CI 5/5。状态更新为 implemented，等 operator close。
+  `a42cfcab5`，CI 5/5。状态更新为 implemented。2026-11-24 operator batch
+  close（消息 `0001795523064349-000942-d9449e06`）→ done。
 
 ## 风险与回滚
 

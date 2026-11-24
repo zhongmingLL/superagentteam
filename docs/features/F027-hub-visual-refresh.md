@@ -2,12 +2,12 @@
 feature_ids: [superagentteam/F027]
 related_features: [superagentteam/F020, superagentteam/F025, superagentteam/F026]
 title: "F027: Hub visual refresh — light-blue rational workspace"
-status: implemented
+status: done
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [墨墨 (Qwen 3.8 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-23
-updated: 2026-11-23
+updated: 2026-11-24
 source_decision: "operator 2026-11-23: 现有前端简陋；方向 A（Clowder 布局语法 + SuperAgentTeam 品牌），改为浅蓝理性氛围 + 侧边导航栏"
 ---
 
@@ -124,4 +124,4 @@ Pencil 画布当前帧：
   light/dark 1440 与 dark 390 抽屉截图。
 - 2026-11-23：operator 确认先合 F027；PR #167 merged as `de9e18061`。
   墨墨 P2/P3 已在 `6ff10c9ba` 全部闭合；CI 5/5 绿。状态更新为 implemented，
-  等 operator close。
+  2026-11-24 operator batch close（消息 `0001795523064349-000942-d9449e06`）→ done。

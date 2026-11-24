@@ -1,7 +1,7 @@
 ---
 title: "F025 — Hub agent management + full-stack A2A E2E"
 doc_kind: plan
-status: accepted
+status: done
 created: 2026-11-22
 updated: 2026-11-22
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -104,5 +104,7 @@ Flow：
   `docs/reports/2026-11-22-f025-fullstack-e2e.md`。
 - P1 修复：v1 tool schema 的 `triggerType` / `kind` 补 `type`；新增递归
   schema 测试，防止其他 provider 同类拒绝。
+- 2026-11-24：operator batch close（消息 `0001795523064349-000942-d9449e06`）；
+  F025 feature 收口 → done。
 
 [宪宪/deepseek-flash🐾]

@@ -16,6 +16,12 @@ related_features: [codeteam/F017, codeteam/F018]
 > `docs/reports/2026-11-24-f032-legacy-inventory.md`。本文从此只作
 > non-normative 历史入口；新开发只以 `0005-thread-first-runtime.md` / F018 为准。
 
+> **F032.2 删除完成（2026-11-24）：** `src/legacy/task-first/`、旧 path shim、
+> control stores、eval/policy/review/merge/gates/sop/scheduling 等可执行代码已从
+> main 删除；`scripts/legacy-boundary-allowlist.json` 为空。本文剩余表格只作
+> 历史索引，不再对应仓库中的可执行文件；恢复代码只能从
+> `archive/task-first-v1` tag 取回。
+
 > **用途：阻止旧 Task-first 实现误导新开发。** 2026-11-04 operator 选择 C：
 > v1 = 纯 A2A runtime。现有 Task-first code delivery/custody 实现不是新架构的
 > 参考实现，也不再是 v1 的运行路径。本文给出具体识别、状态标记和后续处置。
@@ -24,8 +30,9 @@ related_features: [codeteam/F017, codeteam/F018]
 > 本文列出的旧模块/表/工具/feature 不得作为“现状应该这样”的依据。
 > 文档地图见 `docs/architecture/0000-architecture-map.md`。
 >
-> 物理迁移后的统一入口：代码 `packages/superagentteam-daemon/src/legacy/task-first/`，
-> 文档 `docs/legacy/task-first/INDEX.md`；R1 计划见
+> **历史代码位置（已删除）：** F018 R1-0 曾把代码迁到
+> `packages/superagentteam-daemon/src/legacy/task-first/`；F032.2 已删除该目录。
+> 历史索引见 `docs/legacy/task-first/INDEX.md`，R1 计划见
 > `docs/plans/0021-f018-r1-execution.md`。
 
 ## 状态标记

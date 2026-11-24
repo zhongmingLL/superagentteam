@@ -115,4 +115,19 @@ rg -n 'legacy/task-first|--engine legacy|controlPlane' packages/superagentteam-d
 
 删除后 `rg` 只应命中历史 docs / archive 说明；不应命中可执行源码或测试。
 
+## 9. F032.2 删除结果
+
+- 删除提交：`5634e97d5`（feat/f032-runtime-removal）。
+- `src/legacy/task-first/`、旧 path shim、control stores、dispatch/review/merge/
+  gates/sop/scheduling/eval/policy/deployment-wait/custody 已删除。
+- 271 files changed，约 -45.5K 行；legacy-only tests/fixtures 同步删除。
+- `scripts/legacy-boundary-allowlist.json` 清空为 `{}`；boundary guard 通过，
+  并加入负向自测（legacy path / retired tool / frozen table）。
+- 保留：`control/errors.ts`（v1 共享 error）、`data-dir.ts`（v1 data dir 解析）、
+  Hub disabled legacy route shim。
+- 删除：`memory/digest.ts`、`memory/sources/control.ts`（仅服务 legacy control.db
+  且失去测试覆盖）；memory 改为纯 file-source，`memory digest` 子命令移除。
+- 验证：@superagentteam/daemon 68 files / 469 tests passed（1 skipped）；
+  `npm run check` 通过；未删除用户数据或 runtime 数据文件。
+
 [宪宪/deepseek-flash🐾]

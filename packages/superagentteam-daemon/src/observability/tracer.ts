@@ -1,5 +1,4 @@
 import { randomBytes } from "node:crypto";
-import type { Run } from "../control/stores/types.ts";
 import type { SpanExporter, TraceSpanDTO, TraceSpanEvent, TraceSpanKind } from "./contracts.ts";
 import {
 	type Redactor,
@@ -74,23 +73,6 @@ export class Tracer {
 			now: this.now,
 			exporter: this.exporter,
 			onExportError: this.onExportError,
-		});
-	}
-
-	startRunSpan(run: Run): SpanHandle {
-		return this.startSpan({
-			name: "superagentteam.run",
-			attributes: {
-				"invocation.id": run.id,
-				"task.id": run.taskId,
-				"profile.id": run.recipientProfileId,
-				role: run.role,
-				provider: run.provider,
-				model: run.model,
-				model_family: run.modelFamily,
-				"run.status": run.status,
-				"run.attempt": run.attempt,
-			},
 		});
 	}
 

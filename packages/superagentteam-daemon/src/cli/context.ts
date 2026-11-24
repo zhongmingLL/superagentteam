@@ -2,16 +2,9 @@ import type { KeyObject } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { loadOperatorPrivateKey, operatorCredentialPaths, signOperatorPayload } from "../auth/operator.ts";
 import { principalFromOperatorProof } from "../auth/principals.ts";
-import { resolveControlDataDir } from "../control/database.ts";
 import { ControlError } from "../control/errors.ts";
-import { type ControlStore, openControlStore } from "../control/store.ts";
+import { resolveControlDataDir } from "../data-dir.ts";
 import { flag, option, type ParsedArgs } from "./args.ts";
-
-export interface CliContext {
-	readonly dataDir: string;
-	readonly store: ControlStore;
-	readonly json: boolean;
-}
 
 export interface CliCommandContext {
 	readonly dataDir: string;
@@ -24,16 +17,11 @@ export interface OperatorContext {
 	readonly publicKeyPem: string;
 }
 
-export function openCliContext(args: ParsedArgs): CliContext {
-	const dataDir = resolveControlDataDir(option(args, "data-dir"));
-	return { dataDir, store: openControlStore({ dataDir }), json: flag(args, "json") };
-}
-
 export function openCliCommandContext(args: ParsedArgs): CliCommandContext {
 	return { dataDir: resolveControlDataDir(option(args, "data-dir")), json: flag(args, "json") };
 }
 
-export function requireOperator(context: Pick<CliContext, "dataDir">): OperatorContext {
+export function requireOperator(context: { readonly dataDir: string }): OperatorContext {
 	const paths = operatorCredentialPaths(context.dataDir);
 	const privateKey = loadOperatorPrivateKey(context.dataDir);
 	const publicKeyPem = readFileSync(paths.publicKeyPath, "utf8");

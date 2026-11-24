@@ -9,7 +9,6 @@ import { createRedactor } from "../src/observability/redaction.ts";
 import { createObservabilityRuntime } from "../src/observability/runtime.ts";
 import { LocalTraceStore } from "../src/observability/trace-store.ts";
 import { Tracer } from "../src/observability/tracer.ts";
-import { createW5AFixture } from "./helpers/w5a-fixture.ts";
 
 const servers: Server[] = [];
 
@@ -173,10 +172,10 @@ describe("W6c OTLP exporter", () => {
 	});
 
 	it("wires the runtime tracer to the OTLP exporter", () => {
-		const base = createW5AFixture();
+		const dataDir = mkdtempSync(join(tmpdir(), "otlp-runtime-"));
 		try {
 			const telemetry = createObservabilityRuntime({
-				dataDir: base.dataDir,
+				dataDir,
 				env: { SUPERAGENTTEAM_OTLP_ENABLED: "1", SUPERAGENTTEAM_OTLP_ENDPOINT: "http://127.0.0.1:1" },
 			});
 			const exportSpy = vi.spyOn(telemetry.otlp!, "export");
@@ -186,7 +185,7 @@ describe("W6c OTLP exporter", () => {
 			telemetry.logs?.close();
 			telemetry.otlp?.shutdown?.().catch(() => {});
 		} finally {
-			base.cleanup();
+			rmSync(dataDir, { recursive: true, force: true });
 		}
 	});
 
@@ -196,10 +195,10 @@ describe("W6c OTLP exporter", () => {
 				new Response("{}", { status: 200 }),
 		);
 		vi.stubGlobal("fetch", fetchStub);
-		const base = createW5AFixture();
+		const dataDir = mkdtempSync(join(tmpdir(), "otlp-runtime-fetch-"));
 		try {
 			const telemetry = createObservabilityRuntime({
-				dataDir: base.dataDir,
+				dataDir,
 				env: { SUPERAGENTTEAM_OTLP_ENABLED: "1", SUPERAGENTTEAM_OTLP_ENDPOINT: "http://127.0.0.1:4318" },
 			});
 			telemetry.tracer.startSpan({ name: "superagentteam.runtime.fetch", attributes: { role: "coder" } }).end();
@@ -209,7 +208,7 @@ describe("W6c OTLP exporter", () => {
 			expect(String(url)).toBe("http://127.0.0.1:4318/v1/traces");
 			telemetry.logs?.close();
 		} finally {
-			base.cleanup();
+			rmSync(dataDir, { recursive: true, force: true });
 		}
 	});
 });

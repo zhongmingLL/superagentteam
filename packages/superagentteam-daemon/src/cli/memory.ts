@@ -1,13 +1,9 @@
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import { envValue, resolveDataDir } from "../env.ts";
 import type { Coverage, EvidenceKind, RetrievalTrigger } from "../memory/contract.ts";
 import { type MemoryDatabase, openMemoryDatabase, resolveMemoryDatabasePath } from "../memory/database.ts";
-import { buildSessionDigest } from "../memory/digest.ts";
 import { MemoryError } from "../memory/errors.ts";
 import { MemoryIndexer } from "../memory/indexer.ts";
 import { MemoryService } from "../memory/service.ts";
-import { ControlEvidenceReader } from "../memory/sources/control.ts";
 import { flag, option, options, type ParsedArgs, parseArgs } from "./args.ts";
 import { writeJson, writeLine } from "./output.ts";
 
@@ -63,12 +59,6 @@ function openReadMemory(args: ParsedArgs): MemoryDatabase | null {
 		if (error instanceof MemoryError && error.code === "memory_unavailable") return null;
 		throw error;
 	}
-}
-
-function openControl(args: ParsedArgs): ControlEvidenceReader | null {
-	const data = dataDir(args);
-	const path = join(data, "control.db");
-	return existsSync(path) ? ControlEvidenceReader.open({ path }) : null;
 }
 
 function parseKinds(args: ParsedArgs): EvidenceKind[] | undefined {
@@ -145,14 +135,13 @@ export function runMemoryCommand(argv: readonly string[]): number {
 	const json = flag(args, "json");
 	const [subcommand] = args.positionals;
 	if (!subcommand || subcommand === "help") {
-		writeLine("usage: superagentteam memory <index|status|recall|read|digest|trigger> [options]");
+		writeLine("usage: superagentteam memory <index|status|recall|read|trigger> [options]");
 		return 0;
 	}
 	if (subcommand === "index") return runIndex(args, json);
 	if (subcommand === "status") return runStatus(args, json);
 	if (subcommand === "recall") return runRecall(args, json);
 	if (subcommand === "read") return runRead(args, json);
-	if (subcommand === "digest") return runDigest(args, json);
 	if (subcommand === "trigger") return runTrigger(args, json);
 	throw new MemoryError("invalid_input", `unknown memory command: ${subcommand}`);
 }
@@ -174,9 +163,7 @@ function runIndex(args: ParsedArgs, json: boolean): number {
 			writeLine(
 				`indexed ${summary.sourceCount} sources (${summary.skippedCount} unchanged) in ${summary.endedAt - summary.startedAt}ms`,
 			);
-			writeLine(
-				`status: ${summary.status}; errors: ${summary.errorCount}; file=${summary.counts.file} control=${summary.counts.control}`,
-			);
+			writeLine(`status: ${summary.status}; errors: ${summary.errorCount}; file=${summary.counts.file}`);
 			for (const error of summary.errors)
 				writeLine(`  ${error.errorKind}: ${error.sourcePath ?? "-"} ${error.detail}`);
 		}
@@ -189,7 +176,6 @@ function runIndex(args: ParsedArgs, json: boolean): number {
 function runStatus(args: ParsedArgs, json: boolean): number {
 	const path = memoryPath(args);
 	const memory = openReadMemory(args);
-	const control = openControl(args);
 	try {
 		if (!memory) {
 			const coverage = syntheticCoverage("memory_db_absent");
@@ -200,7 +186,7 @@ function runStatus(args: ParsedArgs, json: boolean): number {
 			}
 			return 0;
 		}
-		const service = new MemoryService(memory, { controlReader: control });
+		const service = new MemoryService(memory);
 		const coverage = service.coverage();
 		if (json) writeJson({ memoryDb: path, exists: true, coverage });
 		else {
@@ -209,7 +195,6 @@ function runStatus(args: ParsedArgs, json: boolean): number {
 		}
 		return 0;
 	} finally {
-		control?.close();
 		memory?.close();
 	}
 }
@@ -220,7 +205,6 @@ function runRecall(args: ParsedArgs, json: boolean): number {
 	const trigger = parseTrigger(option(args, "trigger"));
 	const kinds = parseKinds(args);
 	const memory = openReadMemory(args);
-	const control = openControl(args);
 	try {
 		if (!memory) {
 			const result = {
@@ -232,7 +216,7 @@ function runRecall(args: ParsedArgs, json: boolean): number {
 			else writeResult(result);
 			return 0;
 		}
-		const service = new MemoryService(memory, { controlReader: control });
+		const service = new MemoryService(memory);
 		if (trigger) {
 			const result = service.retrieveForTrigger(trigger, {
 				query,
@@ -251,7 +235,6 @@ function runRecall(args: ParsedArgs, json: boolean): number {
 		else writeResult(result);
 		return 0;
 	} finally {
-		control?.close();
 		memory?.close();
 	}
 }
@@ -259,7 +242,6 @@ function runRecall(args: ParsedArgs, json: boolean): number {
 function runRead(args: ParsedArgs, json: boolean): number {
 	const anchor = requirePositional({ ...args, positionals: args.positionals.slice(1) }, "anchor");
 	const memory = openReadMemory(args);
-	const control = openControl(args);
 	try {
 		if (!memory) {
 			const result = {
@@ -272,7 +254,7 @@ function runRead(args: ParsedArgs, json: boolean): number {
 			else writeResult({ items: [], coverage: result.coverage });
 			return 0;
 		}
-		const service = new MemoryService(memory, { controlReader: control });
+		const service = new MemoryService(memory);
 		const result = service.read(anchor);
 		if (json) writeJson(result);
 		else if (!result.found) {
@@ -295,42 +277,7 @@ function runRead(args: ParsedArgs, json: boolean): number {
 		}
 		return 0;
 	} finally {
-		control?.close();
 		memory?.close();
-	}
-}
-
-function runDigest(args: ParsedArgs, json: boolean): number {
-	const runId = option(args, "run");
-	const sessionId = option(args, "session");
-	if (!runId && !sessionId) throw new MemoryError("invalid_input", "memory digest requires --run or --session");
-	const control = openControl(args);
-	try {
-		const result = buildSessionDigest({ reader: control, runId, sessionId });
-		if (json) writeJson(result);
-		else if (!result.found) {
-			writeLine(`digest unavailable: ${result.reason}`);
-		} else {
-			const digest = result.digest;
-			writeLine(`run: ${digest.runId ?? "-"} session: ${digest.sessionId} task: ${digest.taskId ?? "-"}`);
-			writeLine(`status: ${digest.status} role=${digest.role} provider=${digest.provider} model=${digest.model}`);
-			writeLine(
-				`events: ${Object.entries(digest.eventCounts)
-					.map(([kind, count]) => `${kind}=${count}`)
-					.join(" ")}`,
-			);
-			for (const event of digest.events) writeLine(`  ${event.seq} ${event.kind} ${event.summary}`);
-			for (const review of digest.reviews)
-				writeLine(`review ${review.id}: ${review.verdict} (${review.findingCount} findings)`);
-			for (const verification of digest.verifications) {
-				writeLine(`verification ${verification.id}: ${verification.status} ${verification.command ?? ""}`);
-			}
-			for (const merge of digest.merges) writeLine(`merge ${merge.id}: ${merge.status} ${merge.mergeSha}`);
-			writeLine(`sourceRefs: ${digest.sourceRefs.join(",")}`);
-		}
-		return 0;
-	} finally {
-		control?.close();
 	}
 }
 
@@ -338,9 +285,8 @@ function runTrigger(args: ParsedArgs, json: boolean): number {
 	const trigger = parseTrigger(args.positionals[1]);
 	if (!trigger) throw new MemoryError("invalid_input", "memory trigger requires a trigger name");
 	const memory = openReadMemory(args);
-	const control = openControl(args);
 	try {
-		const service = memory ? new MemoryService(memory, { controlReader: control }) : null;
+		const service = memory ? new MemoryService(memory) : null;
 		if (!service) {
 			const result = {
 				trigger,
@@ -369,7 +315,6 @@ function runTrigger(args: ParsedArgs, json: boolean): number {
 		}
 		return 0;
 	} finally {
-		control?.close();
 		memory?.close();
 	}
 }

@@ -2,7 +2,6 @@ import { copyFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { AccountConfig, AgentSession } from "@superagentteam/shared/types";
-import { resolveWorkerExtensionPath } from "../../workers/harness.ts";
 import { RpcConnection } from "../../workers/rpc-client.ts";
 import type { AccountStore } from "../account/store.ts";
 import type { SpawnedWorker, WorkerSpawnPort } from "./pool.ts";
@@ -131,7 +130,7 @@ export class PiWorkerSpawnPort implements WorkerSpawnPort {
 			"rpc",
 			"--no-extensions",
 			"--extension",
-			this.options.extensionPath ?? resolveWorkerExtensionPath(),
+			this.options.extensionPath ?? resolveA2AExtensionPath(),
 			"--no-context-files",
 			"--no-skills",
 			...(this.options.richMessagingSkillPath ? ["--skill", this.options.richMessagingSkillPath] : []),

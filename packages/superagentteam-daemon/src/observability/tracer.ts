@@ -76,34 +76,6 @@ export class Tracer {
 		});
 	}
 
-	/** Legacy task-first run span; removed with the task-first worker runtime. */
-	startRunSpan(run: {
-		readonly id: string;
-		readonly taskId: string;
-		readonly recipientProfileId: string;
-		readonly role: string;
-		readonly provider: string;
-		readonly model: string;
-		readonly modelFamily: string;
-		readonly status: string;
-		readonly attempt: number;
-	}): SpanHandle {
-		return this.startSpan({
-			name: "superagentteam.run",
-			attributes: {
-				"invocation.id": run.id,
-				"task.id": run.taskId,
-				"profile.id": run.recipientProfileId,
-				role: run.role,
-				provider: run.provider,
-				model: run.model,
-				model_family: run.modelFamily,
-				"run.status": run.status,
-				"run.attempt": run.attempt,
-			},
-		});
-	}
-
 	startToolSpan(parent: SpanContext | null, input: ToolSpanInput): SpanHandle {
 		const attributes: Record<string, unknown> = {
 			"tool.name": input.toolName,

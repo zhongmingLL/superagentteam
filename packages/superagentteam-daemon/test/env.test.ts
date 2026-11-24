@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { resolveControlDataDir } from "../src/control/database.ts";
+import { resolveControlDataDir } from "../src/data-dir.ts";
 import { defaultDataDir, envValue, resolveDataDir } from "../src/env.ts";
 
 const dirs: string[] = [];

@@ -10,8 +10,7 @@ import { assertF018MigrationSet, F018_MIGRATIONS } from "./migrations/index.ts";
  *
  * Mechanism provenance (per R1-a review agreement): the ordered-migration +
  * schema_migrations ledger + per-migration transaction pattern follows the
- * approach used by the legacy task-first harness in
- * `src/legacy/task-first/control/database.ts`. No legacy code was copied;
+ * approach used by the retired task-first harness. No legacy code was copied;
  * this implementation is written fresh against the F018 greenfield spec
  * (plan 0021 R1-a): a new-baseline database contains F018 tables only, with
  * up/down support and an empty starting ledger.

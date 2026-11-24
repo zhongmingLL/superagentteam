@@ -96,18 +96,25 @@ Clowder AI 的启动面已经把这些分清了，F033 借鉴机制而不复制�
 - 已补隔离 `3008/3017` 的 start/status/end/restart 集成验证；restart 后进程与 bootId 均更新，end 后端口释放。
 - 残余 gap：Windows `3100/3101` proxy 仍未移除；Windows proxy 生成脚本、test worktree、CI drift/conflict guard、runbook 留 Phase C/D。
 
+### 2026-11-25 — Phase C test isolation & cleanup
+
+- test worktree `/home/ming/agent/superagentteam-alpha` at `04b087379`；build 绿。
+- test stack `3007/3016` + `~/.superagentteam-alpha/data` + `~/.config/superagentteam/alpha.env`；start/status/end 全绿，runtime `3103` 不受影响。
+- port registry `scripts/runtime-ports.mjs` + `scripts/runtime-ports.test.mjs`；`check:runtime-ports` 已接入 `npm run check`，覆盖重复/保留端口/越界与 CLI 默认值漂移。
+- 旧 Windows `3100/3101` proxy 经 identity 核验后停止；只剩当前 `3103`。
+
 ## 验收方向
 
 - [x] AC-1：默认入口从专用 runtime worktree 运行；dev worktree 不承担 runtime。
 - [x] AC-2：入口/状态/收尾/重启幂等，收尾只操作 identity-verified stack，不盲杀端口。
-- [ ] AC-3：runtime 与 Windows 入口固定；test 使用独立端口段，CI 有 drift/conflict guard。
+- [x] AC-3：runtime 与 Windows 入口固定；test 使用独立端口段，CI 有 drift/conflict guard。
 - [ ] AC-4：进程在启动 session 结束后仍存活；无长期 cron watchdog 依赖。
-- [ ] AC-5：test/acceptance 使用独立 worktree、data dir、端口；不读写 runtime 用户数据。
-- [ ] AC-6：旧 stack 可列出/收尾/回收；启动后无孤儿端口。
+- [x] AC-5：test/acceptance 使用独立 worktree、data dir、端口；不读写 runtime 用户数据。
+- [x] AC-6：旧 stack 可列出/收尾/回收；启动后无孤儿端口。
 - [ ] AC-7：Windows proxy 由脚本生成/校验，入口只给一个 URL。
 - [ ] AC-8：runbook 覆盖运行、收尾、恢复、端口冲突、worktree 更新与回滚。
 
-> 2026-11-25：AC-1/AC-2 已由 PR #188 + 真实迁移验证；AC-3/4/6/7 仍有 Phase C/D 残余（test worktree/CI guard、cron 退役、Windows proxy 生成与旧 proxy 清理、runbook）。
+> 2026-11-25：AC-1/2/3/5/6 已由 PR #188、Phase C 隔离与清理验证；AC-4/7/8 仍有 Phase D 残余（cron 退役、Windows proxy 生成/单 URL、runbook）。
 
 ## 非目标
 

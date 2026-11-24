@@ -10,6 +10,8 @@ import {
 	type CreateAgentInput,
 	readCatalogFile,
 	toAgentConfig,
+	type UpdateAgentInput,
+	updateAgent,
 	validateCandidate,
 	writeCatalogAtomic,
 } from "../../domains/agent/catalog-store.ts";
@@ -28,6 +30,11 @@ export interface AgentView {
 	color?: { primary: string; secondary: string };
 	enabled: boolean;
 	status?: AgentStatus;
+	accountRef: string;
+	defaultModel: string;
+	mentionPatterns: string[];
+	roleId: string;
+	roleDescription: string;
 }
 
 export interface HubCatView extends AgentView {
@@ -63,7 +70,76 @@ function toView(agent: AgentConfig, activeAgents: ReadonlySet<string>): AgentVie
 		...(agent.color ? { color: { ...agent.color } } : {}),
 		enabled: agent.enabled,
 		status,
+		accountRef: agent.accountRef,
+		defaultModel: agent.defaultModel,
+		mentionPatterns: [...agent.mentionPatterns],
+		roleId: agent.roleId,
+		roleDescription: agent.roleDescription,
 	};
+}
+
+interface ParsedUpdate {
+	ok: true;
+	input: UpdateAgentInput;
+}
+
+function parseUpdateInput(body: Record<string, unknown>): ParsedUpdate | ParsedCreateError {
+	const input: UpdateAgentInput = {};
+	if (body.displayName !== undefined) {
+		const displayName = readRequiredString(body, "displayName", 200);
+		if (!displayName) return { ok: false, message: "displayName must be 1-200 chars" };
+		input.displayName = displayName;
+	}
+	if (body.mentionPatterns !== undefined) {
+		const mentionPatterns = parseMentionPatterns(body.mentionPatterns);
+		if (!mentionPatterns) return { ok: false, message: "mentionPatterns must be a non-empty string or string array" };
+		input.mentionPatterns = mentionPatterns;
+	}
+	for (const [key, maxLength] of [
+		["accountRef", 200],
+		["defaultModel", 200],
+		["roleId", 100],
+	] as const) {
+		if (body[key] === undefined) continue;
+		const value = readRequiredString(body, key, maxLength);
+		if (!value) return { ok: false, message: `${key} must be 1-${maxLength} chars` };
+		input[key] = value;
+	}
+	if (body.roleDescription !== undefined) {
+		const roleDescription = readOptionalString(body, "roleDescription", 4096);
+		if (roleDescription === null) return { ok: false, message: "roleDescription must be a string (<=4096 chars)" };
+		input.roleDescription = roleDescription ?? "";
+	}
+	if (body.contextWindow !== undefined) {
+		const value = body.contextWindow;
+		if (!Number.isInteger(value) || (value as number) <= 0 || (value as number) > 10_000_000) {
+			return { ok: false, message: "contextWindow must be a positive integer" };
+		}
+		input.contextWindow = value as number;
+	}
+	if (body.enabled !== undefined) {
+		if (typeof body.enabled !== "boolean") return { ok: false, message: "enabled must be a boolean" };
+		input.enabled = body.enabled;
+	}
+	if (body.avatar !== undefined) {
+		if (body.avatar === null) input.avatar = null;
+		else {
+			const avatar = readOptionalString(body, "avatar", 2048);
+			if (avatar === null) return { ok: false, message: "avatar must be a string (<=2048 chars) or null" };
+			input.avatar = avatar ?? "";
+		}
+	}
+	if (body.color !== undefined) {
+		if (body.color === null) input.color = null;
+		else {
+			const color = parseColor(body.color);
+			if (color === null || color === undefined) {
+				return { ok: false, message: "color must be {primary, secondary} strings or null" };
+			}
+			input.color = color;
+		}
+	}
+	return { ok: true, input };
 }
 
 interface ParsedCreate {
@@ -187,6 +263,8 @@ function catalogErrorToHttp(error: CatalogError): { status: number; code: string
 			return { status: 409, code: "mention_pattern_conflict", message: error.message };
 		case "account_ref_unresolved":
 			return { status: 422, code: "account_not_found", message: error.message };
+		case "agent_not_found":
+			return { status: 404, code: "agent_not_found", message: error.message };
 		case "default_model_not_in_account":
 			return { status: 422, code: "model_not_in_account", message: error.message };
 		case "catalog_invalid_json":
@@ -481,6 +559,45 @@ export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
 		return true;
 	}
 
+	async function updateAgentRoute(
+		request: IncomingMessage,
+		response: ServerResponse,
+		context: ApiRouteContext,
+		id: string,
+	): Promise<true> {
+		if (!csrfOk(request, response, context)) return true;
+		const catalogPaths = paths();
+		if (!catalogPaths) {
+			sendError(response, 503, "agent_management_unavailable", "agent catalog paths are not configured");
+			return true;
+		}
+		const body = await readBody(request, response);
+		if (!body) return true;
+		const parsed = parseUpdateInput(body);
+		if (!parsed.ok) {
+			sendError(response, 400, "invalid_input", parsed.message);
+			return true;
+		}
+		try {
+			const { catalog, accounts } = readCatalogFile(catalogPaths);
+			const candidate = updateAgent(catalog, id, parsed.input);
+			validateCandidate(candidate, accounts);
+			writeCatalogAtomic(catalogPaths.catalogPath, candidate);
+			reloadRegistry(registry, candidate, accounts);
+			const updated = candidate.agents.find((agent) => agent.id === id)!;
+			sendJson(response, 200, { agent: toView(updated, new Set()) });
+		} catch (error) {
+			if (error instanceof CatalogError) {
+				const mapped = catalogErrorToHttp(error);
+				sendError(response, mapped.status, mapped.code, mapped.message);
+				return true;
+			}
+			const message = error instanceof Error ? error.message : String(error);
+			sendError(response, 500, "catalog_write_failed", message);
+		}
+		return true;
+	}
+
 	async function handle(
 		request: IncomingMessage,
 		response: ServerResponse,
@@ -495,6 +612,10 @@ export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
 			}
 			if (request.method === "POST") return createAgent(request, response, context);
 			return false;
+		}
+		const agentMatch = /^\/api\/agents\/([^/]+)$/.exec(url.pathname);
+		if (agentMatch && request.method === "PATCH") {
+			return await updateAgentRoute(request, response, context, decodeURIComponent(agentMatch[1]!));
 		}
 		if (request.method !== "GET") return false;
 		if (url.pathname === "/api/cats") {

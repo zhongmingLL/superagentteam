@@ -71,7 +71,7 @@ F025 的真实 provider E2E 通过 `/home/ming/.env` 提供 key，是临时方�
 ## 验收标准
 
 - [x] 账号可在 Hub 创建/编辑/删除；secret 不回显、不写 accounts.json、不进日志。
-- [ ] agent 创建/编辑可选 account 与 model，provider/model 显示正确。
+- [x] agent 创建/编辑可选 account 与 model，provider/model 显示正确。
 - [x] 新建 account 后无需改 `.env` 或重启 daemon 即可用于新 agent 回合。
 - [x] 不同 account 的 key/baseUrl 在各自 worker 生效，互不串用。
 - [x] 真实 provider E2E：account → agent → turn 成功；缺失/错误凭据 fail-closed。
@@ -97,6 +97,13 @@ F025 的真实 provider E2E 通过 `/home/ming/.env` 提供 key，是临时方�
     `auth.json` 含 `kimi-coding` api_key。
   - 证据：`docs/design/F030/account-key-turn-1440.png`、`accounts-390-light.png`。
   - 验证：daemon 135 files / 900 tests；web 99 tests；build/doc-index pass。
+- 2026-11-24：F030.3 agent 编辑页升级完成。
+  - `AgentEditorModal` 分区：模型与接入（account card + model 联动）、@ 名字、
+    身份（role id / 角色描述 / 启停）；
+  - `PATCH /api/agents/:id` + catalog update，支持编辑现有 agent；
+  - 实机 3104：新建 `Agent D` 成功；编辑 Agent A 表单正确预填；
+  - 验证：daemon 135 files / 901 tests；web 99 tests；typecheck/build/doc-index pass。
+  - 证据：`docs/design/F030/agent-editor-1440.png`、`agent-editor-edit-1440.png`。
 
 ## 风险与回滚
 

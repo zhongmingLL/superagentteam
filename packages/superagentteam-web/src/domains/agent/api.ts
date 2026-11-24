@@ -11,6 +11,11 @@ export interface AgentView {
 	color?: { primary: string; secondary: string };
 	enabled: boolean;
 	status?: AgentStatus;
+	accountRef?: string;
+	defaultModel?: string;
+	mentionPatterns?: string[];
+	roleId?: string;
+	roleDescription?: string;
 }
 
 export type { AccountView } from "@/domains/account/api";
@@ -26,17 +31,33 @@ export interface CreateAgentInput {
 	enabled?: boolean;
 }
 
+export interface UpdateAgentInput {
+	displayName?: string;
+	mentionPatterns?: string[];
+	accountRef?: string;
+	defaultModel?: string;
+	roleId?: string;
+	roleDescription?: string;
+	enabled?: boolean;
+}
+
 export interface AgentApi {
 	list(): Promise<{ agents: AgentView[] }>;
 	accounts(): Promise<{ accounts: AccountView[] }>;
 	create(input: CreateAgentInput): Promise<{ agent: AgentView }>;
+	update(id: string, input: UpdateAgentInput): Promise<{ agent: AgentView }>;
 }
 
-export function createAgentApi(client: Pick<ApiClient, "get" | "post">): AgentApi {
+export function createAgentApi(client: Pick<ApiClient, "get" | "post" | "request">): AgentApi {
 	return {
 		list: () => client.get<{ agents: AgentView[] }>("/api/agents"),
 		accounts: () => client.get<{ accounts: AccountView[] }>("/api/accounts"),
 		create: (input) => client.post<{ agent: AgentView }>("/api/agents", input),
+		update: (id, input) =>
+			client.request<{ agent: AgentView }>(`/api/agents/${encodeURIComponent(id)}`, {
+				method: "PATCH",
+				body: JSON.stringify(input),
+			}),
 	};
 }
 

@@ -161,6 +161,41 @@ describe("F025 agent create API", () => {
 		expect(listed.agents.map((agent) => agent.id)).toContain("a3");
 	});
 
+	it("updates an existing agent and revalidates account/model", async () => {
+		const base = await start();
+		const auth = await login(base);
+		const response = await fetch(`${base}/api/agents/a1`, {
+			method: "PATCH",
+			headers: { cookie: auth.cookie, "x-csrf-token": auth.csrfToken, "content-type": "application/json" },
+			body: JSON.stringify({
+				displayName: "Agent A1 renamed",
+				mentionPatterns: ["@a1x"],
+				defaultModel: "kimi-for-coding",
+			}),
+		});
+		expect(response.status).toBe(200);
+		const body = (await response.json()) as { agent: { displayName: string; mentionPatterns: string[] } };
+		expect(body.agent).toMatchObject({ displayName: "Agent A1 renamed", mentionPatterns: ["@a1x"] });
+		const catalog = JSON.parse(readFileSync(join(dataDir, "agent-catalog.json"), "utf8")) as {
+			agents: Array<{ id: string; displayName: string }>;
+		};
+		expect(catalog.agents.find((agent) => agent.id === "a1")?.displayName).toBe("Agent A1 renamed");
+
+		const badModel = await fetch(`${base}/api/agents/a1`, {
+			method: "PATCH",
+			headers: { cookie: auth.cookie, "x-csrf-token": auth.csrfToken, "content-type": "application/json" },
+			body: JSON.stringify({ defaultModel: "not-in-account" }),
+		});
+		expect(badModel.status).toBe(422);
+
+		const missing = await fetch(`${base}/api/agents/nope`, {
+			method: "PATCH",
+			headers: { cookie: auth.cookie, "x-csrf-token": auth.csrfToken, "content-type": "application/json" },
+			body: JSON.stringify({ displayName: "x" }),
+		});
+		expect(missing.status).toBe(404);
+	});
+
 	it("rejects duplicate ids and mention patterns without mutating the catalog", async () => {
 		const base = await start();
 		const auth = await login(base);

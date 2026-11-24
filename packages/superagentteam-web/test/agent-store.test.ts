@@ -10,6 +10,7 @@ describe("agent store", () => {
 			})),
 			accounts: vi.fn(async () => ({ accounts: [] })),
 			create: vi.fn(),
+			update: vi.fn(),
 		};
 		const store = createAgentStore({ api });
 
@@ -27,6 +28,7 @@ describe("agent store", () => {
 				.mockRejectedValueOnce(new Error("daemon down")),
 			accounts: vi.fn(async () => ({ accounts: [] })),
 			create: vi.fn(),
+			update: vi.fn(),
 		};
 		const store = createAgentStore({ api });
 		await store.getState().load();
@@ -60,6 +62,7 @@ describe("agent store", () => {
 			create: vi.fn(async () => ({
 				agent: { id: "a1", displayName: "Agent A1", enabled: true, status: "idle" as const },
 			})),
+			update: vi.fn(),
 		};
 		const store = createAgentStore({ api });
 		await store.getState().load();

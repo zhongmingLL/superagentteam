@@ -25,7 +25,7 @@ export class RealRuntimeSpawner implements RuntimeSpawner {
 
 	spawnDaemon(input: RuntimeDaemonSpawnInput): { pid: number } {
 		const log = this.openLog("runtime-daemon.log");
-		const child = spawn(process.execPath, [join(input.worktree, "scripts", "f025-e2e-daemon.mjs")], {
+		const child = spawn(process.execPath, [join(input.worktree, "scripts", "superagentteam", "runtime-daemon.mjs")], {
 			cwd: input.worktree,
 			detached: true,
 			stdio: ["ignore", log.fd, log.fd],
@@ -186,7 +186,7 @@ export function syncWorktree(worktree: string, ref: string): void {
 export function assertBuilt(worktree: string): void {
 	const required = [
 		join(worktree, "packages", "superagentteam-daemon", "dist", "cli.js"),
-		join(worktree, "scripts", "f025-e2e-daemon.mjs"),
+		join(worktree, "scripts", "superagentteam", "runtime-daemon.mjs"),
 		join(worktree, "node_modules", ".bin", "vite"),
 	];
 	for (const file of required) {

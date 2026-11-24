@@ -25,14 +25,14 @@ source_decision: "operator 2026-11-25: continue F033 after Phase B; DP-F033-2=A 
 
 - test worktree `/home/ming/agent/superagentteam-alpha` at `04b087379`；`npm install --ignore-scripts` + `build:offline` 绿。
 - test stack：`--web-port 3007 --daemon-port 3016`，data `~/.superagentteam-alpha/data`，env `~/.config/superagentteam/alpha.env`；start → running → status → end 全绿，端口释放，runtime `3103` 不受影响。
-- port registry：`scripts/runtime-ports.mjs`（runtime 3005/3014/3103，test 3007/3016，reserved 3003/3004）；`scripts/runtime-ports.test.mjs` 覆盖重复、保留端口、越界和 CLI 默认值漂移；`check:runtime-ports` 已接入 `npm run check`。
+- port registry：`scripts/superagentteam/runtime-ports.mjs`（runtime 3005/3014/3103，test 3007/3016，reserved 3003/3004）；`scripts/superagentteam/runtime-ports.test.mjs` 覆盖重复、保留端口、越界和 CLI 默认值漂移；`check:runtime-ports` 已接入 `npm run check`。
 - 旧 WSL 栈 4 套 data dir 已快照到 `/home/ming/superagentteam-archive/20261124T173508Z/` 并收尾。
 - 旧 Windows proxy `3100`/`3101` 经 PID + command line 身份核验后停止；只剩当前 `3103`（`f028-wsl-proxy-3103.ps1`）。
 
 ## 验证
 
-- `node scripts/runtime-ports.mjs`
-- `node --test scripts/runtime-ports.test.mjs`
+- `node scripts/superagentteam/runtime-ports.mjs`
+- `node --test scripts/superagentteam/runtime-ports.test.mjs`
 - alpha test stack start/status/end；`3007/3016` 端口释放；`http://localhost:3103/` 仍 200。
 - `npm run check` 由 CI 覆盖。
 

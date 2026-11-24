@@ -10,6 +10,7 @@ import { openCliCommandContext } from "./context.ts";
 import { runDaemonCommand } from "./daemon.ts";
 import { runMemoryCommand } from "./memory.ts";
 import { writeJson, writeLine } from "./output.ts";
+import { runRuntimeCommand } from "./runtime.ts";
 import { runA2AThreadCommand } from "./thread-a2a.ts";
 
 // F032: these task-first commands lived on the frozen control.db runtime. A2A v1
@@ -52,6 +53,7 @@ export async function runCli(argv: readonly string[]): Promise<number> {
 			"allow-primary-worktree",
 			"clear",
 			"new-boot",
+			"sync",
 		],
 	);
 	if (flag(args, "help")) {
@@ -82,6 +84,9 @@ export async function runCli(argv: readonly string[]): Promise<number> {
 	}
 	if (command === "daemon") {
 		return await runDaemonCommand(args, openCliCommandContext(args));
+	}
+	if (command === "runtime") {
+		return await runRuntimeCommand(args, openCliCommandContext(args));
 	}
 	throw new ControlError("invalid_input", `unknown command ${command}`);
 }
@@ -151,6 +156,7 @@ function writeUsage(): void {
 	writeLine("  auth console-link [--data-dir <path>] [--ttl-ms <ms>] [--hub-origin <url>]");
 	writeLine("  thread <create|list|show|post|tail>");
 	writeLine("  daemon <status|stop>");
+	writeLine("  runtime <start|status|end|restart>");
 	writeLine("  memory <index|status|recall|read|trigger>");
 	writeLine("global options: --data-dir <path> --json");
 	writeLine("  global options may precede the command");
@@ -158,5 +164,7 @@ function writeUsage(): void {
 	writeLine("thread post: <threadId> <body> [--to <agentId> ...] [--id <messageId>]");
 	writeLine("thread post replay: same --id + omitted --to reuses stored targets; different --to conflicts");
 	writeLine("thread tail: <threadId> [--after-seq N] [--follow] [--interval-ms N]");
+	writeLine("runtime start: --worktree <path> --web-port 3005 --daemon-port 3014 --hub-origin <url> [--sync]");
+	writeLine("runtime env: default ~/.config/superagentteam/runtime.env (mode 0600) or --env-file <path>");
 	writeLine("legacy task-first commands were retired in F032; use thread or the Hub API");
 }

@@ -3,7 +3,7 @@ title: "SuperAgentTeam 文档索引"
 doc_kind: index
 status: active
 created: 2026-10-21
-updated: 2026-11-23
+updated: 2026-11-24
 ---
 
 # SuperAgentTeam 文档
@@ -86,6 +86,7 @@ updated: 2026-11-23
 | [`features/F028-assistant-execution-record.md`](features/F028-assistant-execution-record.md) | F028：Assistant execution record（thinking/tool calls 可折叠、live SSE、merged toolEvents canonical） |
 | [`features/F029-message-surface-parity.md`](features/F029-message-surface-parity.md) | F029：Hub message surface parity（agent nameplate 宽度、A2A 收件人归属、rich blocks 展示） |
 | [`features/F030-account-agent-management.md`](features/F030-account-agent-management.md) | F030：Account & agent management（凭据契约、account 设置页、agent 创建/编辑、worker 隔离） |
+| [`features/F031-rich-block-producer.md`](features/F031-rich-block-producer.md) | F031：Rich block producer（agent 创建富块、draft 暂存、settlement 落最终消息、rich-messaging skill） |
 | [`plans/0015-w6c-observability-trajectory.md`](plans/0015-w6c-observability-trajectory.md) | W6c observability/trajectory 实施计划与 AC 映射 |
 | [`plans/0018-f016a-a2a-ingress-e2e.md`](plans/0018-f016a-a2a-ingress-e2e.md) | F016a：8 类 ingress × scenario real RPC E2E、P0 工具面、withdraw/parallel/loop guard |
 | [`plans/0020-f018-thread-first-runtime.md`](plans/0020-f018-thread-first-runtime.md) | F018：A2A runtime v1 R0-R5、AgentConfig/Registry、schema/migration、same/cross-thread post、multi_mention fan-out、验收与回滚 |

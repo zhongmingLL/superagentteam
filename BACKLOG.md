@@ -43,6 +43,7 @@ created: 2026-10-25
 | F028 | Assistant execution record — thinking/tool calls 折叠 + live 中间结果（SSE；F018 merged toolEvents canonical） | implemented (merged `5615173fe`; 墨墨 vision/UX approve + 砚砚 contract/SSE approve @ `677ca2e50`; CI 5/5 @ `9ffec881d`; pending operator close) | 宪宪 | [F028](docs/features/F028-assistant-execution-record.md) |
 | F029 | Hub message surface parity — agent nameplate 宽度、A2A 收件人归属、rich blocks 展示 | implemented (merged `493aa01c3`; 墨墨 vision/UX approve @ `e44825788`; CI 5/5; pending operator close) | 宪宪 | [F029](docs/features/F029-message-surface-parity.md) |
 | F030 | Account & agent management — credential contract、account 设置页、agent 创建/编辑升级 | implemented (merged `a42cfcab5`; 砚砚 contract/security approve @ `12fa07ae8`; 墨墨 vision/UX approve @ `0b14e9bac`; CI 5/5; pending operator close) | 宪宪 | [F030](docs/features/F030-account-agent-management.md) |
+| F031 | Rich block producer — agent-created rich blocks in responses（producer tool、draft 暂存、settlement 落消息、rich-messaging skill） | spec (operator 2026-11-24 立项；F029 展示层之后的 Phase 2) | 宪宪 | [F031](docs/features/F031-rich-block-producer.md) |
 
 > Naming (F019): new and active docs use `superagentteam/Fxxx`; F001–F018 retain
 > `codeteam/Fxxx` for history. Package/env/data/CLI/tool names use `superagentteam*`

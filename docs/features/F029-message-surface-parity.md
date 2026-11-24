@@ -1,6 +1,6 @@
 ---
 feature_ids: [superagentteam/F029]
-related_features: [superagentteam/F018, superagentteam/F020, superagentteam/F027, superagentteam/F028]
+related_features: [superagentteam/F018, superagentteam/F020, superagentteam/F027, superagentteam/F028, superagentteam/F031]
 title: "F029: Hub message surface parity — nameplate width, A2A dispatch attribution, rich blocks"
 status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -57,7 +57,7 @@ F027/F028 之后，operator 实机查看 Hub 提出三条消息面问题：
 
 ### 非目标
 
-- 富块的生产端工具（agent 如何在回复里创建 rich block）留到 Phase 2；
+- 富块的生产端工具（agent 如何在回复里创建 rich block）留到 Phase 2，由 F031 承接；
   本 phase 只消费已持久化的 `extra.rich`。
 - interactive 的真实发送 / callback action、文件上传、TTS 生成、富块转发。
 - Clowder 的 per-cat OKLCH、nameplate 的 breed 视觉、rich block 动作运行时。

@@ -7,10 +7,17 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [烁烁 (Kimi K3), 砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 operator_signoff: "approved 2026-10-24"
 created: 2026-10-24
-updated: 2026-10-24
+updated: 2026-11-24
 ---
 
 # P0 复用卡：Dispatch / Queue
+
+> **Thread-first revalidation (2026-11-24): adapt.** 本卡的 `queue_entries` /
+> `runs.queue_entry_id` / `handoffs` mapping 是 task-first 历史。v1 当前映射：
+> `invocation_queue` + `queue_admissions` + `invocation_records` +
+> `invocation_attempts` + `turn_executions`；投递事实在
+> `messages.lifecycle.dispatchRefs`。详见
+> `../reports/2026-11-24-reuse-thread-first-revalidation.md`。
 
 ## 结论
 
@@ -36,7 +43,18 @@ updated: 2026-10-24
 - **代码面**：`QueueLedger.ts`、`QueueLedgerAdmission.ts`、`RedisQueueLedgerStore.ts`、`InvocationQueue.ts`、`QueueProcessor.ts`、`routes/queue.ts`。
 - **不采用的历史语义**：F122 旧文档的 per-target 拆行与 steer 预留；当前以 ADR-043 + F117 Phase D 的 single-ledger 为准。
 
-## codeteam mapping
+## Thread-first v1 mapping (2026-11-24)
+
+- `invocation_queue` + `queue_admissions`：一个 source message 一条 durable
+  pending-wake admission；targets / claim / cap 在这一层。
+- `invocation_records`：source message 的 fan-out parent；重试复用 parent。
+- `invocation_attempts`：per-target delivery/retry ledger，绑 TurnExecution / worker /
+  provider / model / responseMessageId / settlement。
+- `turn_executions`：单 agent child 的 running/terminal 真相。
+- 投递事实：input message 的 `lifecycle.dispatchRefs` + `extra.targetAgentIds`；
+  不再使用 `queue_entries` / `runs` / `handoffs` / task DAG / worktree pool。
+
+## Historical task-first mapping (superseded 2026-11-24)
 
 - W1：建 `queue_entries`（source / targets / priority / claim）；`messages.dispatch_refs_json` 记录实际投递；`runs.queue_entry_id` 指向 claim 的 entry。
 - W5：把 operator、agent、connector 三种来源都映射成同一种 Queue Entry；`handoff(pending)` / `inbox(pending)` 只是 source/admission，不另建队列。`AgentRouter`/`routeSerial`/`routeParallel` 复用，唯一替换点是 `invokeSingleCat → invokeSingleAgent → pi kernel`。

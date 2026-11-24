@@ -7,10 +7,15 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [烁烁 (Kimi K3), 砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 operator_signoff: "approved 2026-10-24"
 created: 2026-10-24
-updated: 2026-10-24
+updated: 2026-11-24
 ---
 
 # P0 复用卡：Plugin
+
+> **Thread-first revalidation (2026-11-24): current.** skill surface 走
+> `@superagentteam/skills` curated catalog + pi explicit skill path；没有 task-first
+> 坐标，v1 实现不变。详见
+> `../reports/2026-11-24-reuse-thread-first-revalidation.md`。
 
 ## 结论
 

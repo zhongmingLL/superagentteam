@@ -7,10 +7,15 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [烁烁 (Kimi K3), 砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 operator_signoff: "approved 2026-10-24"
 created: 2026-10-24
-updated: 2026-10-24
+updated: 2026-11-24
 ---
 
 # P0 复用卡：Runtime Deployment
+
+> **Thread-first revalidation (2026-11-24): adapt.** daemon identity / frozen build
+> target / per-boot readiness 仍是 v1 当前实现；但旧卡把 deployment wait 挂到 work
+> Task + F280 typed await，F018 v1 没有 Task/waits，这部分不进入 v1。详见
+> `../reports/2026-11-24-reuse-thread-first-revalidation.md`。
 
 ## 结论
 
@@ -41,6 +46,7 @@ updated: 2026-10-24
 - W0/W5：codeteam daemon 复用 deployment identity + frozen build target + per-boot readiness；activation/recovery 走 reviewed lifecycle。W0 最小子集 = daemon 身份 + readiness + 最小 lifecycle 记录；完整 boot history/授权/复验是 W5。
 - 生命周期执行者：W0/W5 = `codeteam` CLI；W7 = Web Console/API 只发 intent/approval，由独立 supervisor/controller 执行。目标 backend 不 self-restart；不暴露通用 shell。
 - deployment wait 复用 F280 typed await，挂在原 work Task 上；readiness 不直接调猫、不直接关闭 Task。
+  （Thread-first v1 注：本句是历史映射；v1 没有 work Task/waits，部署等待 deferred。）
 - W7a 的 daemon API/事件重放只消费 deployment facts；不另建 controller/status 数据库。
 - 不新增：第二套 process registry、第二套 boot history、用 source ref/SHA/PID 代替 operator 授权。
 

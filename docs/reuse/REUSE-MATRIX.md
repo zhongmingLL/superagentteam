@@ -3,7 +3,7 @@ title: "clowder feature 复用矩阵"
 doc_kind: matrix
 status: approved
 created: 2026-10-24
-updated: 2026-10-25
+updated: 2026-11-24
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 ---
 
@@ -49,6 +49,9 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 
 ### P0（SOP + 核心基础设施，10 个 cell + 1 个 P0 slice）
 
+> **下表是 2026-10-24 task-first 决策记录。** 开工前先读本节末尾的
+> “2026-11-24 thread-first revalidation”表；v1 以该表为准。
+
 | Cell | 覆盖 | Canonical features | codeteam W | 决策 | 备注 |
 |---|---|---|---|---|---|
 | `dispatch` | thread 持久 Queue Entry / targets / claim / steer / wake；A2A 执行链 | F047, F117, F167, F175, F177, F185, F247, F254, F264, F280, F295 | W1/W5 | **R0** | 当前真相 ADR-043 + F117 Phase D；F122 旧文档历史；A2A 链复用只换 invoke 内核 |
@@ -72,6 +75,29 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 > 旧 task-first 坐标的 P0 卡，复用前也需要同样的 revalidation。
 
 > **P0 slice：`sop-bulletin`**（跨 `hub-action-surface` + `managed-work`，不新增 ownership cell）。卡在 `reuse/sop-bulletin.md`，覆盖 `WorkflowSop` / `BacklogItem` 数据契约、CAS、`codeteam_update_workflow` / `get_workflow_sop`；board/rich-block UI 仍归 `hub-action-surface` 的 P1-active。F073 的主题归属仍是 `managed-work`，但 SOP 契约本体由这张 P0 卡负责。
+
+> **2026-11-24 thread-first revalidation。** 上表是 2026-10-24 的 task-first 决策记录。
+> F018 v1 已切 thread-first，`tasks` / `runs` / `handoffs` / `waits` / `custody_events`
+> 不在 greenfield schema。下表是 v1 使用口径；开发前先看它，再看单卡。
+> 完整证据与 legacy 终局建议见 `../reports/2026-11-24-reuse-thread-first-revalidation.md`。
+
+| Cell | v1 verdict | 当前 v1 映射 |
+|---|---|---|
+| `dispatch` | **adapt** | `invocation_queue` / `queue_admissions` / `invocation_records` / `invocation_attempts` / `turn_executions`；消息 `lifecycle.dispatchRefs`。 |
+| `bubble-pipeline` | **adapt** | `messages` + `invocation_attempts.response_message_id` + `turn_executions`；富块 `messages.extra.rich`。 |
+| `identity-session` | **adapt** | `AgentConfig` / `AgentRegistry` + `agent_sessions`（thread×agent）+ `thread_participants`；无 taskId/stage/role 列。 |
+| `callback-auth` | **current** | `invocation_credentials` 绑 child `TurnExecution`；无 task/run。 |
+| `runtime-deployment` | **adapt** | daemon identity/readiness 仍有效；deployment-wait/work-Task 映射不进入 v1。 |
+| `plugin` | **current** | `@superagentteam/skills` curated catalog + pi explicit skill path。 |
+| `ball-custody` | **deferred** | v1 不做 custody/handoff/wait；等 full A2A custody 重新立项。 |
+| `managed-work` | **deferred** | v1 不做 Task/Run/work admission；Invocation/Attempt 身份归 `dispatch`。 |
+| `approval-index` | **deferred** | v1 无 approvals 表；审批走 operator/human 流程；approval rich block 禁止。 |
+| `sop-bulletin` | **deferred** | v1 的 SOP/backlog 真相是 `BACKLOG.md` + `docs/SOP.md` + skills，不是 runtime 表。 |
+| `harness-eval` | **deferred** | v1 不做 code delivery/review/merge/eval；等 code delivery 重新立项。 |
+
+> `github-signals`（P1-active，W8）：**preflight-required**。卡里的
+> `tasks(kind=pr_tracking)` / `waits` / `forge_deliveries` 都不在 v1 schema；
+> W8 实施前必须先完成 thread-first 存储/等待模型设计。
 
 ### P1-active（非首个闭环阻塞，10 个 cell）
 

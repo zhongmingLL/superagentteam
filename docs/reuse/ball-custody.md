@@ -7,10 +7,15 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [烁烁 (Kimi K3), 砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 operator_signoff: "approved 2026-10-24"
 created: 2026-10-24
-updated: 2026-10-24
+updated: 2026-11-24
 ---
 
 # P0 复用卡：Ball Custody
+
+> **Thread-first revalidation (2026-11-24): deferred / not-in-v1.** F018 v1 明确不做
+> custody/handoff/wait；`handoffs` / `custody_events` / `waits` 不在 greenfield schema。
+> 本卡只保留为历史语义与风险清单；等 full A2A custody 重新立项再复用，不要按本卡写
+> v1 代码。详见 `../reports/2026-11-24-reuse-thread-first-revalidation.md`。
 
 ## 结论
 
@@ -36,7 +41,7 @@ updated: 2026-10-24
 - **F254**：旧 attention/closure/supplement 机制已退役；历史事件只作证据，不恢复通知或新责任。普通 A2A 投递归 `dispatch`。
 - **代码面**：`ActionSuccessorLeaseStore.ts`、`ActionSuccessorAdmissionService.ts`、`BallCustodyProjection.ts`、`ball-custody-events.ts`、`wait-continuation-carrier.ts`、`ManagedCommandWakeRecoverySweep.ts`。
 
-## codeteam mapping
+## Historical task-first mapping (superseded; not v1)
 
 - `Handoff` = clowder `ActionSuccessorMetadata` + `BallCustodyEvent` + `waits` 的代码交付 typed envelope，新增 `expectedArtifact` / `actionPair` / `fromRole,toRole` / `deadline`。
 - `Handoff` 是 A2A 执行链的 typed source；真正唤醒仍走 `queue_entries`，`handoffs`/`custody_events` 不内置第二队列。

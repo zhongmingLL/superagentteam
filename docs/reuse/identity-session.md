@@ -7,7 +7,7 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [烁烁 (Kimi K3), 砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 operator_signoff: "approved 2026-10-24"
 created: 2026-10-24
-updated: 2026-10-24
+updated: 2026-11-24
 ---
 
 # P0 复用卡：Identity / Session
@@ -17,6 +17,12 @@ updated: 2026-10-24
 > 设计以 `docs/architecture/0010-session-model.md` 和
 > `docs/architecture/0012-clowder-session-architecture.md` 为准；本卡保留为历史
 > 复用记录，待 F018 收口时重签。
+
+> **Thread-first revalidation (2026-11-24): adapt/current.** v1 稳定身份 =
+> `AgentConfig` + `AgentRegistry`（config-as-code）；执行身份 = `agent_sessions`
+> （thread×agent）；路由成员 = `thread_participants`；阅读游标 = `agent_read_state`。
+> 不再使用 `agent_profiles` / `roles` 表、taskId/stageId/role/effectiveToolPolicy。
+> 详见 `../reports/2026-11-24-reuse-thread-first-revalidation.md`。
 
 ## 结论
 
@@ -41,7 +47,17 @@ updated: 2026-10-24
 - **Role**：`type Role = string` 的动态 registry；内置 architect/coder/reviewer/verifier，前端可加 writer 等；`human` 是 `actorKind`，不是 Role。
 - **代码面**：`AgentRegistry`、`SessionChainStore`、`ContextEpochOwner`、`cat-config`、`runtimeSession`、`CAT_CAFE_DATA_DIR`、`cat-cafe-profile`。
 
-## codeteam mapping
+## Thread-first v1 mapping (2026-11-24)
+
+- `AgentConfig` / `AgentRegistry`：稳定 agent 身份、mentionPatterns、accountRef、
+  defaultModel；存在 `.superagentteam/agent-catalog.json`，不是 DB profile 表。
+- `agent_sessions`：thread × agent 的持久执行身份；piSessionId/piSessionFile；
+  active + lightweight seal；没有 taskId/stageId/role/effectiveToolPolicy。
+- `threads.createdBy` + `thread_participants` + `agent_read_state`：thread 归属、
+  路由成员、投递 cursor。
+- `roles`/`agent_profiles` 只保留为历史概念；v1 不再建这两张表。
+
+## Historical task-first mapping (superseded 2026-11-24)
 
 - `AgentProfile` 对应 clowder `catId`/`CatConfig`；`AgentSession` 对应 cat session/invocation；`Run` 绑 `agentSessionId`。
 - W1 建 `roles` / `agent_profiles` / `agent_sessions`；`AgentProfile.role` 是 primary role，`AgentSession.role` 可不同。

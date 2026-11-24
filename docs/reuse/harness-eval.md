@@ -7,10 +7,15 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [烁烁 (Kimi K3), 砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 operator_signoff: "approved 2026-10-24"
 created: 2026-10-24
-updated: 2026-10-24
+updated: 2026-11-24
 ---
 
 # P0 复用卡：Harness / Eval
+
+> **Thread-first revalidation (2026-11-24): deferred / not-in-v1.** F018 v1 不做 code
+> delivery/review/merge/gate/eval，也没有 `reviews`/`merges`/eval runtime 表。本卡保留
+> verdict/finding 语义供未来 code-delivery feature 重核，不作为 v1 实现契约。详见
+> `../reports/2026-11-24-reuse-thread-first-revalidation.md`。
 
 ## 结论
 
@@ -36,7 +41,7 @@ updated: 2026-10-24
 - **F278**：paw-feel disposition inbox；raw signal 与 verdict identity 分离，`routed` 不等于 fixed。
 - **代码面**：`VerdictHandoffPacket`、`lifecycle-root.json`、`eval:verdict-lifecycle`、`eval-case-v1`、`PawFeelDisposition`、`eval-domain`。
 
-## codeteam mapping
+## Historical task-first mapping (superseded; not v1)
 
 - W3：review/falsifier/verifier 复用 F192 的 verdict 语义；finding 不可变，生命周期只追加。
 - W6：eval domain / metrics 复用 F267 的 measurement validity；代码域只加 build/test/merge 指标。

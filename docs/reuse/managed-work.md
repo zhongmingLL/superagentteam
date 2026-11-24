@@ -7,10 +7,15 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [烁烁 (Kimi K3), 砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 operator_signoff: "approved 2026-10-24"
 created: 2026-10-24
-updated: 2026-10-24
+updated: 2026-11-24
 ---
 
 # P0 复用卡：Managed Work
+
+> **Thread-first revalidation (2026-11-24): deferred / not-in-v1.** F018 v1 不做
+> TaskItem/Run/work admission/worktree；`work_admission` / `work_attempt` / Task 坐标
+> 不在 v1 schema。Invocation/Attempt 身份归 `dispatch`，不归本卡。等 code delivery
+> 能力重新立项再复用。详见 `../reports/2026-11-24-reuse-thread-first-revalidation.md`。
 
 ## 结论
 
@@ -35,7 +40,7 @@ updated: 2026-10-24
 - **代码面**：`WorkflowSopStore.ts`、`RedisWorkflowSopStore.ts`、`WorkAdmission`、`WorkAttempt`、`workflow_sop_v1`。
 - **不采用**：用 thread / latest Episode / branch / timestamp / TaskItem ID / action lease 当 work identity root。
 
-## codeteam mapping
+## Historical task-first mapping (superseded; not v1)
 
 - W1/W5：`Task`/`Run` 持业务身份；`work_admission` / `work_attempt` 只作 server-private 关联，不进入公共 DTO。
 - attempt 身份是 W3 falsifier 审计链的承重段；retry 不得复用 run id。

@@ -51,20 +51,15 @@ afterEach(() => {
 
 describe("memory CLI", () => {
 	it("indexes, reports status, recalls, reads and builds a trigger context", () => {
-		const index = cliJson<{ status: string; counts: { file: number }; controlAvailable: boolean }>([
-			"memory",
-			"index",
-			"--repo",
-			repo,
-		]);
-		expect(index).toMatchObject({ status: "fresh", counts: { file: 1 }, controlAvailable: false });
+		const index = cliJson<{ status: string; counts: { file: number } }>(["memory", "index", "--repo", repo]);
+		expect(index).toMatchObject({ status: "fresh", counts: { file: 1 } });
 		const status = cliJson<{ exists: boolean; coverage: { counts: { file: number }; reasons: string[] } }>([
 			"memory",
 			"status",
 		]);
 		expect(status.exists).toBe(true);
 		expect(status.coverage.counts.file).toBe(1);
-		expect(status.coverage.reasons).toContain("control_db_absent");
+		expect(status.coverage.reasons).not.toContain("control_source_retired");
 		const recall = cliJson<{ items: { anchor: string; match: string }[] }>(["memory", "recall", "memory"]);
 		expect(recall.items[0]).toMatchObject({ anchor: "file:docs/features/F001.md" });
 		const read = cliJson<{ found: boolean; content: string }>(["memory", "read", "file:docs/features/F001.md"]);
@@ -96,11 +91,12 @@ describe("memory CLI", () => {
 		expect(status.coverage.reasons).toContain("memory_db_absent");
 	});
 
-	it("fails closed for an unknown trigger and reports digest unavailability", () => {
+	it("fails closed for an unknown trigger and the retired digest command", () => {
 		const invalid = rawCli(["memory", "trigger", "nope", "--json"]);
 		expect(invalid.status).toBe(1);
 		expect(invalid.stderr).toContain('"code":"invalid_input"');
-		const digest = cliJson<{ found: boolean; reason: string }>(["memory", "digest", "--run", "missing-run"]);
-		expect(digest).toEqual({ found: false, reason: "control_db_absent" });
+		const digest = rawCli(["memory", "digest", "--run", "missing-run"]);
+		expect(digest.status).toBe(1);
+		expect(digest.stderr).toContain("unknown memory command");
 	});
 });

@@ -89,10 +89,10 @@ describe("memory recall", () => {
 		expect(result.coverage).toMatchObject({
 			scope: "indexed_scope_only",
 			indexStatus: "fresh",
-			degraded: true,
+			degraded: false,
 			counts: { evidence: 2, file: 2, control: 0 },
 		});
-		expect(result.coverage.reasons).toContain("control_db_absent");
+		expect(result.coverage.reasons).not.toContain("control_source_retired");
 	});
 
 	it("falls back to lexical substring matching for short CJK queries and filters by kind", () => {

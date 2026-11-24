@@ -112,6 +112,9 @@ NODE_ENV=development npm test -w @superagentteam/skills
   observability/auth/lifecycle/paths/state。daemon 469 tests + `npm run check` 绿。
 - 2026-11-24：F032.3 进行中。历史文档加 non-normative 删除声明；boundary guard
   增加负向自测（legacy path/retired tool/frozen table）。
+- 2026-11-24：砚砚 P2 收口。删除 `memory/digest.ts` 与 `memory/sources/control.ts`
+  （仅服务 legacy control.db 且失去覆盖），memory 改为纯 file-source；
+  `memory digest` 子命令移除。memory v1 测试仍覆盖 index/recall/trigger。
 - 下一步：F032.4 full build/check/test + A2A CLI/provider E2E，然后收口。
 
 [宪宪/deepseek-flash🐾]

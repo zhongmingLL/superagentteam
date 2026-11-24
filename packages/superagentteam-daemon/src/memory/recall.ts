@@ -20,7 +20,6 @@ import { MemoryError } from "./errors.ts";
 import { sha256Hex } from "./hash.ts";
 import { decodeKeywords } from "./keywords.ts";
 import { redactSecrets } from "./redaction.ts";
-import type { ControlEvidenceReader } from "./sources/control.ts";
 
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 50;
@@ -28,7 +27,6 @@ const DEFAULT_STALE_AFTER_MS = 24 * 60 * 60 * 1000;
 const CONTROL_TABLES = new Set<ControlTable>(["tasks", "artifacts", "reviews", "verifications", "merges"]);
 
 export interface MemoryRecallOptions {
-	readonly controlReader?: ControlEvidenceReader | null;
 	readonly workspaceId?: string;
 	readonly collectionId?: string;
 	readonly now?: () => number;
@@ -241,19 +239,15 @@ export class MemoryRecall {
 				stale = true;
 			}
 			try {
-				const summary = JSON.parse(latest.error_summary_json) as { controlAvailable?: boolean };
-				if (summary.controlAvailable === false) {
-					reasons.push("control_db_absent");
-					degraded = true;
-				}
+				JSON.parse(latest.error_summary_json);
 			} catch {
 				// A malformed summary is itself a degradation.
 				reasons.push("index_summary_invalid");
 				degraded = true;
 			}
 		}
-		if (!this.options.controlReader && counts.control > 0 && !reasons.includes("control_db_absent")) {
-			reasons.push("control_db_absent");
+		if (counts.control > 0 && !reasons.includes("control_source_retired")) {
+			reasons.push("control_source_retired");
 			degraded = true;
 		}
 		const indexedAt = latest ? (latest.ended_at ?? latest.started_at) : null;
@@ -434,13 +428,7 @@ export class MemoryRecall {
 				return { stale: true, reasons: ["source_missing"] };
 			}
 		}
-		const reader = this.options.controlReader;
-		if (!reader) return { stale: false, reasons: ["control_unavailable"] };
-		const result = reader.isStale(source);
-		return {
-			stale: result.reasons.includes("source_missing") || result.reasons.includes("source_changed"),
-			reasons: result.reasons,
-		};
+		return { stale: false, reasons: ["control_source_retired"] };
 	}
 
 	read(anchor: string): ReadResult {

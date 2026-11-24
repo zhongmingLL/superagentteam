@@ -105,10 +105,12 @@ legacy control-plane 入口。operator 已确认：**没有真实 legacy 使用�
 - 2026-11-24：F032.2 完成。删除 `src/legacy/task-first/`、旧 path shim、control
   stores、dispatch/review/merge/gates/sop/scheduling/eval/policy/deployment-wait/
   custody 及其 legacy-only tests/fixtures；`legacy-boundary-allowlist.json` 清空。
-  保留 v1 需要的 `control/errors.ts`、`data-dir.ts`、read-only memory control
-  adapter 和 Hub disabled-route shim。净删除约 45.5K 行；daemon 68 files / 469
-  tests 通过，`npm run check` 全绿。F032.3 已补文档与 boundary 负向自测，剩余
-  F032.4 full gate。
+  保留 v1 需要的 `control/errors.ts`、`data-dir.ts` 和 Hub disabled-route shim。
+  净删除约 45.5K 行；daemon 68 files / 469 tests 通过，`npm run check` 全绿。
+- 2026-11-24：F032.3 完成 + 砚砚 P2 收口。历史文档加 non-normative 删除声明；
+  boundary guard 增加负向自测。为消除“保留模块失去覆盖”，删除只服务 legacy
+  control.db 的 `memory/digest.ts` 与 `memory/sources/control.ts`，memory 变为纯
+  file-source；memory CLI 的 `digest` 子命令移除。剩余 F032.4 full gate。
 
 ## 非目标
 

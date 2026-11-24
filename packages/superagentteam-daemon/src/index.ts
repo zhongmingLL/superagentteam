@@ -20,7 +20,6 @@ export { type InstallationIdentity, resolveInstallation } from "./installation.t
 export * from "./lifecycle/index.ts";
 export * from "./memory/contract.ts";
 export { type MemoryDatabase, openMemoryDatabase, resolveMemoryDatabasePath } from "./memory/database.ts";
-export { buildSessionDigest } from "./memory/digest.ts";
 export { MemoryError, type MemoryErrorCode } from "./memory/errors.ts";
 export { type IndexRunSummary, MemoryIndexer, type MemoryIndexOptions } from "./memory/indexer.ts";
 export { MemoryRecall, type MemoryRecallOptions } from "./memory/recall.ts";

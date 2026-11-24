@@ -124,7 +124,9 @@ rg -n 'legacy/task-first|--engine legacy|controlPlane' packages/superagentteam-d
 - `scripts/legacy-boundary-allowlist.json` 清空为 `{}`；boundary guard 通过，
   并加入负向自测（legacy path / retired tool / frozen table）。
 - 保留：`control/errors.ts`（v1 共享 error）、`data-dir.ts`（v1 data dir 解析）、
-  read-only memory control.db adapter、Hub disabled legacy route shim。
+  Hub disabled legacy route shim。
+- 删除：`memory/digest.ts`、`memory/sources/control.ts`（仅服务 legacy control.db
+  且失去测试覆盖）；memory 改为纯 file-source，`memory digest` 子命令移除。
 - 验证：@superagentteam/daemon 68 files / 469 tests passed（1 skipped）；
   `npm run check` 通过；未删除用户数据或 runtime 数据文件。
 

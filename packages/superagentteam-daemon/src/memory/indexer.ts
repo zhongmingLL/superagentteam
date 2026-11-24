@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { existsSync, statSync } from "node:fs";
-import { basename, join } from "node:path";
+import { basename } from "node:path";
 import { envValue } from "../env.ts";
 import { resolveInstallation } from "../installation.ts";
 import type { EvidenceSourceRef } from "./contract.ts";
@@ -10,7 +10,6 @@ import { sha256Hex } from "./hash.ts";
 import { encodeKeywords } from "./keywords.ts";
 import { MemoryIndexLock, memoryLockPath } from "./lock.ts";
 import { redactSecrets, scanSecrets } from "./redaction.ts";
-import { type ControlEvidenceDocument, ControlEvidenceReader } from "./sources/control.ts";
 import {
 	chunkPassages,
 	type FileEvidenceDocument,
@@ -25,7 +24,6 @@ export type IndexErrorKind = "path_denied" | "secret_redacted" | "max_file_bytes
 export interface MemoryIndexOptions {
 	readonly root: string;
 	readonly dataDir?: string;
-	readonly controlDbPath?: string;
 	readonly workspaceId?: string;
 	readonly collectionId?: string;
 	readonly mode?: IndexMode;
@@ -51,10 +49,7 @@ export interface IndexRunSummary {
 	readonly skippedCount: number;
 	readonly errorCount: number;
 	readonly errors: readonly IndexErrorSummary[];
-	readonly counts: { readonly file: number; readonly control: number };
-	readonly controlAvailable: boolean;
-	readonly controlTables: readonly string[];
-	readonly controlMissingTables: readonly string[];
+	readonly counts: { readonly file: number };
 }
 
 interface EvidenceDocument {
@@ -72,19 +67,6 @@ interface EvidenceDocument {
 
 interface ExistingEvidence {
 	readonly source_hash: string;
-}
-
-function controlDbPath(options: MemoryIndexOptions): string | null {
-	if (options.controlDbPath && options.controlDbPath.trim() !== "") return options.controlDbPath;
-	const dataDir = options.dataDir ?? envValue(process.env, "DATA_DIR");
-	return dataDir && dataDir.trim() !== "" ? join(dataDir, "control.db") : null;
-}
-
-function redactedDocument(document: ControlEvidenceDocument, content: string): ControlEvidenceDocument {
-	return {
-		...document,
-		content,
-	};
 }
 
 export class MemoryIndexer {
@@ -111,7 +93,6 @@ export class MemoryIndexer {
 		const startedAt = now();
 		const runId = `memrun:${startedAt}:${randomUUID()}`;
 		const lock = MemoryIndexLock.acquire(memoryLockPath(this.memory.path), now);
-		let controlReader: ControlEvidenceReader | null = null;
 		const errors: IndexErrorSummary[] = [];
 		const errorCounts: Record<string, number> = {};
 		let sourceCount = 0;
@@ -141,10 +122,7 @@ export class MemoryIndexer {
 				)
 				.run(collectionId, workspaceId, basename(root) || "superagentteam", root);
 
-			const configuredControlPath = controlDbPath(this.options);
-			controlReader = configuredControlPath ? ControlEvidenceReader.open({ path: configuredControlPath }) : null;
-			const controlAvailable = controlReader?.available() ?? false;
-			const sourceKind = controlAvailable ? "mixed" : "file";
+			const sourceKind = "file";
 			this.memory.database
 				.prepare(
 					`INSERT INTO index_runs (id, workspace_id, source_kind, mode, started_at, status, worker_pid, source_count, skipped_count, error_count, error_summary_json)
@@ -241,54 +219,17 @@ export class MemoryIndexer {
 				seenFile.add(document.source.ref);
 			}
 
-			const seenControl = new Set<string>();
-			let controlTables: readonly string[] = [];
-			let controlMissingTables: readonly string[] = [];
-			if (controlReader && controlAvailable) {
-				const scanned = controlReader.scan({ maxFileBytes });
-				controlTables = scanned.tables;
-				controlMissingTables = scanned.missingTables;
-				for (const issue of scanned.issues) {
-					recordError(issue.sourceRef, issue.errorKind, issue.detail);
-				}
-				for (const table of scanned.missingTables) {
-					recordError(null, "parse_error", `control_table_missing:${table}`);
-				}
-				for (const scannedDocument of scanned.documents) {
-					let document: ControlEvidenceDocument = scannedDocument;
-					const findings = scanSecrets(document.content);
-					if (findings.length > 0) {
-						const patterns = [...new Set(findings.map((finding) => finding.pattern))].join(",");
-						if ((this.options.secretMode ?? "skip") === "skip") {
-							recordError(document.source.ref, "secret_redacted", `skipped:${patterns}`);
-							continue;
-						}
-						document = redactedDocument(document, redactSecrets(document.content).text);
-						recordError(document.source.ref, "secret_redacted", `redacted:${patterns}`);
-					}
-					const passages = chunkPassages(document.content);
-					sourceCount += 1;
-					if (!upsert(document, passages)) skippedCount += 1;
-					seenControl.add(document.source.ref);
-				}
-			}
-
 			if (mode === "full") {
 				this.prune(collectionId, "file", seenFile);
-				if (controlAvailable) this.prune(collectionId, "control", seenControl);
 			}
 
 			const counts = {
 				file: this.countEvidence(collectionId, "file"),
-				control: this.countEvidence(collectionId, "control"),
 			};
 			const endedAt = now();
 			const status = errors.length > 0 ? "degraded" : "fresh";
 			const errorSummary = JSON.stringify({
 				byKind: errorCounts,
-				controlAvailable,
-				controlTables,
-				controlMissingTables,
 				mode,
 			});
 			this.memory.database
@@ -307,9 +248,6 @@ export class MemoryIndexer {
 				errorCount: errors.length,
 				errors,
 				counts,
-				controlAvailable,
-				controlTables,
-				controlMissingTables,
 			};
 		} catch (error) {
 			const endedAt = now();
@@ -330,7 +268,6 @@ export class MemoryIndexer {
 			if (error instanceof MemoryError) throw error;
 			throw new MemoryError("index_failed", `memory index failed: ${String(error)}`, { cause: error });
 		} finally {
-			controlReader?.close();
 			lock.release();
 		}
 	}

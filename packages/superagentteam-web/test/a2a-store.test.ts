@@ -46,6 +46,7 @@ describe("a2a store", () => {
 			})),
 			live: vi.fn(async () => ({ threadId: "thread:1", invocations: [invocation] })),
 			retryInvocation: vi.fn(),
+			cancelAgent: vi.fn(),
 		};
 		const store = createA2AStore({ api });
 
@@ -70,6 +71,7 @@ describe("a2a store", () => {
 				.mockResolvedValueOnce({ threadId: "thread:1", invocations: [] })
 				.mockRejectedValueOnce(new Error("daemon down")),
 			retryInvocation: vi.fn(),
+			cancelAgent: vi.fn(),
 		};
 		const store = createA2AStore({ api });
 		await store.getState().load("thread:1");
@@ -99,6 +101,7 @@ describe("a2a store", () => {
 				return Promise.resolve({ threadId, invocations: [live({ turnExecutionId: "turn:2" })] });
 			}),
 			retryInvocation: vi.fn(),
+			cancelAgent: vi.fn(),
 		};
 		const store = createA2AStore({ api });
 
@@ -122,6 +125,7 @@ describe("a2a store", () => {
 			})),
 			live: vi.fn(async () => ({ threadId: "thread:1", invocations: [] })),
 			retryInvocation: vi.fn(async () => ({ status: "retrying" as const, retriedAgentIds: ["a1"] })),
+			cancelAgent: vi.fn(),
 		};
 		const store = createA2AStore({ api });
 		await store.getState().load("thread:1");
@@ -143,10 +147,33 @@ describe("a2a store", () => {
 			})),
 			live: vi.fn(async () => ({ threadId: "thread:1", invocations: [] })),
 			retryInvocation: vi.fn(async () => Promise.reject(new ApiError(409, "not_retryable", "not retryable", {}))),
+			cancelAgent: vi.fn(),
 		};
 		const store = createA2AStore({ api });
 		await store.getState().load("thread:1");
 
 		await expect(store.getState().retryInvocation("inv:1")).rejects.toThrow("这条回复当前不能重试");
+	});
+
+	it("cancels a running agent and refreshes queue/live", async () => {
+		const api = {
+			queue: vi.fn(async () => ({
+				threadId: "thread:1",
+				cap: { perKind: 5 },
+				queue: [],
+				entries: [],
+				activeInvocations: [],
+			})),
+			live: vi.fn(async () => ({ threadId: "thread:1", invocations: [] })),
+			retryInvocation: vi.fn(),
+			cancelAgent: vi.fn(async () => ({ status: "canceling" as const, agentId: "a1" })),
+		};
+		const store = createA2AStore({ api });
+		await store.getState().load("thread:1");
+
+		await store.getState().cancelAgent("a1");
+
+		expect(api.cancelAgent).toHaveBeenCalledWith("thread:1", "a1");
+		expect(api.queue).toHaveBeenCalledTimes(2);
 	});
 });

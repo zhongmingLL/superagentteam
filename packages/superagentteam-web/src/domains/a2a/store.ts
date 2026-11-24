@@ -15,11 +15,12 @@ export interface A2AState {
 	load(threadId: string): Promise<boolean>;
 	refresh(): Promise<boolean>;
 	retryInvocation(invocationId: string): Promise<void>;
+	cancelAgent(agentId: string): Promise<void>;
 	reset(): void;
 }
 
 export interface A2AStoreDeps {
-	api: Pick<A2AApi, "queue" | "live" | "retryInvocation">;
+	api: Pick<A2AApi, "queue" | "live" | "retryInvocation" | "cancelAgent">;
 }
 
 function messageOf(error: unknown, fallback: string): string {
@@ -84,6 +85,21 @@ export function createA2AStore(deps: A2AStoreDeps) {
 						if (error.code === "not_retryable") throw new Error("这条回复当前不能重试");
 						if (error.code === "nothing_to_retry") throw new Error("没有可重试的目标");
 						if (error.code === "retry_conflict") throw new Error("重试状态已变化，请刷新后再试");
+					}
+					throw error;
+				}
+				await fetchSnapshot(threadId);
+			},
+
+			async cancelAgent(agentId) {
+				const threadId = get().threadId;
+				if (!threadId) throw new Error("没有打开的对话");
+				try {
+					await deps.api.cancelAgent(threadId, agentId);
+				} catch (error) {
+					if (error instanceof ApiError && error.code === "not_running") {
+						await fetchSnapshot(threadId);
+						return;
 					}
 					throw error;
 				}

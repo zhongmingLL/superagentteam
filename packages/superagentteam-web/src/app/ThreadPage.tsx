@@ -51,6 +51,7 @@ export function ThreadPage() {
 	const loadA2A = useA2AStore((state) => state.load);
 	const refreshA2A = useA2AStore((state) => state.refresh);
 	const retryInvocation = useA2AStore((state) => state.retryInvocation);
+	const cancelAgent = useA2AStore((state) => state.cancelAgent);
 	const resetA2A = useA2AStore((state) => state.reset);
 	const agents = useAgentStore((state) => state.agents);
 	const liveExecutions = useExecutionStore((state) => state.turns);
@@ -70,6 +71,7 @@ export function ThreadPage() {
 	const [titleDraft, setTitleDraft] = useState("");
 	const [renameBusy, setRenameBusy] = useState(false);
 	const [renameError, setRenameError] = useState<string | undefined>();
+	const [stopError, setStopError] = useState<string | undefined>();
 
 	const handleEventRefresh = useCallback(
 		(topics: readonly ChangeTopic[]) => {
@@ -294,7 +296,16 @@ export function ThreadPage() {
 			{deleted ? <p className="st-thread-deleted">这个对话已删除，历史只读。</p> : null}
 			{a2aMatches && (a2aLive.length > 0 || a2aQueue.length > 0) ? (
 				<div className="st-thread-status-row">
-					<LivePill live={a2aLive} agents={agents} />
+					<LivePill
+						live={a2aLive}
+						agents={agents}
+						onStop={(agentId) => {
+							setStopError(undefined);
+							void cancelAgent(agentId).catch((error: unknown) => {
+								setStopError(error instanceof Error ? error.message : "停止失败");
+							});
+						}}
+					/>
 					{a2aQueue.length > 0 ? (
 						<span className="st-status-pill">
 							队列 {a2aQueue.length}
@@ -302,6 +313,11 @@ export function ThreadPage() {
 						</span>
 					) : null}
 				</div>
+			) : null}
+			{stopError ? (
+				<p className="st-a2a-degraded" role="alert">
+					{stopError}
+				</p>
 			) : null}
 			{realtimeStatus === "fallback" ? (
 				<p className="st-realtime-note" role="status">

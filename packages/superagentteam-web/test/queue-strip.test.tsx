@@ -35,6 +35,7 @@ describe("queue strip", () => {
 		expect(screen.getByText("#1")).toBeInTheDocument();
 		expect(screen.getByText("Agent A1")).toBeInTheDocument();
 		expect(screen.getByText("排队中")).toBeInTheDocument();
+		expect(screen.getByText("每个对话同类最多 20 条（v1 固定）")).toBeInTheDocument();
 	});
 
 	it("is hidden when the queue is empty", () => {

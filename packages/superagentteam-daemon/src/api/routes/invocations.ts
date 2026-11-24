@@ -7,6 +7,7 @@ import { requireCsrf } from "../session.ts";
 import type { ApiRouteContext } from "./context.ts";
 
 const RETRY_PATH = /^\/api\/threads\/([^/]+)\/invocations\/([^/]+)\/retry$/;
+const CANCEL_PATH = /^\/api\/threads\/([^/]+)\/agents\/([^/]+)\/cancel$/;
 
 export interface InvocationRoutes {
 	handle(request: IncomingMessage, response: ServerResponse, url: URL, context: ApiRouteContext): boolean;
@@ -30,6 +31,41 @@ export function createInvocationRoutes(options: InvocationRoutesOptions): Invoca
 
 	function handle(request: IncomingMessage, response: ServerResponse, url: URL, context: ApiRouteContext): boolean {
 		if (request.method !== "POST") return false;
+
+		const cancelMatch = CANCEL_PATH.exec(url.pathname);
+		if (cancelMatch) {
+			const csrf = request.headers["x-csrf-token"];
+			const csrfToken = Array.isArray(csrf) ? csrf[0] : csrf;
+			if (!requireCsrf(context.session, csrfToken)) {
+				sendError(response, 403, "csrf_failed", "invalid CSRF token");
+				return true;
+			}
+			const threadId = decodePath(cancelMatch[1]!);
+			const agentId = decodePath(cancelMatch[2]!);
+			if (threadId === null || agentId === null) {
+				sendError(response, 400, "invalid_input", "thread or agent id is not valid URL encoding");
+				return true;
+			}
+			const thread = runtime.threads.get(threadId);
+			if (!thread || (thread.deletedAt !== null && thread.deletedAt !== undefined)) {
+				sendError(response, 404, "thread_not_found", `thread ${threadId} not found`);
+				return true;
+			}
+			if (thread.createdBy !== context.session.userId) {
+				sendError(response, 403, "forbidden", `thread ${threadId} belongs to another user`);
+				return true;
+			}
+			const controller = runtime.tracker.getController(threadId, agentId);
+			if (!controller || controller.signal.aborted) {
+				sendError(response, 409, "not_running", `agent ${agentId} is not running in this thread`);
+				return true;
+			}
+			controller.abort();
+			options.changeBus?.publish(threadId, ["queue", "live"]);
+			sendJson(response, 202, { status: "canceling", agentId });
+			return true;
+		}
+
 		const match = RETRY_PATH.exec(url.pathname);
 		if (!match) return false;
 

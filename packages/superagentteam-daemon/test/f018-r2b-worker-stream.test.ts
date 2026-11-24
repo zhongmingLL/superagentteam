@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AccountConfig, AgentCatalog, AgentConfig, AgentStreamEvent } from "@superagentteam/shared/types";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { OperatorMessageIngress } from "../src/domains/a2a/router.ts";
 import type { AgentRegistry } from "../src/domains/agent/registry.ts";
 import { buildRegistry } from "../src/domains/agent/registry.ts";
@@ -53,6 +53,7 @@ class ScriptedConnection implements WorkerRpcConnection {
 	acceptedCount = 0;
 	script: RpcEvent[] = [];
 	promptError: string | null = null;
+	waitForAbort = false;
 
 	onEvent(listener: (event: RpcEvent) => void): () => void {
 		this.listeners.push(listener);
@@ -70,6 +71,15 @@ class ScriptedConnection implements WorkerRpcConnection {
 		if (this.promptError) throw new Error(this.promptError);
 		this.acceptedCount += 1;
 		options.onAccepted?.();
+		if (this.waitForAbort) {
+			return await new Promise<{ aborted: boolean }>((resolve) => {
+				if (options.signal?.aborted) {
+					resolve({ aborted: true });
+					return;
+				}
+				options.signal?.addEventListener("abort", () => resolve({ aborted: true }), { once: true });
+			});
+		}
 		for (const event of this.script) {
 			for (const listener of [...this.listeners]) listener(event);
 		}
@@ -87,6 +97,7 @@ class MockSpawnPort implements WorkerSpawnPort {
 	/** Pre-programmed event script handed to every spawned connection. */
 	scriptFor: RpcEvent[] = [];
 	promptError: string | null = null;
+	waitForAbort = false;
 
 	async spawn(): Promise<{
 		connection: WorkerRpcConnection;
@@ -99,6 +110,7 @@ class MockSpawnPort implements WorkerSpawnPort {
 		this.lastConnection = new ScriptedConnection();
 		this.lastConnection.script = this.scriptFor;
 		this.lastConnection.promptError = this.promptError;
+		this.lastConnection.waitForAbort = this.waitForAbort;
 		return {
 			connection: this.lastConnection,
 			pid: 4242,
@@ -607,5 +619,25 @@ describe("RunAgentTurn (0010 §6.1.1 steps 2-8)", () => {
 				40,
 			),
 		).toEqual({ outcome: "conflict" });
+	});
+
+	it("F034: operator abort cancels a running turn and retires the worker", async () => {
+		const w = makeWorld();
+		w.spawnPort.waitForAbort = true;
+		const submitted = w.ingress.submit({ threadId: "t1", userId: "u1", body: "go @a1", now: 10 });
+		const draining = w.processor.drain("t1", "u1");
+		await vi.waitFor(() => {
+			expect(w.tracker.getController("t1", "a1")).toBeDefined();
+		});
+		w.tracker.getController("t1", "a1")?.abort();
+		await draining;
+		const invocationId = `inv:t1:${submitted.message.id}`;
+		const attempt = w.attempts.getLatest(invocationId, "a1");
+		expect(attempt?.deliveryState).toBe("canceled");
+		expect(attempt?.terminalReason).toBe("operator_canceled");
+		expect(w.turns.get(attempt!.turnExecutionId!)?.status).toBe("canceled");
+		expect(w.messages.get(`resp:${attempt!.turnExecutionId}`)?.lifecycle?.status).toBe("canceled");
+		expect(w.queue.listQueued("t1")).toHaveLength(0);
+		expect(w.spawnPort.lastConnection?.finishes).toContain("operator-canceled");
 	});
 });

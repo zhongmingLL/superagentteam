@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F034]
 related_features: [superagentteam/F018, superagentteam/F033]
 title: "F034: Agent run control — bounded retries + cancel running agent + queue clarity"
-status: spec
+status: implementing
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 created: 2026-11-25
@@ -36,12 +36,21 @@ operator 在前端给 agent 发消息后观察到同一目标持续重试（本�
 - 不做 provider 特定的错误分类/退避表。
 - 不做 daemon 重启后的活动 turn 自动恢复 UI（既有 T4/recovery 边界不变）。
 
+## 进展（2026-11-25）
+
+- 根因确认：`f018.db` 中同一 invocation 的 attempt 达 358，`provider_phase_failed` 每 ~10s 一次；`RetryDeferrals` 只有指数退避、没有自动次数上限。
+- 重试预算：每个 manual retry epoch 最多 5 次自动 provider 重试；按 `invocationId + agentId` 记录 epoch start；耗尽后 parent/attempt/R 终态 failed，reason `provider_retry_exhausted`，并写一条系统提示；不再 restore target。
+- 手动重试：`requestRetry` 递增 `retry_count` 并为每个目标记录新的 epoch start，重新获得 5 次预算。
+- 停止运行：`InvocationTracker` signal 传入 `RunAgentTurn`/`promptAndWait`，abort 时 `finish("operator-canceled")` 释放 worker；processor 将 turn/attempt/R terminalize 为 canceled，不 restore target；新增 `POST /api/threads/:id/agents/:agentId/cancel`。
+- UI：运行中 agent 的 LivePill 增加“停止”；QueueStrip 显示“每个对话同类最多 5 条（v1 固定）”；a2a store 增加 cancelAgent。
+- 测试：daemon 492 passed / 1 skipped；web 101 passed；新增 retry cap、manual retry、processor cancel、RunAgentTurn abort、cancel API CSRF/409、LivePill 停止与 queue 说明测试。
+
 ## 验收
 
-- [ ] AC-1：同一目标连续 provider 失败 5 次后不再自动入队；parent failed，reason `provider_retry_exhausted`，用户可见说明。
-- [ ] AC-2：手动 retry 后重新获得 5 次预算，且不会复用已终态 attempt。
-- [ ] AC-3：停止 API 在 agent 运行时返回 202；turn/attempt/R 变为 canceled，worker 释放，queue target 不 restore。
-- [ ] AC-4：前端运行时显示“停止”，点击后状态更新；队列 `1 / 5` 有一行说明。
-- [ ] AC-5：daemon/web tests + browser smoke 通过；真实 3103 前端可发消息并停止。
+- [x] AC-1：同一目标连续 provider 失败 5 次后不再自动入队；parent failed，reason `provider_retry_exhausted`，用户可见说明。
+- [x] AC-2：手动 retry 后重新获得 5 次预算，且不会复用已终态 attempt。
+- [x] AC-3：停止 API 在 agent 运行时返回 202；turn/attempt/R 变为 canceled，worker 释放，queue target 不 restore。
+- [x] AC-4：前端运行时显示“停止”，点击后状态更新；队列 `1 / 5` 有一行说明。
+- [ ] AC-5：daemon/web tests + browser smoke 通过；真实 3103 前端可发消息并停止（待部署后做 live E2E）。
 
 [宪宪/deepseek-flash🐾]

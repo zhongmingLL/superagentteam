@@ -681,6 +681,13 @@ svg {
 	overflow: hidden;
 }
 
+.st-live-pills {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	min-width: 0;
+}
+
 .st-live-pill {
 	display: inline-flex;
 	align-items: center;
@@ -696,11 +703,27 @@ svg {
 	text-overflow: ellipsis;
 }
 
-.st-live-pill > span:last-child {
+.st-live-text {
 	min-width: 0;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
+}
+
+.st-live-stop {
+	flex: none;
+	padding: 0 2px;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	font-size: 9px;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.st-live-stop:hover {
+	color: var(--st-danger, #c0392b);
 }
 
 .st-status-pill {
@@ -1781,6 +1804,12 @@ svg {
 .st-queue-count {
 	font-family: var(--st-font-mono);
 	font-weight: 500;
+}
+
+.st-queue-note {
+	margin: 0;
+	color: var(--st-muted);
+	font-size: 9px;
 }
 
 .st-queue-rows {

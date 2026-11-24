@@ -1,7 +1,7 @@
 ---
 title: "F033 Phase D execution — script layout, runbook, cron retirement"
 doc_kind: plan
-status: active
+status: done
 created: 2026-11-25
 updated: 2026-11-25
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"

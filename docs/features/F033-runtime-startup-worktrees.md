@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F033]
 related_features: [superagentteam/F018, superagentteam/F032]
 title: "F033: Local runtime startup & worktree isolation"
-status: implemented
+status: done
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -126,6 +126,12 @@ Clowder AI 的启动面已经把这些分清了，F033 借鉴机制而不复制�
 - [x] AC-8：runbook 覆盖运行、收尾、恢复、端口冲突、worktree 更新与回滚。
 
 > 2026-11-25：AC-1–AC-8 已由 PR #188/#190、Phase C 隔离清理与 Phase D runbook/proxy/cron 退役验证；feature 实现完成，operator close pending。
+
+## 收口
+
+- 2026-11-25 operator close：F033 完成。
+- live runtime：`bac20a684`，daemon `scripts/superagentteam/runtime-daemon.mjs`，data `~/.superagentteam-runtime/data`，`http://localhost:3103/` 与 `/api/session` 200。
+- 所有 AC-1–AC-8 有证据；cron 已退役；旧栈/旧 proxy 已快照并收尾。
 
 ## 非目标
 

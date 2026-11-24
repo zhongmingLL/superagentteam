@@ -111,6 +111,8 @@ Clowder AI 的启动面已经把这些分清了，F033 借鉴机制而不复制�
 - Windows proxy 模板 `scripts/superagentteam/windows-proxy.ps1` + WSL bridge `wsl-tcp-bridge.py` + `windows-proxy.mjs check|print`；3103 listener/root/session 实测通过。
 - cron watchdog 已备份到 `/home/ming/superagentteam-archive/20261124T173508Z/cron/` 并退役；当前 runtime 无 cron 依赖，3103 仍 200。
 - 墨墨 P2 收口：runtime 数据从 `/tmp/f028-demo-1795448211/data` 迁到 `~/.superagentteam-runtime/data`；旧目录快照到 `/home/ming/superagentteam-archive/20261124T173508Z/runtime-data-before-persistent-migration/`；新路径启动后 3103/`/api/session` 仍 200。
+- live runtime worktree ff-only 到 `bac20a684`、rebuild、`runtime end`→`runtime start`；daemon command 已切到 `scripts/superagentteam/runtime-daemon.mjs`，数据仍在持久路径，3103/`/api/session` 200。
+- alpha worktree 同步 `bac20a684`；test stack `3007/3016` start/status/end 闭环，端口释放，3103 不受影响。
 
 ## 验收方向
 

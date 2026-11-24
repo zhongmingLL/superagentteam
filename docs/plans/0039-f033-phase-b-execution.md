@@ -49,6 +49,15 @@ source_decision: "operator 2026-11-25: DP-F033-1=A, DP-F033-2=A, DP-F033-3=defer
 - 旧栈 data dir 快照到 `~/superagentteam-archive/<timestamp>/`，再收尾旧进程；保留 `3103`。
 - 现有 cron watchdog 改为调用统一入口或退役；记录证据与残余 gap。
 
+## 进展（2026-11-25）
+
+- **B1 已合入**：PR #188 → `e1ceb0e43`；砚砚（identity/端口/env/state）+ 墨墨（operator 文案/迁移）双审，CI `build-check-test` / `supply-chain` / `mcp-conformance` 全绿。
+- **B2 完成**：runtime worktree `/home/ming/agent/superagentteam-runtime` at `e1ceb0e43`；`npm install --ignore-scripts` + `build:offline` 绿。
+- **B3 部分**：Windows `3103` 实测 root/session 200；proxy 生成脚本仍延后。
+- **B4 主体完成**：真实 `3005/3014` 切换到新入口，daemon `runningRevision=e1ceb0e43`；旧栈 data dir 快照到 `/home/ming/superagentteam-archive/20261124T173508Z/` 后收尾；cron watchdog 改为调用统一入口。
+- **验证**：隔离 `3008/3017` start → status → restart → end，restart 后 PIDs/bootId 更新、end 后端口释放；真实 `3005/3014` health/web/API 200；`http://localhost:3103/` 与 `/api/session` 200。
+- **残余**：Windows `3100/3101` proxy 清理、Windows proxy 生成、test worktree/CI drift guard、runbook、cron 退役（Phase C/D）。
+
 ## 验收映射
 
 - AC-2 入口/状态/收尾/重启幂等，收尾 identity-verified：B1 单测 + B4 集成。

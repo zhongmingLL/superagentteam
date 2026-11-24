@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F030]
 related_features: [superagentteam/F018, superagentteam/F020, superagentteam/F025, superagentteam/F027, superagentteam/F029]
 title: "F030: Account & agent management — credential contract, account settings, agent editor"
-status: in-progress
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -107,6 +107,10 @@ F025 的真实 provider E2E 通过 `/home/ming/.env` 提供 key，是临时方�
 - 2026-11-24：墨墨 vision/UX approve @ `12fa07ae8`；P3（未配置凭据的 account
   在 agent 编辑器里无提示）已补：选中 credential=none 的 account 时显示
   amber 提示「该账号还没有凭据，首次运行会失败」；不硬阻塞创建。
+- 2026-11-24：砚砚 contract/security approve @ `12fa07ae8`（P3 备案：
+  credentials.json 明文 0600 本地单用户可接受、envName 名称暴露无泄漏）；
+  墨墨确认 P3 delta，approve 延伸至 `0b14e9bac`。PR #174 merged as
+  `a42cfcab5`，CI 5/5。状态更新为 implemented，等 operator close。
 
 ## 风险与回滚
 

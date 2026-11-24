@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F033]
 related_features: [superagentteam/F018, superagentteam/F032]
 title: "F033: Local runtime startup & worktree isolation"
-status: implementing
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -89,7 +89,7 @@ Clowder AI 的启动面已经把这些分清了，F033 借鉴机制而不复制�
 
 - B1 统一入口已合入：PR #188 → `e1ceb0e43`；reviewers 砚砚（identity/端口/env/state）+ 墨墨（operator 文案/迁移），CI `build-check-test` / `supply-chain` / `mcp-conformance` 全绿。
 - runtime worktree：`/home/ming/agent/superagentteam-runtime`，detached at `e1ceb0e43`。
-- 真实入口：`3005/3014` + Windows `3103`；daemon `runningRevision=e1ceb0e43`，health ready，`/`、`/api/session`、`/api/agents`、`/api/threads` 与 `http://localhost:3103/` 均 200；数据目录沿用 `/tmp/f028-demo-1795448211/data`。
+- 真实入口：`3005/3014` + Windows `3103`；daemon `runningRevision=e1ceb0e43`，health ready，`/`、`/api/session`、`/api/agents`、`/api/threads` 与 `http://localhost:3103/` 均 200；数据目录当时沿用 `/tmp/f028-demo-1795448211/data`；Phase D 已迁到 `~/.superagentteam-runtime/data`。
 - env：`~/.config/superagentteam/runtime.env`（0600），从旧 daemon 进程 env 迁移 `KIMI_API_KEY`，未打印、未入库。
 - 旧栈：4 套 data dir 快照到 `/home/ming/superagentteam-archive/20261124T173508Z/`；旧 WSL 栈已收尾，仅保留 `3005/3014`（另 `3003/3004` 属 Clowder AI）。
 - cron watchdog：改为调用统一入口，作为迁移期兜底；稳定观察后退役（Phase D）。
@@ -100,21 +100,30 @@ Clowder AI 的启动面已经把这些分清了，F033 借鉴机制而不复制�
 
 - test worktree `/home/ming/agent/superagentteam-alpha` at `04b087379`；build 绿。
 - test stack `3007/3016` + `~/.superagentteam-alpha/data` + `~/.config/superagentteam/alpha.env`；start/status/end 全绿，runtime `3103` 不受影响。
-- port registry `scripts/runtime-ports.mjs` + `scripts/runtime-ports.test.mjs`；`check:runtime-ports` 已接入 `npm run check`，覆盖重复/保留端口/越界与 CLI 默认值漂移。
+- port registry `scripts/superagentteam/runtime-ports.mjs` + `scripts/superagentteam/runtime-ports.test.mjs`；`check:runtime-ports` 已接入 `npm run check`，覆盖重复/保留端口/越界与 CLI 默认值漂移。
 - 旧 Windows `3100/3101` proxy 经 identity 核验后停止；只剩当前 `3103`。
+
+### 2026-11-25 — Phase D script layout & runbook
+
+- runtime launcher 迁到 `scripts/superagentteam/runtime-daemon.mjs`；`scripts/f025-e2e-daemon.mjs` 保留兼容 wrapper；CLI 的 spawn/assertBuilt 指向新路径。
+- port registry/test 迁到 `scripts/superagentteam/`；`check:runtime-ports` 指向新路径。
+- runbook 落 `docs/runbooks/F033-local-runtime.md`：正式入口、runtime/test 布局、env、端口、Windows 3103、故障恢复。
+- Windows proxy 模板 `scripts/superagentteam/windows-proxy.ps1` + WSL bridge `wsl-tcp-bridge.py` + `windows-proxy.mjs check|print`；3103 listener/root/session 实测通过。
+- cron watchdog 已备份到 `/home/ming/superagentteam-archive/20261124T173508Z/cron/` 并退役；当前 runtime 无 cron 依赖，3103 仍 200。
+- 墨墨 P2 收口：runtime 数据从 `/tmp/f028-demo-1795448211/data` 迁到 `~/.superagentteam-runtime/data`；旧目录快照到 `/home/ming/superagentteam-archive/20261124T173508Z/runtime-data-before-persistent-migration/`；新路径启动后 3103/`/api/session` 仍 200。
 
 ## 验收方向
 
 - [x] AC-1：默认入口从专用 runtime worktree 运行；dev worktree 不承担 runtime。
 - [x] AC-2：入口/状态/收尾/重启幂等，收尾只操作 identity-verified stack，不盲杀端口。
 - [x] AC-3：runtime 与 Windows 入口固定；test 使用独立端口段，CI 有 drift/conflict guard。
-- [ ] AC-4：进程在启动 session 结束后仍存活；无长期 cron watchdog 依赖。
+- [x] AC-4：进程在启动 session 结束后仍存活；无长期 cron watchdog 依赖。
 - [x] AC-5：test/acceptance 使用独立 worktree、data dir、端口；不读写 runtime 用户数据。
 - [x] AC-6：旧 stack 可列出/收尾/回收；启动后无孤儿端口。
-- [ ] AC-7：Windows proxy 由脚本生成/校验，入口只给一个 URL。
-- [ ] AC-8：runbook 覆盖运行、收尾、恢复、端口冲突、worktree 更新与回滚。
+- [x] AC-7：Windows proxy 由脚本生成/校验，入口只给一个 URL。
+- [x] AC-8：runbook 覆盖运行、收尾、恢复、端口冲突、worktree 更新与回滚。
 
-> 2026-11-25：AC-1/2/3/5/6 已由 PR #188、Phase C 隔离与清理验证；AC-4/7/8 仍有 Phase D 残余（cron 退役、Windows proxy 生成/单 URL、runbook）。
+> 2026-11-25：AC-1–AC-8 已由 PR #188/#190、Phase C 隔离清理与 Phase D runbook/proxy/cron 退役验证；feature 实现完成，operator close pending。
 
 ## 非目标
 

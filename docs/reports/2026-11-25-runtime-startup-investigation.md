@@ -17,6 +17,8 @@ related_features: [superagentteam/F033, superagentteam/F032]
 | F025 e2e | 3000 | 3011 | `/tmp/f025-e2e-1795345602/data` | 3100 | 早期 e2e |
 | devlogin | 3001 | 3012 | `/tmp/f025-e2e-devlogin/data` | 3101 | dev auto-login 验证 |
 | F028 demo | 3005 | 3014 | `/tmp/f028-demo-1795448211/data` | 3103 | 当前 operator 入口 |
+
+> 2026-11-25: 上表是迁移前调查；当前 runtime 数据已迁到 `~/.superagentteam-runtime/data`，旧 `/tmp` 路径仅作历史/快照。
 | F030 demo | 3006 | 3015 | `/tmp/f030-demo-1795493398/data` | — | 展示栈；HUB_ORIGIN=3104，无 proxy |
 | F030 e2e | 3007 | 3016 | `/tmp/f030-e2e-1795493745/data` | — | e2e 栈；HUB_ORIGIN=3105，无 proxy |
 

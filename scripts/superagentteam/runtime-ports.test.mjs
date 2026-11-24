@@ -37,7 +37,7 @@ test("out-of-range ports are rejected", () => {
 
 test("CLI defaults stay in sync with the registry", () => {
 	const source = readFileSync(
-		fileURLToPath(new URL("../packages/superagentteam-daemon/src/cli/runtime.ts", import.meta.url)),
+		fileURLToPath(new URL("../../packages/superagentteam-daemon/src/cli/runtime.ts", import.meta.url)),
 		"utf8",
 	);
 	assert.match(source, new RegExp(`DEFAULT_WEB_PORT = ${RUNTIME_PORT_REGISTRY.runtime.web};`));

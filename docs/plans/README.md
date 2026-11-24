@@ -70,6 +70,7 @@ W0b upstream/CI 治理：与 W1–W4 并行，W5 前完成
 | [`0038-f033-runtime-startup-worktrees.md`](0038-f033-runtime-startup-worktrees.md) | F033 计划：worktree 角色、managed runtime state、port registry、supervisor、Windows proxy、runbook | 砚砚（state/安全/端口）+ 墨墨（runbook/operator 文案） |
 | [`0039-f033-phase-b-execution.md`](0039-f033-phase-b-execution.md) | F033 Phase B 执行计划：runtime state + 入口/状态/收尾 + 固定端口 + env 注入 + 旧栈迁移 | 砚砚（state/identity/端口）+ 墨墨（operator 文案/迁移说明） |
 | [`0040-f033-phase-c-execution.md`](0040-f033-phase-c-execution.md) | F033 Phase C：test worktree、3007/3016 端口隔离、port registry/CI guard、旧 proxy 清理 | 砚砚（端口/安全边界）+ 墨墨（test 迁移文案） |
+| [`0041-f033-phase-d-execution.md`](0041-f033-phase-d-execution.md) | F033 Phase D：脚本分层、正式 launcher、runbook、Windows proxy 校验、cron 退役 | 砚砚（身份/端口/脚本边界）+ 墨墨（runbook 可读性） |
 
 ## W0–W8 一览
 

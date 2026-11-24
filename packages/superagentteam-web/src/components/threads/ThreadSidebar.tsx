@@ -91,6 +91,10 @@ export function ThreadSidebar({ open, onClose, onAgents }: ThreadSidebarProps) {
 					<ThreadRow key={thread.id} thread={thread} />
 				))}
 			</div>
+			<Link to="/settings" className="st-sidebar-settings" onClick={onClose}>
+				<Icon name="settings" size={15} />
+				<span>设置</span>
+			</Link>
 			<div className="st-sidebar-profile">
 				<span className="st-operator-avatar" aria-hidden="true">
 					O

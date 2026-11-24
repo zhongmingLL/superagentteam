@@ -6,6 +6,7 @@ import { useSessionStore } from "@/domains/session/store";
 import { consumeReturnTo, rememberReturnTo } from "@/lib/return-to";
 import { HomePage } from "./app/HomePage";
 import { ReloginPage } from "./app/ReloginPage";
+import { SettingsPage } from "./app/SettingsPage";
 import { ThreadPage } from "./app/ThreadPage";
 
 export function App() {
@@ -51,6 +52,7 @@ export function App() {
 			<Route element={<AppShell />}>
 				<Route index element={<HomePage />} />
 				<Route path="thread/:threadId" element={<ThreadPage />} />
+				<Route path="settings" element={<SettingsPage />} />
 			</Route>
 			<Route path="*" element={<Navigate to="/" replace />} />
 		</Routes>

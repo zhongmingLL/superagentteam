@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F035]
 related_features: [superagentteam/F030, superagentteam/F033]
 title: "F035: Settings hub — sidebar entry + accounts/agents pages"
-status: spec
+status: implementing
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [墨墨 (Qwen 3.8 Flash), 砚砚 (GLM 5.3 Flash)]
 created: 2026-11-25
@@ -40,10 +40,18 @@ source_decision: "operator 2026-11-25: add Settings at the bottom of the sidebar
 
 ## 验收
 
-- [ ] AC-1：侧边栏底部设置入口可见、可键盘访问、窄屏可用。
-- [ ] AC-2：`/settings` 页面包含账号与 Agents 两个设置区块。
-- [ ] AC-3：账号创建/编辑/删除与 agent 创建/编辑在设置页可用，错误可读。
-- [ ] AC-4：现有顶栏 popover 入口不回归；无重复提交/状态不同步。
+- [x] AC-1：侧边栏底部设置入口可见、可键盘访问、窄屏可用。
+- [x] AC-2：`/settings` 页面包含账号与 Agents 两个设置区块。
+- [x] AC-3：账号创建/编辑/删除与 agent 创建/编辑在设置页可用，错误可读。
+- [x] AC-4：现有顶栏 popover 入口不回归；无重复提交/状态不同步。
 - [ ] AC-5：web tests + browser screenshots；3103 实机可完成一次账号/agent 创建。
+
+## 实现进展（2026-11-25）
+
+- `/settings` 路由 + 两栏设置布局（账号 / Agents）；窄屏折叠为横向导航。
+- `AccountsModal`、`AgentEditorModal` 增加 `variant="page"`：表单与校验仍是同一份实现，弹窗入口原样保留。
+- `NavRail` 底部、`ThreadSidebar` profile 上方加设置入口；修正 Threads 导航项在非对话路由仍高亮的问题。
+- 测试：`settings-page.test.tsx` 覆盖列表/页面编辑器/区块切换；`thread-sidebar.test.tsx` 覆盖设置链接。web 全量 101 passed。
+- 待办：浏览器截图（1440/390）与 3103 实机创建验证，随后进入 review。
 
 [宪宪/deepseek-flash🐾]

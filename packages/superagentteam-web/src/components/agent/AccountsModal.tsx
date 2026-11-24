@@ -11,6 +11,7 @@ export interface AccountsModalProps {
 	open: boolean;
 	onClose: () => void;
 	onChanged?: () => void;
+	variant?: "dialog" | "page";
 }
 
 type FormMode = "create" | "edit";
@@ -59,7 +60,8 @@ function credentialLabel(account: AccountView): string {
 	return "未配置凭据";
 }
 
-export function AccountsModal({ open, onClose, onChanged }: AccountsModalProps) {
+export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: AccountsModalProps) {
+	const page = variant === "page";
 	const [accounts, setAccounts] = useState<AccountView[]>([]);
 	const [providers, setProviders] = useState<AccountProviderView[]>([]);
 	const [loading, setLoading] = useState(false);
@@ -98,13 +100,13 @@ export function AccountsModal({ open, onClose, onChanged }: AccountsModalProps) 
 	}, [open]);
 
 	useEffect(() => {
-		if (!open) return;
+		if (!open || page) return;
 		const onKey = (event: KeyboardEvent): void => {
 			if (event.key === "Escape") onCloseRef.current();
 		};
 		window.addEventListener("keydown", onKey);
 		return () => window.removeEventListener("keydown", onKey);
-	}, [open]);
+	}, [open, page]);
 
 	if (!open) return null;
 
@@ -192,8 +194,17 @@ export function AccountsModal({ open, onClose, onChanged }: AccountsModalProps) 
 	}
 
 	return (
-		<div className="st-dialog-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-			<div ref={dialogRef} className="st-dialog is-wide" role="dialog" aria-modal="true" aria-labelledby="st-accounts-title">
+		<div
+			className={page ? "st-settings-panel-wrap" : "st-dialog-backdrop"}
+			onMouseDown={page ? undefined : (event) => event.target === event.currentTarget && onClose()}
+		>
+			<div
+				ref={dialogRef}
+				className={page ? "st-settings-panel" : "st-dialog is-wide"}
+				role={page ? "region" : "dialog"}
+				aria-modal={page ? undefined : true}
+				aria-labelledby="st-accounts-title"
+			>
 				<div className="st-accounts-head">
 					<div>
 						<h2 id="st-accounts-title">账号</h2>
@@ -202,12 +213,14 @@ export function AccountsModal({ open, onClose, onChanged }: AccountsModalProps) 
 					<div className="st-accounts-head-actions">
 						{mode === null ? (
 							<button type="button" className="st-button" onClick={startCreate} disabled={providers.length === 0}>
-								新增账号
+								新建账号
 							</button>
 						) : null}
-						<button type="button" className="st-button st-button-secondary" onClick={onClose}>
-							关闭
-						</button>
+						{page ? null : (
+							<button type="button" className="st-button st-button-secondary" onClick={onClose}>
+								关闭
+							</button>
+						)}
 					</div>
 				</div>
 				{error ? <p className="st-error" role="alert">{error}</p> : null}
@@ -215,7 +228,7 @@ export function AccountsModal({ open, onClose, onChanged }: AccountsModalProps) 
 				{mode === null ? (
 					<div className="st-account-list">
 						{accounts.length === 0 && !loading ? (
-							<p className="st-page-note">还没有账号。新增一个 provider 账号后，agent 就能选择它。</p>
+							<p className="st-page-note">还没有账号。新建一个 provider 账号后，agent 就能选择它。</p>
 						) : null}
 						{accounts.map((account) => (
 							<div className="st-account-row" key={account.ref}>

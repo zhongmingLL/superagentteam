@@ -135,7 +135,12 @@ describe("RuntimeService", () => {
 		const dataDir = tempDir();
 		const h = harness(dataDir);
 		h.portsFree.value = false;
-		await expect(h.service.start(h.options)).rejects.toMatchObject({ code: "runtime_port_in_use" });
+		const error = await h.service.start(h.options).then(
+			() => null,
+			(caught: { code?: string; message?: string }) => caught,
+		);
+		expect(error).toMatchObject({ code: "runtime_port_in_use" });
+		expect(error?.message).toContain("--web-port");
 		expect(h.world.spawnCount).toBe(0);
 	});
 

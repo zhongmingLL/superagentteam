@@ -69,7 +69,10 @@ export class RuntimeService {
 			const busy = [!webFree ? `web ${input.webPort}` : null, !daemonFree ? `daemon ${input.daemonPort}` : null]
 				.filter((value): value is string => value !== null)
 				.join(", ");
-			throw new ControlError("runtime_port_in_use", `runtime port is already in use: ${busy}`);
+			throw new ControlError(
+				"runtime_port_in_use",
+				`runtime port is already in use: ${busy}; if this is the legacy dev stack, follow the F033 B4 migration in docs/plans/0039-f033-phase-b-execution.md; otherwise free the ports or pass --web-port/--daemon-port`,
+			);
 		}
 
 		const startedAt = nowIso(this.clock);

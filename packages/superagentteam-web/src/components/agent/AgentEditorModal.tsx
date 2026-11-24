@@ -19,6 +19,7 @@ export interface AgentEditorModalProps {
 	onCreate?: (input: CreateAgentInput) => Promise<AgentView>;
 	onUpdate?: (id: string, input: UpdateAgentInput) => Promise<AgentView>;
 	onSaved?: (agent: AgentView) => void;
+	variant?: "dialog" | "page";
 }
 
 function splitPatterns(value: string): string[] {
@@ -47,7 +48,9 @@ export function AgentEditorModal({
 	onCreate,
 	onUpdate,
 	onSaved,
+	variant = "dialog",
 }: AgentEditorModalProps) {
+	const page = variant === "page";
 	const [id, setId] = useState("");
 	const [displayName, setDisplayName] = useState("");
 	const [mentionPatterns, setMentionPatterns] = useState("");
@@ -151,15 +154,23 @@ export function AgentEditorModal({
 	}
 
 	return (
-		<div className="st-dialog-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-			<div className="st-dialog is-wide st-agent-editor" role="dialog" aria-modal="true" aria-labelledby="st-agent-editor-title">
+		<div
+			className={page ? "st-settings-panel-wrap" : "st-dialog-backdrop"}
+			onMouseDown={page ? undefined : (event) => event.target === event.currentTarget && onClose()}
+		>
+			<div
+				className={page ? "st-settings-panel st-agent-editor" : "st-dialog is-wide st-agent-editor"}
+				role={page ? "region" : "dialog"}
+				aria-modal={page ? undefined : true}
+				aria-labelledby="st-agent-editor-title"
+			>
 				<div className="st-accounts-head">
 					<div>
 						<h2 id="st-agent-editor-title">{mode === "create" ? "新建 Agent" : `编辑 ${agent?.displayName ?? ""}`}</h2>
 						<p className="st-accounts-sub">account 决定 provider 与凭据；model 跟随 account 的 models。</p>
 					</div>
 					<button type="button" className="st-button st-button-secondary" onClick={onClose}>
-						关闭
+						{page ? "返回列表" : "关闭"}
 					</button>
 				</div>
 				<form

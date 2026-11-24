@@ -77,6 +77,7 @@ describe("thread sidebar", () => {
 		);
 
 		expect(screen.getByText("还没有对话。点「+ 新对话」开始。")).toBeInTheDocument();
+		expect(screen.getByRole("link", { name: /设置/ })).toHaveAttribute("href", "/settings");
 		fireEvent.click(screen.getByRole("button", { name: "+ 新对话" }));
 		expect(useNewThreadDialog.getState().open).toBe(true);
 		useNewThreadDialog.setState({ open: false });

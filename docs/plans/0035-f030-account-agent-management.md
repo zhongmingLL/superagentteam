@@ -1,7 +1,7 @@
 ---
 title: "F030 execution plan — account & agent management"
 doc_kind: plan
-status: accepted
+status: done
 created: 2026-11-24
 updated: 2026-11-24
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -45,7 +45,8 @@ agent 选择 account/model，worker 按 account 隔离 key 与 baseUrl。
 状态（2026-11-24）：F030.4 完成。per-worker `PI_CODING_AGENT_DIR` + `auth.json` /
 `models.json`；真实 Kimi 回合在 daemon 无 ambient key 的情况下成功。
 F030.3 agent 编辑页升级完成（分区 modal、account/model 联动、PATCH 编辑）。
-F030.1–F030.4 全部完成，进入 review/merge gate。
+F030.1–F030.4 全部完成。PR #174 merged as `a42cfcab5`（砚砚 @ `12fa07ae8`、
+墨墨 @ `0b14e9bac`，CI 5/5）。
 
 ## 测试矩阵
 

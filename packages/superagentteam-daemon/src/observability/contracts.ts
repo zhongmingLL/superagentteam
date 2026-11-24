@@ -1,5 +1,3 @@
-import type { RunEventKind } from "../control/stores/types.ts";
-
 export type LogLevel = "debug" | "info" | "warn" | "error";
 export type ToolCategory = "native" | "mcp" | "skill";
 export type TraceSpanKind = "internal" | "server" | "client";
@@ -58,67 +56,6 @@ export interface TraceQueryResult {
 export interface SpanExporter {
 	export(span: TraceSpanDTO): void;
 	shutdown?(): Promise<void>;
-}
-
-export interface TrajectoryMessageRef {
-	readonly id: string;
-	readonly kind: string;
-	readonly authorKind: string;
-	readonly authorId: string;
-	readonly seq: number;
-	readonly createdAt: number;
-	readonly bodyDigest: string;
-	readonly bodyBytes: number;
-}
-
-export interface TrajectoryStep {
-	readonly seq: number;
-	readonly at: number;
-	readonly kind: RunEventKind;
-	readonly summary: string;
-	readonly attributes: TraceAttributes;
-	readonly source:
-		| { readonly kind: "run_event"; readonly id: string }
-		| { readonly kind: "message"; readonly id: string };
-}
-
-/**
- * Frozen read contract for a single invocation trajectory. `inv` is the
- * canonical `inv:<runs.id>` join key. The projection is read-only and never
- * inlines message bodies, prompts, diffs, or file content.
- */
-export interface InvocationTrajectory {
-	readonly inv: `inv:${string}`;
-	readonly run: {
-		readonly id: string;
-		readonly taskId: string;
-		readonly status: string;
-		readonly role: string;
-		readonly agentSessionId: string;
-		readonly provider: string;
-		readonly model: string;
-		readonly modelFamily: string;
-		readonly attempt: number;
-		readonly startedAt: number;
-		readonly terminalAt: number | null;
-		/** Bounded token/cost metadata; unknown usage keys are dropped by the projection. */
-		readonly usage: Readonly<Record<string, string | number | boolean>> | null;
-	};
-	readonly task: { readonly id: string; readonly title: string; readonly status: string } | null;
-	readonly thread: { readonly id: string; readonly title: string | null } | null;
-	readonly queueEntry: {
-		readonly id: string;
-		readonly sourceKind: string;
-		readonly priority: string;
-		readonly status: string;
-		readonly enqueuedAt: number;
-	} | null;
-	readonly sourceMessage: TrajectoryMessageRef | null;
-	readonly responseMessage: TrajectoryMessageRef | null;
-	readonly steps: readonly TrajectoryStep[];
-	/** True is a possible-truncation signal (hit MAX_STEPS), not proof that data is missing. */
-	readonly stepsTruncated: boolean;
-	readonly trace: TraceQueryResult;
 }
 
 export interface ToolUsageQuery {

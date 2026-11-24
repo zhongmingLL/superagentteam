@@ -1,7 +1,7 @@
 import { consoleLinkUrl, createConsoleToken } from "../api/console-link.ts";
 import { initOperatorCredential } from "../auth/operator.ts";
-import { resolveControlDataDir } from "../control/database.ts";
 import { ControlError } from "../control/errors.ts";
+import { resolveControlDataDir } from "../data-dir.ts";
 import { envValue } from "../env.ts";
 import { resolveDaemonPaths } from "../paths.ts";
 import { readStateFile } from "../state.ts";

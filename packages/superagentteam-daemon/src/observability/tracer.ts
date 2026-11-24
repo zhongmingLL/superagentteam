@@ -1,5 +1,4 @@
 import { randomBytes } from "node:crypto";
-import type { Run } from "../control/stores/types.ts";
 import type { SpanExporter, TraceSpanDTO, TraceSpanEvent, TraceSpanKind } from "./contracts.ts";
 import {
 	type Redactor,
@@ -77,7 +76,18 @@ export class Tracer {
 		});
 	}
 
-	startRunSpan(run: Run): SpanHandle {
+	/** Legacy task-first run span; removed with the task-first worker runtime. */
+	startRunSpan(run: {
+		readonly id: string;
+		readonly taskId: string;
+		readonly recipientProfileId: string;
+		readonly role: string;
+		readonly provider: string;
+		readonly model: string;
+		readonly modelFamily: string;
+		readonly status: string;
+		readonly attempt: number;
+	}): SpanHandle {
 		return this.startSpan({
 			name: "superagentteam.run",
 			attributes: {

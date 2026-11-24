@@ -1,9 +1,12 @@
-import { chmodSync, closeSync, mkdirSync, openSync } from "node:fs";
+import { chmodSync, closeSync, openSync } from "node:fs";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { envValue, resolveDataDir } from "../env.ts";
+import { envValue } from "../env.ts";
 import { ControlError } from "./errors.ts";
 import { CONTROL_MIGRATIONS, CONTROL_TABLE_NAMES, type ControlMigration } from "./migrations/index.ts";
+import { resolveControlDataDir } from "../data-dir.ts";
+
+export { resolveControlDataDir } from "../data-dir.ts";
 
 export const DEFAULT_CONTROL_BUSY_TIMEOUT_MS = 5000;
 export const CONTROL_DATABASE_FILE = "control.db";
@@ -29,22 +32,6 @@ interface SchemaMigrationRow {
 	version: number;
 	name: string;
 	applied_at: number;
-}
-
-export function resolveControlDataDir(dataDir?: string): string {
-	const resolved = resolveDataDir(dataDir);
-	if (!resolved || resolved.trim() === "") {
-		throw new ControlError("data_dir_missing", "SUPERAGENTTEAM_DATA_DIR is required");
-	}
-	try {
-		mkdirSync(resolved, { recursive: true, mode: 0o700 });
-		chmodSync(resolved, 0o700);
-	} catch (error) {
-		throw new ControlError("database_open_failed", `cannot prepare control data dir: ${String(error)}`, {
-			cause: error,
-		});
-	}
-	return resolved;
 }
 
 export function resolveControlBusyTimeoutMs(value?: number): number {

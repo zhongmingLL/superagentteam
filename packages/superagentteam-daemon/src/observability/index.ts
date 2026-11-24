@@ -41,5 +41,3 @@ export type { LocalTraceStoreOptions, LocalTraceStoreStats } from "./trace-store
 export { LOCAL_TRACE_DEFAULT_MAX_AGE_MS, LOCAL_TRACE_DEFAULT_MAX_SPANS, LocalTraceStore } from "./trace-store.ts";
 export type { SpanContext, SpanHandle, StartSpanInput, ToolSpanInput, TracerOptions } from "./tracer.ts";
 export { Tracer } from "./tracer.ts";
-export type { TraceQuerySource, TrajectoryServiceOptions } from "./trajectory.ts";
-export { TrajectoryService } from "./trajectory.ts";

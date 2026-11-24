@@ -44,7 +44,7 @@ created: 2026-10-25
 | F029 | Hub message surface parity — agent nameplate 宽度、A2A 收件人归属、rich blocks 展示 | done (merged `493aa01c3`; 墨墨 vision/UX approve @ `e44825788`; CI 5/5; operator close 2026-11-24) | 宪宪 | [F029](docs/features/F029-message-surface-parity.md) |
 | F030 | Account & agent management — credential contract、account 设置页、agent 创建/编辑升级 | done (merged `a42cfcab5`; 砚砚 contract/security approve @ `12fa07ae8`; 墨墨 vision/UX approve @ `0b14e9bac`; CI 5/5; operator close 2026-11-24) | 宪宪 | [F030](docs/features/F030-account-agent-management.md) |
 | F031 | Rich block producer — agent-created rich blocks in responses（producer tool、draft 暂存、settlement 落消息、rich-messaging skill） | done (merged `839b22f4a`; 砚砚 contract/security approve @ `656ebfec3`; 墨墨 vision/UX approve @ `656ebfec3`; CI 5/5; docs close `a5ca6aab0`; operator close 2026-11-24) | 宪宪 | [F031](docs/features/F031-rich-block-producer.md) |
-| F032 | Task-first legacy retirement — archive reference, delete legacy runtime/shims/tests, keep historical docs | spec (operator 2026-11-24 confirmed no legacy engine/control.db use; reuse revalidation #180) | 宪宪 | [F032](docs/features/F032-task-first-legacy-retirement.md) |
+| F032 | Task-first legacy retirement — archive reference, delete legacy runtime/shims/tests, keep historical docs | implemented — PR #184 merged `520929940`; archive `archive/task-first-v1` → `dd29e1cab`; daemon 469 / web 99 / skills 15 tests + `npm run check` green; operator close pending | 宪宪 | [F032](docs/features/F032-task-first-legacy-retirement.md) |
 
 > Naming (F019): new and active docs use `superagentteam/Fxxx`; F001–F018 retain
 > `codeteam/Fxxx` for history. Package/env/data/CLI/tool names use `superagentteam*`

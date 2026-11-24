@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F032]
 related_features: [superagentteam/F018, superagentteam/F019, superagentteam/F031]
 title: "F032: Task-first legacy retirement — archive reference, delete runtime"
-status: spec
+status: in_progress
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -88,6 +88,14 @@ legacy control-plane 入口。operator 已确认：**没有真实 legacy 使用�
 - [ ] AC-4：历史文档保留且明确 non-normative；F032 删除报告记录文件清单与验证命令。
 - [ ] AC-5：没有删除用户数据；旧 control.db 按“无读取需求”归档说明处理。
 - [ ] AC-6：full build/check/test + A2A E2E 绿；boundary guard negative test 生效。
+
+## 进展
+
+- 2026-11-24：F032.0 完成。archive tag `archive/task-first-v1` 指向
+  `dd29e1cabbcf7907ee001c6c9440164697d0747e`；inventory 报告
+  `docs/reports/2026-11-24-f032-legacy-inventory.md` 记录 88 files / 800K legacy code、
+  55 allowlist entries、52 个非 legacy shim 文件、3 个直接 import legacy 的测试，
+  以及 legacy CLI/daemon 入口。下一步 F032.1 入口退场。
 
 ## 非目标
 

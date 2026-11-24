@@ -168,6 +168,7 @@ updated: 2026-11-24
 - [pi v1.4.0 baseline verification](reports/2026-10-26-pi-v1.4.0-baseline.md)
 - [F028 live execution record implementation evidence](reports/2026-11-23-f028-live-execution-record.md)
 - [Reuse card thread-first revalidation](reports/2026-11-24-reuse-thread-first-revalidation.md)
+- [F032 legacy inventory](reports/2026-11-24-f032-legacy-inventory.md)
 
 ---
 

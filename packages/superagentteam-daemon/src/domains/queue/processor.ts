@@ -41,6 +41,8 @@ export interface PreparedDispatch {
 	claimId: string;
 	/** Child-TurnExecution capability for the worker's A2A control channel. */
 	credentialToken: string;
+	/** Tracker-owned abort signal; operator cancel aborts this turn. */
+	signal?: AbortSignal;
 }
 
 /**
@@ -120,6 +122,9 @@ type PreflightTarget =
 	  }
 	| { kind: "invalid"; agentId: string; reason: "agent_not_found" | "agent_disabled" | "account_not_found" };
 
+/** Automatic provider retries allowed per manual retry epoch. */
+export const MAX_PROVIDER_ATTEMPTS = 5;
+
 /** Bounded exponential backoff ledger for pre-handoff failures (base 10s, cap 1h; R2-d tunes). */
 export class RetryDeferrals {
 	private readonly nextEligible = new Map<string, number>();
@@ -154,6 +159,11 @@ export class RetryDeferrals {
 export class QueueProcessor {
 	private readonly deps: QueueProcessorDeps;
 	private readonly deferrals = new RetryDeferrals();
+	private readonly providerRetryStart = new Map<string, number>();
+
+	private providerRetryKey(invocationId: string, agentId: string): string {
+		return `${invocationId}\u0000${agentId}`;
+	}
 
 	constructor(deps: QueueProcessorDeps) {
 		this.deps = deps;
@@ -706,6 +716,7 @@ export class QueueProcessor {
 						responseMessageId: `resp:${prepared.turnExecutionId}`,
 						claimId,
 						credentialToken: prepared.credentialToken ?? "",
+						signal: this.deps.tracker.getController(entry.threadId, prepared.agentId)?.signal,
 					});
 				} catch {
 					// P1-2: provider-phase failure must NOT strand an appended
@@ -719,20 +730,34 @@ export class QueueProcessor {
 					// of escaping and skipping the final claim release.
 					const nowP = this.now();
 					const responseMessageId = `resp:${prepared.turnExecutionId}`;
+					const canceled =
+						this.deps.tracker.getController(entry.threadId, prepared.agentId)?.signal.aborted === true;
+					const attempt = this.deps.attempts.get(prepared.attemptId);
+					const retryKey = this.providerRetryKey(invocationId, prepared.agentId);
+					const retryStart = this.providerRetryStart.get(retryKey) ?? 1;
+					const retryBudget = retryStart + MAX_PROVIDER_ATTEMPTS - 1;
+					const retryExhausted = !canceled && (attempt?.attempt ?? 1) >= retryBudget;
+					if (retryExhausted || canceled) this.providerRetryStart.delete(retryKey);
+					const terminalStatus: "canceled" | "failed" = canceled ? "canceled" : "failed";
+					const terminalReason = canceled
+						? "operator_canceled"
+						: retryExhausted
+							? "provider_retry_exhausted"
+							: "provider_phase_failed";
 					try {
 						runInTransaction(this.deps.db, () => {
 							const terminal = this.deps.turns.transitionTerminal(prepared.turnExecutionId, {
-								status: "failed",
+								status: terminalStatus,
 								endedAt: nowP,
-								terminalReason: "provider_phase_failed",
+								terminalReason,
 							});
 							if (terminal.outcome === "not_found" || terminal.outcome === "conflict") {
 								throw new Error("provider_phase_terminal_conflict");
 							}
 							const projected = this.deps.attempts.projectChildTerminal(prepared.attemptId, {
 								turnExecutionId: prepared.turnExecutionId,
-								childStatus: "failed",
-								terminalReason: "provider_phase_failed",
+								childStatus: terminalStatus,
+								terminalReason,
 								endedAt: nowP,
 							});
 							if (projected.outcome === "not_found" || projected.outcome === "terminal_conflict") {
@@ -740,36 +765,47 @@ export class QueueProcessor {
 							}
 							// Credential follows child truth (0007 §5.3, T1
 							// same close-out): canonical-first commitTerminal.
-							const cred = this.deps.credentials.commitTerminal(prepared.turnExecutionId, "failed");
+							const cred = this.deps.credentials.commitTerminal(prepared.turnExecutionId, terminalStatus);
 							if (cred.outcome === "not_found" || cred.outcome === "conflict") {
 								throw new Error("provider_phase_credential_conflict");
 							}
-							// The response R is terminal-failed here (no T2 will
-							// commit it); settle the attempt so T4 has nothing
-							// dangling to recover, and drop the empty draft.
+							// The response R is terminal here (no T2 will commit it);
+							// settle the attempt so T4 has nothing dangling to recover,
+							// and drop the empty draft.
 							this.deps.attempts.setSettlement(prepared.attemptId, "settled", responseMessageId);
 							this.deps.drafts.delete(prepared.turnExecutionId);
 							const response = this.deps.messages.get(responseMessageId, { includeDeleted: true });
 							if (response?.lifecycle?.kind === "response") {
 								this.deps.messages.updateLifecycle(
 									responseMessageId,
-									{ ...response.lifecycle, status: "failed", endedAt: nowP },
+									{ ...response.lifecycle, status: terminalStatus, endedAt: nowP },
 									nowP,
 								);
 							}
-							const restored = this.deps.queue.restoreTargets(entry.threadId, entry.queueEntryId, claimId, {
-								targets: [{ kind: "agent", id: prepared.agentId }],
-								now: nowP,
-							});
-							if (restored.outcome !== "updated") {
-								throw new Error("provider_phase_restore_state_changed");
+							if (retryExhausted) {
+								this.deps.messages.append({
+									id: `retry-exhausted:${prepared.attemptId}`,
+									threadId: entry.threadId,
+									from: { kind: "system", service: "queue" },
+									content: `自动重试 ${MAX_PROVIDER_ATTEMPTS} 次仍失败，已停止自动重试；可在失败消息上手动重试。`,
+									now: nowP,
+								});
+							}
+							if (!canceled && !retryExhausted) {
+								const restored = this.deps.queue.restoreTargets(entry.threadId, entry.queueEntryId, claimId, {
+									targets: [{ kind: "agent", id: prepared.agentId }],
+									now: nowP,
+								});
+								if (restored.outcome !== "updated") {
+									throw new Error("provider_phase_restore_state_changed");
+								}
 							}
 						});
 					} catch (convergenceError) {
 						convergenceFailed.push(prepared.agentId);
 						void convergenceError;
 					} finally {
-						this.deferrals.defer(entry.threadId, prepared.agentId, nowP);
+						if (!canceled && !retryExhausted) this.deferrals.defer(entry.threadId, prepared.agentId, nowP);
 					}
 				}
 			}
@@ -861,6 +897,8 @@ export class QueueProcessor {
 				}
 			}
 			for (const agentId of retryable) {
+				const latest = this.deps.attempts.getLatest(invocationId, agentId);
+				this.providerRetryStart.set(this.providerRetryKey(invocationId, agentId), (latest?.attempt ?? 0) + 1);
 				this.deferrals.reset(this.deps.records.get(invocationId)!.threadId, agentId);
 			}
 		});

@@ -22,6 +22,13 @@ import type { WorkerPoolKey } from "../worker/store.ts";
 // T1 child-terminal / T2 settlement are R2-c; on failure this port throws
 // CLEAN (the R2-a processor convergence owns turn/attempt/credential/R).
 
+export class TurnCanceledError extends Error {
+	constructor() {
+		super("turn_canceled");
+		this.name = "TurnCanceledError";
+	}
+}
+
 export interface RunAgentTurnDeps {
 	db: DatabaseSync;
 	registry: AgentRegistry;
@@ -75,6 +82,7 @@ export class RunAgentTurn implements DispatchTargetPort {
 		if (!attempt || attempt.deliveryState !== "appended") {
 			throw new Error(`turn_attempt_not_appended: ${prepared.attemptId}`);
 		}
+		const aborted = (): boolean => prepared.signal?.aborted === true;
 
 		// Step 2: history window (read-only cursor — ack happens in T1).
 		const window = this.deps.assembler.loadHistory(prepared.threadId, prepared.agentId);
@@ -90,9 +98,18 @@ export class RunAgentTurn implements DispatchTargetPort {
 		// a failure between acquiring the worker and the try block must not
 		// leak the worker (port contract: release before any throw).
 		let handle: Awaited<ReturnType<WorkerPool["ensure"]>> | null = null;
+		let abortCleanup: (() => void) | null = null;
 		try {
 			handle = await this.deps.pool.ensure(poolKey, session, prepared.credentialToken);
 			this.deps.attempts.bindWorker(prepared.attemptId, handle.workerId);
+			const onAbort = (): void => {
+				void handle?.connection.finish("operator-canceled").catch(() => {});
+			};
+			if (prepared.signal) {
+				if (prepared.signal.aborted) onAbort();
+				else prepared.signal.addEventListener("abort", onAbort, { once: true });
+			}
+			abortCleanup = () => prepared.signal?.removeEventListener("abort", onAbort);
 
 			// Bind the pi session identity on first spawn (resume continuity).
 			if (handle.piSessionId && handle.piSessionFile && session.piSessionId === null) {
@@ -148,8 +165,9 @@ export class RunAgentTurn implements DispatchTargetPort {
 				// Step 5: prompt RPC. markPromptDelivered fires from onAccepted —
 				// the provider has the payload; later failures still ack
 				// (0010 §6.1.3 row 7 semantics live in T1/R2-c).
-				await handle.connection.promptAndWait(prompt, {
+				const promptResult = await handle.connection.promptAndWait(prompt, {
 					timeoutMs: this.deps.promptTimeoutMs ?? 300_000,
+					signal: prepared.signal,
 					onAccepted: () => {
 						runInTransaction(this.deps.db, () => {
 							this.deps.attempts.markPromptDelivered(prepared.attemptId, {
@@ -159,10 +177,12 @@ export class RunAgentTurn implements DispatchTargetPort {
 						});
 					},
 				});
+				if (promptResult.aborted || aborted()) throw new TurnCanceledError();
 			} finally {
 				offEvent();
 			}
 
+			if (aborted()) throw new TurnCanceledError();
 			const summary = sink.summary();
 			const lifecycle = new TurnExecutionLifecycle(this.settlementDeps());
 			const committer = new RouteResponseCommitter(this.settlementDeps());
@@ -222,8 +242,9 @@ export class RunAgentTurn implements DispatchTargetPort {
 			// 0010 §6.1.1 step 10 (R2-c): worker release AFTER T2 settlement —
 			// the response R is committed (or safely response_pending) before
 			// the carrier retires; the pi session file survives regardless.
+			abortCleanup?.();
 			if (handle) {
-				await this.deps.pool.release(handle, "turn-complete").catch(() => {});
+				await this.deps.pool.release(handle, aborted() ? "operator-canceled" : "turn-complete").catch(() => {});
 			}
 		}
 	}

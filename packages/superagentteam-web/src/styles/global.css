@@ -681,12 +681,19 @@ svg {
 	overflow: hidden;
 }
 
+.st-live-pills {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	min-width: 0;
+}
+
 .st-live-pill {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
 	max-width: 320px;
-	padding: 3px 9px;
+	padding: 4px 9px;
 	border-radius: 999px;
 	background: var(--st-primary-soft);
 	color: var(--st-primary-active);
@@ -696,11 +703,30 @@ svg {
 	text-overflow: ellipsis;
 }
 
-.st-live-pill > span:last-child {
+.st-live-text {
 	min-width: 0;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
+}
+
+.st-live-stop {
+	flex: none;
+	min-width: 24px;
+	min-height: 20px;
+	margin: -4px -6px -4px 0;
+	padding: 0 6px;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	font-size: 9px;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.st-live-stop:hover {
+	color: var(--st-danger, #c0392b);
 }
 
 .st-status-pill {
@@ -1781,6 +1807,12 @@ svg {
 .st-queue-count {
 	font-family: var(--st-font-mono);
 	font-weight: 500;
+}
+
+.st-queue-note {
+	margin: 0;
+	color: var(--st-muted);
+	font-size: 9px;
 }
 
 .st-queue-rows {

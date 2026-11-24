@@ -15,8 +15,16 @@ export function QueueStrip({ queue, agents, cap }: QueueStripProps) {
 		<section className="st-queue-strip" aria-label="消息队列">
 			<div className="st-queue-header">
 				<span>队列</span>
-				<span className="st-queue-count">{cap === undefined ? queue.length : `${queue.length} / ${cap}`}</span>
+				<span
+					className="st-queue-count"
+					title={cap === undefined ? undefined : `直接消息与 agent 唤醒分别计数，各自最多 ${cap} 条（v1 固定）`}
+				>
+					{cap === undefined ? queue.length : `${queue.length} / ${cap}`}
+				</span>
 			</div>
+			{cap === undefined ? null : (
+				<p className="st-queue-note">每个对话：消息最多 {cap} 条、agent 唤醒最多 {cap} 条（v1 固定）</p>
+			)}
 			<div className="st-queue-rows">
 				{queue.map((entry) => (
 					<div className="st-queue-row" key={entry.queueEntryId}>

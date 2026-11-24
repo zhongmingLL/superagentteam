@@ -44,10 +44,16 @@ export interface RetryInvocationReceipt {
 	retriedAgentIds: string[];
 }
 
+export interface CancelAgentReceipt {
+	status: "canceling";
+	agentId: string;
+}
+
 export interface A2AApi {
 	queue(threadId: string): Promise<QueueSnapshot>;
 	live(threadId: string): Promise<LiveSnapshot>;
 	retryInvocation(threadId: string, invocationId: string): Promise<RetryInvocationReceipt>;
+	cancelAgent(threadId: string, agentId: string): Promise<CancelAgentReceipt>;
 }
 
 export function createA2AApi(client: Pick<ApiClient, "get" | "post">): A2AApi {
@@ -57,6 +63,11 @@ export function createA2AApi(client: Pick<ApiClient, "get" | "post">): A2AApi {
 		retryInvocation: (threadId, invocationId) =>
 			client.post<RetryInvocationReceipt>(
 				`/api/threads/${encodeURIComponent(threadId)}/invocations/${encodeURIComponent(invocationId)}/retry`,
+				{},
+			),
+		cancelAgent: (threadId, agentId) =>
+			client.post<CancelAgentReceipt>(
+				`/api/threads/${encodeURIComponent(threadId)}/agents/${encodeURIComponent(agentId)}/cancel`,
 				{},
 			),
 	};

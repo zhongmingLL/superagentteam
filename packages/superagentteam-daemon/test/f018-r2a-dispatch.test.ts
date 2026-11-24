@@ -636,4 +636,137 @@ describe("QueueProcessor (0007 §3.2)", () => {
 		expect(w.records.get(`inv:t1:${first.message.id}`)).toBeNull();
 		expect(w.records.get(`inv:t1:${second.message.id}`)).toBeNull();
 	});
+
+	it("F034: stops automatic provider retries after 5 attempts", async () => {
+		const w = makeWorld();
+		const submitted = w.ingress.submit({ threadId: "t1", userId: "u1", body: "go @a1", now: 10 });
+		let now = 1000;
+		let calls = 0;
+		const processor = new QueueProcessor({
+			db: w.db,
+			registry: w.registry,
+			queue: w.queue,
+			records: w.records,
+			turns: w.turns,
+			attempts: w.attempts,
+			sessions: w.sessions,
+			credentials: w.credentials,
+			drafts: w.drafts,
+			messages: w.messages,
+			threads: w.threads,
+			tracker: w.tracker,
+			dispatchTarget: {
+				async dispatch() {
+					calls += 1;
+					throw new Error("provider exploded");
+				},
+			},
+			clock: () => now,
+		});
+		for (let index = 0; index < 5; index += 1) {
+			await processor.drain("t1", "u1");
+			now += 600_000;
+		}
+		const invocationId = `inv:t1:${submitted.message.id}`;
+		const attempt = w.attempts.getLatest(invocationId, "a1");
+		expect(calls).toBe(5);
+		expect(attempt?.attempt).toBe(5);
+		expect(attempt?.deliveryState).toBe("failed");
+		expect(attempt?.terminalReason).toBe("provider_retry_exhausted");
+		expect(w.queue.listQueued("t1")).toHaveLength(0);
+		expect(w.records.get(invocationId)?.status).toBe("failed");
+		expect(w.messages.getByThread("t1", 50).some((message) => message.content.includes("自动重试 5 次仍失败"))).toBe(
+			true,
+		);
+	});
+
+	it("F034: manual retry opens a fresh 5-attempt budget", async () => {
+		const w = makeWorld();
+		const submitted = w.ingress.submit({ threadId: "t1", userId: "u1", body: "go @a1", now: 10 });
+		let now = 1000;
+		let fail = true;
+		const processor = new QueueProcessor({
+			db: w.db,
+			registry: w.registry,
+			queue: w.queue,
+			records: w.records,
+			turns: w.turns,
+			attempts: w.attempts,
+			sessions: w.sessions,
+			credentials: w.credentials,
+			drafts: w.drafts,
+			messages: w.messages,
+			threads: w.threads,
+			tracker: w.tracker,
+			dispatchTarget: {
+				async dispatch() {
+					if (fail) throw new Error("provider exploded");
+				},
+			},
+			clock: () => now,
+		});
+		for (let index = 0; index < 5; index += 1) {
+			await processor.drain("t1", "u1");
+			now += 600_000;
+		}
+		const invocationId = `inv:t1:${submitted.message.id}`;
+		expect(processor.requestRetry(invocationId).outcome).toBe("admitted");
+		expect(w.queue.listQueued("t1")).toHaveLength(1);
+		fail = false;
+		await processor.drain("t1", "u1");
+		const attempt = w.attempts.getLatest(invocationId, "a1");
+		expect(attempt?.attempt).toBe(6);
+		expect(attempt?.deliveryState).toBe("appended");
+	});
+
+	it("F034: canceling a running target terminalizes canceled and does not requeue", async () => {
+		const w = makeWorld();
+		const submitted = w.ingress.submit({ threadId: "t1", userId: "u1", body: "go @a1", now: 10 });
+		const processor = new QueueProcessor({
+			db: w.db,
+			registry: w.registry,
+			queue: w.queue,
+			records: w.records,
+			turns: w.turns,
+			attempts: w.attempts,
+			sessions: w.sessions,
+			credentials: w.credentials,
+			drafts: w.drafts,
+			messages: w.messages,
+			threads: w.threads,
+			tracker: w.tracker,
+			dispatchTarget: {
+				async dispatch(prepared) {
+					await new Promise<void>((_resolve, reject) => {
+						const signal = prepared.signal;
+						if (!signal) {
+							reject(new Error("missing cancel signal"));
+							return;
+						}
+						if (signal.aborted) {
+							reject(new Error("aborted"));
+							return;
+						}
+						signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+					});
+				},
+			},
+			clock: () => 1000,
+		});
+		const draining = processor.drain("t1", "u1");
+		await vi.waitFor(() => {
+			expect(w.tracker.getController("t1", "a1")).toBeDefined();
+		});
+		w.tracker.getController("t1", "a1")?.abort();
+		await draining;
+		const invocationId = `inv:t1:${submitted.message.id}`;
+		const attempt = w.attempts.getLatest(invocationId, "a1");
+		expect(attempt?.deliveryState).toBe("canceled");
+		expect(attempt?.terminalReason).toBe("operator_canceled");
+		expect(w.turns.get(attempt!.turnExecutionId!)?.status).toBe("canceled");
+		const responseMessage = w.messages.get(`resp:${attempt!.turnExecutionId}`);
+		expect(responseMessage?.lifecycle).toMatchObject({ kind: "response", status: "canceled" });
+		expect(w.queue.listQueued("t1")).toHaveLength(0);
+		expect(w.records.get(invocationId)?.status).toBe("canceled");
+	});
 });

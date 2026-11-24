@@ -104,6 +104,7 @@ export interface RuntimeStatusReport {
 	readonly web?: RuntimeStatusProcess;
 	readonly health?: { readonly daemon: boolean; readonly web: boolean };
 	readonly windowsProxy: "configured" | "unverified" | "not_configured";
+	readonly warnings?: readonly string[];
 	readonly daemonBootId?: string | null;
 	readonly lastError?: { readonly code: string; readonly message: string };
 }

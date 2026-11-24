@@ -183,6 +183,8 @@ describe("RuntimeService", () => {
 		const daemon = state?.daemon;
 		expect(daemon).not.toBeNull();
 		h.world.identities.set(daemon!.pid, { ...daemon!, startedAt: "reused" });
+		const report = await h.service.status();
+		expect(report.warnings?.join(" ")).toContain(`daemon pid ${daemon!.pid}`);
 		const result = await h.service.end();
 		expect(result.state).toBe("degraded");
 		expect(result.mismatched).toContain(daemon!.pid);

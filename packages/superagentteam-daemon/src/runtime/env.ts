@@ -51,10 +51,25 @@ export function readAccountsFile(dataDir: string): RuntimeEnvAccount[] {
 	);
 }
 
+const ENV_PATTERN = /^[A-Z_][A-Za-z0-9_]*$/;
+
+/** Mirror F030 `AccountStore.credentialKind`: secret refs need no env; ENV:/bare names do. */
+export function envNameFromApiKeyRef(ref: string): string | null {
+	if (ref.startsWith("secret:")) return null;
+	if (ref.startsWith("ENV:")) {
+		const name = ref.slice(4);
+		return name === "" ? null : name;
+	}
+	return ENV_PATTERN.test(ref) ? ref : null;
+}
+
 export function requiredEnvNames(accounts: readonly RuntimeEnvAccount[]): string[] {
 	const names = new Set<string>();
 	for (const account of accounts) {
-		if (account.apiKeyRef) names.add(account.apiKeyRef);
+		if (account.apiKeyRef) {
+			const name = envNameFromApiKeyRef(account.apiKeyRef);
+			if (name) names.add(name);
+		}
 		if (account.credential?.kind === "env" && account.credential.envName) names.add(account.credential.envName);
 	}
 	return [...names].sort();

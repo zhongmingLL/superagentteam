@@ -119,6 +119,7 @@ async function status(context: CliCommandContext): Promise<number> {
 				`web pid: ${report.web.pid || "-"} alive=${report.web.alive} verified=${report.web.identityVerified}`,
 			);
 		if (report.health) writeLine(`health: daemon=${report.health.daemon} web=${report.health.web}`);
+		for (const warning of report.warnings ?? []) writeLine(`warning: ${warning}`);
 		if (report.lastError) writeLine(`last error: ${report.lastError.code}: ${report.lastError.message}`);
 		writeLine(`state file: ${report.stateFile}`);
 	}

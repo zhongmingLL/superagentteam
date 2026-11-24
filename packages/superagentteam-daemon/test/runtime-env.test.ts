@@ -23,20 +23,26 @@ describe("runtime env", () => {
 		expect(parsed).toEqual({ KIMI_API_KEY: "secret", PLAIN: "value", EMPTY: "" });
 	});
 
+	it("normalizes F030 apiKeyRef shapes", () => {
+		expect(requiredEnvNames([{ ref: "kimi", apiKeyRef: "secret:kimi" }])).toEqual([]);
+		expect(requiredEnvNames([{ ref: "kimi", apiKeyRef: "ENV:KIMI_API_KEY" }])).toEqual(["KIMI_API_KEY"]);
+		expect(requiredEnvNames([{ ref: "kimi", apiKeyRef: "KIMI_API_KEY" }])).toEqual(["KIMI_API_KEY"]);
+		expect(requiredEnvNames([{ ref: "kimi", credential: { kind: "env", envName: "OTHER_KEY" } }])).toEqual([
+			"OTHER_KEY",
+		]);
+		expect(requiredEnvNames([{ ref: "kimi", credential: { kind: "stored" } }])).toEqual([]);
+	});
+
 	it("requires env names referenced by accounts.json", () => {
 		const dir = tempDir();
 		writeFileSync(
 			join(dir, "accounts.json"),
 			JSON.stringify([
-				{ ref: "kimi", apiKeyRef: "KIMI_API_KEY" },
-				{ ref: "other", credential: { kind: "stored" } },
+				{ ref: "kimi", apiKeyRef: "ENV:KIMI_API_KEY" },
+				{ ref: "stored", apiKeyRef: "secret:stored" },
 			]),
 		);
 		const resolved = resolveRuntimeEnv({ dataDir: dir, inherited: {} });
-		expect(requiredEnvNames([{ ref: "kimi", apiKeyRef: "KIMI_API_KEY" }])).toEqual(["KIMI_API_KEY"]);
-		expect(requiredEnvNames([{ ref: "kimi", credential: { kind: "env", envName: "OTHER_KEY" } }])).toEqual([
-			"OTHER_KEY",
-		]);
 		expect(resolved.requiredEnvNames).toEqual(["KIMI_API_KEY"]);
 		expect(resolved.missingEnvNames).toEqual(["KIMI_API_KEY"]);
 	});

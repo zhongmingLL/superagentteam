@@ -174,6 +174,13 @@ export class RuntimeService {
 				web: await this.options.health.web(state.webPort),
 			};
 		}
+		const warnings: string[] = [];
+		if (daemon.alive && !daemon.identityVerified) {
+			warnings.push(`daemon pid ${daemon.pid} is alive but its identity no longer matches the recorded process`);
+		}
+		if (web.alive && !web.identityVerified) {
+			warnings.push(`web pid ${web.pid} is alive but its identity no longer matches the recorded process`);
+		}
 		let lifecycle: RuntimeStatusReport["state"];
 		if (state.state === "failed") lifecycle = "failed";
 		else if (state.state === "stopped") lifecycle = "stopped";
@@ -201,6 +208,7 @@ export class RuntimeService {
 					: state.webPort === 3005 && health?.web
 						? "configured"
 						: "unverified",
+			warnings: warnings.length > 0 ? warnings : undefined,
 			daemonBootId: state.daemonBootId,
 			lastError: state.lastError,
 		};

@@ -104,6 +104,9 @@ F025 的真实 provider E2E 通过 `/home/ming/.env` 提供 key，是临时方�
   - 实机 3104：新建 `Agent D` 成功；编辑 Agent A 表单正确预填；
   - 验证：daemon 135 files / 901 tests；web 99 tests；typecheck/build/doc-index pass。
   - 证据：`docs/design/F030/agent-editor-1440.png`、`agent-editor-edit-1440.png`。
+- 2026-11-24：墨墨 vision/UX approve @ `12fa07ae8`；P3（未配置凭据的 account
+  在 agent 编辑器里无提示）已补：选中 credential=none 的 account 时显示
+  amber 提示「该账号还没有凭据，首次运行会失败」；不硬阻塞创建。
 
 ## 风险与回滚
 

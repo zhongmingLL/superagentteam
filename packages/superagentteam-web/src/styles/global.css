@@ -2455,6 +2455,16 @@ svg {
 	width: 100%;
 }
 
+.st-agent-credential-warning {
+	margin: 0;
+	padding: 6px 9px;
+	border: 1px solid var(--st-warning);
+	border-radius: var(--st-radius-sm);
+	background: color-mix(in srgb, var(--st-warning) 10%, transparent);
+	color: var(--st-warning);
+	font-size: 10.5px;
+}
+
 @media (max-width: 600px) {
 	.st-account-form-grid {
 		grid-template-columns: minmax(0, 1fr);

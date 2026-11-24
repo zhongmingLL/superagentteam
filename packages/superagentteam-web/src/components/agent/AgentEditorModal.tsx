@@ -202,6 +202,11 @@ export function AgentEditorModal({
 								</div>
 							</div>
 						) : null}
+						{selectedAccount?.credential.kind === "none" ? (
+							<p className="st-agent-credential-warning" role="status">
+								该账号还没有凭据，首次运行会失败——可先创建后补 key。
+							</p>
+						) : null}
 						<label className="st-field">
 							<span>model</span>
 							<select

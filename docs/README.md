@@ -88,6 +88,7 @@ updated: 2026-11-24
 | [`features/F030-account-agent-management.md`](features/F030-account-agent-management.md) | F030：Account & agent management（凭据契约、account 设置页、agent 创建/编辑、worker 隔离） |
 | [`features/F031-rich-block-producer.md`](features/F031-rich-block-producer.md) | F031：Rich block producer（agent 创建富块、draft 暂存、settlement 落最终消息、rich-messaging skill） |
 | [`features/F032-task-first-legacy-retirement.md`](features/F032-task-first-legacy-retirement.md) | F032：Task-first legacy retirement（archive reference、删除 legacy runtime/shims/tests、保留历史文档） |
+| [`features/F033-runtime-startup-worktrees.md`](features/F033-runtime-startup-worktrees.md) | F033：Local runtime startup & worktree isolation（单一入口、runtime/test worktree、固定端口、受管生命周期、Windows proxy） |
 | [`plans/0015-w6c-observability-trajectory.md`](plans/0015-w6c-observability-trajectory.md) | W6c observability/trajectory 实施计划与 AC 映射 |
 | [`plans/0018-f016a-a2a-ingress-e2e.md`](plans/0018-f016a-a2a-ingress-e2e.md) | F016a：8 类 ingress × scenario real RPC E2E、P0 工具面、withdraw/parallel/loop guard |
 | [`plans/0020-f018-thread-first-runtime.md`](plans/0020-f018-thread-first-runtime.md) | F018：A2A runtime v1 R0-R5、AgentConfig/Registry、schema/migration、same/cross-thread post、multi_mention fan-out、验收与回滚 |
@@ -169,6 +170,7 @@ updated: 2026-11-24
 - [F028 live execution record implementation evidence](reports/2026-11-23-f028-live-execution-record.md)
 - [Reuse card thread-first revalidation](reports/2026-11-24-reuse-thread-first-revalidation.md)
 - [F032 legacy inventory](reports/2026-11-24-f032-legacy-inventory.md)
+- [Runtime startup investigation](reports/2026-11-25-runtime-startup-investigation.md)
 
 ---
 

@@ -20,3 +20,13 @@ skills:
     output: "finding list with severity and stance"
     next: null
     sop_step: request-review
+  - skillId: superagentteam-rich-messaging
+    path: skills/superagentteam-rich-messaging
+    sourceKind: repo-local
+    category: presentation
+    not_for:
+      - plain text answers that need no structure
+      - approval or permission cards
+    output: "one or more rich blocks attached to the current response"
+    next: null
+    sop_step: response-composition

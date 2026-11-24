@@ -3,9 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AgentSession } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it } from "vitest";
-
-import { freshPiSessionId, PiWorkerSpawnPort } from "../src/domains/worker/pi-spawn.ts";
 import { AccountStore } from "../src/domains/account/store.ts";
+import { freshPiSessionId, PiWorkerSpawnPort, resolveRichMessagingSkillPath } from "../src/domains/worker/pi-spawn.ts";
 
 // F018 R3-d: real child-process spawn contract. This is not a mock spawn port:
 // PiWorkerSpawnPort launches a Node process over stdio and speaks the pi RPC
@@ -92,6 +91,7 @@ describe("F018 R3-d real worker spawn surface", () => {
 			sessionDir,
 			workerAgentDir,
 			controlSocketPath: "/tmp/superagentteam-a2a.sock",
+			richMessagingSkillPath: "/tmp/superagentteam-rich-messaging",
 			env: { ...process.env, SPAWN_CONTRACT_FILE: contractFile },
 			offline: true,
 		});
@@ -124,6 +124,8 @@ describe("F018 R3-d real worker spawn surface", () => {
 					"--no-extensions",
 					"--no-context-files",
 					"--no-mcp",
+					"--skill",
+					"/tmp/superagentteam-rich-messaging",
 					"--approve",
 					"--provider",
 					"openrouter",
@@ -147,6 +149,11 @@ describe("F018 R3-d real worker spawn surface", () => {
 		} finally {
 			await spawned.connection.finish();
 		}
+	});
+
+	it("resolves the shipped rich-messaging skill path", () => {
+		const path = resolveRichMessagingSkillPath();
+		expect(path).toContain("superagentteam-rich-messaging");
 	});
 
 	it("isolates account credentials and base URL into the worker agent dir", async () => {

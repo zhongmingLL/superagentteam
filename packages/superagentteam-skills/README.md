@@ -3,6 +3,9 @@
 Curated skill catalog for SuperAgentTeam. The manifest lists only routing metadata; the skill
 `name`, `description`, and `triggers` come from each `SKILL.md` frontmatter.
 
+The shipped catalog contains `superagentteam-verify`, `superagentteam-review`, and
+`superagentteam-rich-messaging`.
+
 ```ts
 import { loadCuratedCatalog } from "@superagentteam/skills";
 

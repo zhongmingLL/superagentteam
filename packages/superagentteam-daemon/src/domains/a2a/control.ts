@@ -8,6 +8,7 @@ import type { InvocationCredential, ThreadContextInput, TurnExecution } from "@s
 import type { InvocationCredentialStore } from "../auth/store.ts";
 import type { TurnExecutionStore } from "../invocation/store.ts";
 import type { MultiMentionInput, MultiMentionOrchestrator } from "../multi-mention/orchestrator.ts";
+import { RichBlockError, type RichBlockService } from "../rich-block/service.ts";
 import type { WorkerBindingStore, WorkerStore } from "../worker/store.ts";
 import type { ThreadContextService } from "./thread-context.ts";
 import {
@@ -22,7 +23,8 @@ import { A2A_V1_TOOL_NAMES, type A2A_V1ToolName } from "./tool-surface.ts";
 // F018 R5-a: credential-scoped local control channel for the v1 pi extension.
 // A worker process authenticates with its child-TurnExecution token; the
 // server re-checks credential state, worker binding, and running turn before
-// dispatching to the four A2A services. No task/role/run coordinates.
+// dispatching to the four A2A services or the F031 rich-block producer. No
+// task/role/run coordinates.
 
 const MAX_FRAME_BYTES = 4 * 1024 * 1024;
 const MAX_CONNECTIONS = 128;
@@ -55,6 +57,7 @@ export interface A2AControlServerDeps {
 	a2aTools: A2AToolService;
 	multiMention: MultiMentionOrchestrator;
 	threadContext: ThreadContextService;
+	richBlocks: RichBlockService;
 	clock?: () => number;
 	leaseTtlMs?: number;
 }
@@ -211,7 +214,7 @@ export class A2AControlServer {
 			const result = await this.handle(request);
 			this.reply(socket, { id: request.id, ok: true, result });
 		} catch (error) {
-			if (error instanceof A2AControlError || error instanceof A2AToolError) {
+			if (error instanceof A2AControlError || error instanceof A2AToolError || error instanceof RichBlockError) {
 				this.reply(socket, { id: request.id, ok: false, error: { code: error.code, message: error.message } });
 				return;
 			}
@@ -234,7 +237,17 @@ export class A2AControlServer {
 			return { workerId };
 		}
 		if (request.type === "a2a_call") return this.handleA2ACall(request);
+		if (request.type === "rich_block_create") return this.handleRichBlockCreate(request);
 		throw new A2AControlError("invalid_request", `unknown control request type ${String(request.type)}`);
+	}
+
+	private handleRichBlockCreate(request: ControlRequest): unknown {
+		const input = objectInput(request.input);
+		const { credential } = this.resolveWorker(request, true);
+		if (!credential.allowedTools.includes("create_rich_block")) {
+			throw new A2AToolError("tool_not_allowed", "credential does not allow create_rich_block");
+		}
+		return this.deps.richBlocks.create(credential.turnExecutionId, input.block);
 	}
 
 	private handleA2ACall(request: ControlRequest): unknown {

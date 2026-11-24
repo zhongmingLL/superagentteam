@@ -1,10 +1,10 @@
-import type { RichMessageExtra } from "@superagentteam/shared/types";
+import { MAX_RICH_BLOCKS, type RichMessageExtra } from "@superagentteam/shared/types";
 
 import { MessageContent } from "./MessageContent";
 
 type RichBlock = RichMessageExtra["blocks"][number];
 
-const MAX_BLOCKS = 20;
+const MAX_BLOCKS = MAX_RICH_BLOCKS;
 const MAX_MEDIA_ITEMS = 8;
 const MIN_WIDGET_HEIGHT = 50;
 const MAX_WIDGET_HEIGHT = 800;

@@ -362,6 +362,7 @@ describe("ResponseEventSink (0007 §3.6.1)", () => {
 			content: "",
 			toolEvents: [],
 			thinking: null,
+			richBlocks: [],
 			createdAt: 10,
 			updatedAt: 10,
 		});

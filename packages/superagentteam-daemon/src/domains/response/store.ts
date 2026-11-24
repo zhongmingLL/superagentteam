@@ -1,6 +1,12 @@
 import type { DatabaseSync } from "node:sqlite";
 
-import type { DraftRecord, StoredToolEvent } from "@superagentteam/shared/types";
+import {
+	type DraftContentSnapshot,
+	type DraftRecord,
+	MAX_RICH_BLOCKS,
+	type RichBlock,
+	type StoredToolEvent,
+} from "@superagentteam/shared/types";
 
 // F018 R1-c ResponseDraftStore (0017 §4-§7): one DraftRecord per attempt/
 // turn; full-snapshot upsert; deletion is final (late flush returns null and
@@ -15,6 +21,7 @@ interface DraftRow {
 	content: string;
 	tool_events_json: string;
 	thinking: string | null;
+	rich_blocks_json: string;
 	created_at: number;
 	updated_at: number;
 }
@@ -29,6 +36,7 @@ function mapDraft(row: DraftRow): DraftRecord {
 		content: row.content,
 		toolEvents: JSON.parse(row.tool_events_json) as StoredToolEvent[],
 		thinking: row.thinking,
+		richBlocks: JSON.parse(row.rich_blocks_json) as RichBlock[],
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 	};
@@ -78,8 +86,8 @@ export class ResponseDraftStore {
 		}
 		this.db
 			.prepare(
-				`INSERT INTO response_drafts (attempt_id, turn_execution_id, parent_invocation_id, thread_id, agent_id, content, tool_events_json, thinking, created_at, updated_at)
-				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				`INSERT INTO response_drafts (attempt_id, turn_execution_id, parent_invocation_id, thread_id, agent_id, content, tool_events_json, thinking, rich_blocks_json, created_at, updated_at)
+				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			)
 			.run(
 				draft.attemptId,
@@ -90,6 +98,7 @@ export class ResponseDraftStore {
 				draft.content,
 				JSON.stringify(draft.toolEvents),
 				draft.thinking,
+				JSON.stringify(draft.richBlocks),
 				draft.createdAt,
 				draft.updatedAt,
 			);
@@ -100,7 +109,7 @@ export class ResponseDraftStore {
 	 * WorkerEventSink flush: full snapshot, last-write-wins. Row deleted by
 	 * T2/T4 → returns null and does NOT recreate (0017 §5.3).
 	 */
-	upsert(draft: DraftRecord): DraftRecord | null {
+	upsert(draft: DraftContentSnapshot): DraftRecord | null {
 		// 0017 §4: identity is turnExecutionId; the attempt key may not drift.
 		const changes = this.db
 			.prepare(
@@ -116,6 +125,30 @@ export class ResponseDraftStore {
 				draft.attemptId,
 			).changes;
 		return changes > 0 ? this.getByTurn(draft.turnExecutionId) : null;
+	}
+
+	/**
+	 * F031: rich blocks have their own writer because the content flush is a
+	 * full snapshot. Same id replaces (idempotent tool retry); a new id appends
+	 * until MAX_RICH_BLOCKS. Missing draft (T2/T4 already deleted) returns null.
+	 */
+	upsertRichBlock(turnExecutionId: string, block: RichBlock, now = Date.now()): RichBlock[] | null {
+		const row = this.db
+			.prepare("SELECT rich_blocks_json FROM response_drafts WHERE turn_execution_id = ?")
+			.get(turnExecutionId) as { rich_blocks_json: string } | undefined;
+		if (!row) return null;
+		const blocks = JSON.parse(row.rich_blocks_json) as RichBlock[];
+		const index = blocks.findIndex((existing) => existing.id === block.id);
+		if (index >= 0) {
+			blocks[index] = block;
+		} else {
+			if (blocks.length >= MAX_RICH_BLOCKS) throw new Error("rich_block_too_many");
+			blocks.push(block);
+		}
+		this.db
+			.prepare("UPDATE response_drafts SET rich_blocks_json = ?, updated_at = ? WHERE turn_execution_id = ?")
+			.run(JSON.stringify(blocks), now, turnExecutionId);
+		return blocks;
 	}
 
 	getByTurn(turnExecutionId: string): DraftRecord | null {

@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F031]
 related_features: [superagentteam/F018, superagentteam/F028, superagentteam/F029, superagentteam/F030]
 title: "F031: Rich block producer — agent-created rich blocks in responses"
-status: spec
+status: review
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -135,6 +135,25 @@ Clowder 的参考链路是 **skill 负责判断、tool 负责写入、draft 负�
       能说明何时用哪种 block。
 - [ ] AC-6：migration up/down、store、control、settlement、web 渲染测试全绿；
       真实 E2E 与 1440/390 截图有记录。
+
+## 进展
+
+- 2026-11-24：F031.1–F031.5 已实现，待独立 review。
+- **F031.1**：shared 导出 `RichBlock` / `MAX_RICH_BLOCKS` / `MAX_RICH_BLOCK_BYTES`；
+  `DraftRecord.richBlocks`；migration 007 `response_drafts.rich_blocks_json`；
+  `ResponseDraftStore.upsertRichBlock` 独立写、content flush 不覆盖。
+- **F031.2**：`superagentteam_create_rich_block` 工具 + `rich_block_create` control；
+  credential allowlist 增加 `create_rich_block`；未知 kind/approval/超限/超大均 typed
+  reject；同 id 幂等 replace。
+- **F031.3**：T2/T4 从 draft 读取富块写入最终 response 的 `extra.rich`；无富块不写空
+  `rich`；`0017` 契约已同步。
+- **F031.4**：`superagentteam-rich-messaging` skill 注册；v1 worker 通过显式
+  `--skill` 注入，保留 `--no-skills` 关闭目录发现。
+- **F031.5 证据**：daemon 136 files / 912 tests passed（3 skipped）；web 24 files /
+  99 tests；skills 15 tests；根级 `npm run check` 通过。真实 provider E2E 在 Hub 新建
+  thread `thread:a0e22bbd7058fd21473d44eb9c7393e1`，agentA 实际调用两次 producer，
+  最终回复 `extra.rich` 包含 card + checklist，刷新后仍在，browser console 0 error。
+  截图：`docs/design/F031/rich-blocks-{1440,390}-{light,dark}.png`。
 
 ## 依赖与风险
 

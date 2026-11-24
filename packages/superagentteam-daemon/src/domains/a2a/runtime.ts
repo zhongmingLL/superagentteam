@@ -16,6 +16,7 @@ import { QueueProcessor } from "../queue/processor.ts";
 import { QueueLedgerStore } from "../queue/store.ts";
 import { InvocationTracker } from "../queue/tracker.ts";
 import { ResponseDraftStore } from "../response/store.ts";
+import { RichBlockService } from "../rich-block/service.ts";
 import { AgentSessionStore } from "../session/store.ts";
 import { ThreadStore } from "../thread/store.ts";
 import { WorkerPool, type WorkerSpawnPort } from "../worker/pool.ts";
@@ -110,6 +111,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		clock,
 	});
 	const threadContext = new ThreadContextService({ threads, messages });
+	const richBlocks = new RichBlockService({ drafts, clock });
 	const multiMentionOrchestrator = new MultiMentionOrchestrator({
 		db,
 		registry: deps.registry,
@@ -134,6 +136,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 				a2aTools,
 				multiMention: multiMentionOrchestrator,
 				threadContext,
+				richBlocks,
 				clock,
 			})
 		: null;

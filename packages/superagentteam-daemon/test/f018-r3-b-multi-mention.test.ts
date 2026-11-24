@@ -363,7 +363,7 @@ describe("F018 R3-b multi_mention create", () => {
 			expect(child.causal.multiMentionRequestId).toBe(created.requestId);
 			expect(child.causal.multiMentionCallbackDepth).toBeUndefined();
 			expect(w.runtime.credentials.getByTurn(child.turnExecutionId)?.allowedTools.sort()).toEqual(
-				["cross_post_message", "multi_mention", "post_message", "thread_context"].sort(),
+				["cross_post_message", "create_rich_block", "multi_mention", "post_message", "thread_context"].sort(),
 			);
 		}
 		expect(w.runtime.threads.listParticipants("t1")).toEqual(expect.arrayContaining(["a2", "a3"]));

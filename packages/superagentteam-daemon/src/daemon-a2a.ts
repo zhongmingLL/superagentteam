@@ -8,7 +8,11 @@ import { AccountStore } from "./domains/account/store.ts";
 import type { AgentRegistry } from "./domains/agent/registry.ts";
 import { loadRegistryFromFiles } from "./domains/agent/registry.ts";
 import type { ChangeBus } from "./domains/events/bus.ts";
-import { PiWorkerSpawnPort, resolveA2AExtensionPath } from "./domains/worker/pi-spawn.ts";
+import {
+	PiWorkerSpawnPort,
+	resolveA2AExtensionPath,
+	resolveRichMessagingSkillPath,
+} from "./domains/worker/pi-spawn.ts";
 import type { WorkerSpawnPort } from "./domains/worker/pool.ts";
 import { envValue } from "./env.ts";
 import { DaemonError } from "./errors.ts";
@@ -128,6 +132,7 @@ export class A2ADaemonControlPlane {
 					workerAgentDir: options.workerAgentDir ?? join(options.dataDir, "worker-agent"),
 					extensionPath: options.extensionPath ?? resolveA2AExtensionPath(),
 					controlSocketPath: this.controlSocket,
+					richMessagingSkillPath: resolveRichMessagingSkillPath() ?? undefined,
 					offline: options.offline ?? true,
 					env: options.env,
 					accountStore,

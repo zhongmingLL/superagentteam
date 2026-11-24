@@ -64,7 +64,7 @@ describe("F018 greenfield migration harness", () => {
 
 	it("applies pending migrations and is idempotent on re-run", () => {
 		const { db } = makeDb();
-		expect(db.migrateUp()).toBe(6);
+		expect(db.migrateUp()).toBe(7);
 		expect(db.migrateUp()).toBe(0);
 		expect(db.appliedVersions().map((row) => row.name)).toEqual([
 			"core",
@@ -73,12 +73,22 @@ describe("F018 greenfield migration harness", () => {
 			"auth-session-worker-draft",
 			"multi-mention",
 			"thread-read-state",
+			"rich-blocks",
 		]);
 	});
 
 	it("rolls back the newest migration and re-applies it", () => {
 		const { db } = makeDb();
 		db.migrateUp();
+		expect(db.migrateDown()).toBe(true);
+		expect(db.appliedVersions().map((row) => row.name)).toEqual([
+			"core",
+			"messages",
+			"invocation-queue",
+			"auth-session-worker-draft",
+			"multi-mention",
+			"thread-read-state",
+		]);
 		expect(db.migrateDown()).toBe(true);
 		expect(db.appliedVersions().map((row) => row.name)).toEqual([
 			"core",
@@ -110,7 +120,30 @@ describe("F018 greenfield migration harness", () => {
 		expect(tables).not.toContain("threads");
 		expect(tables).not.toContain("multi_mention_requests");
 		expect(tables).not.toContain("thread_read_state");
-		expect(db.migrateUp()).toBe(6);
+		expect(db.migrateUp()).toBe(7);
+	});
+
+	it("adds rich_blocks_json to response_drafts with an empty-array default", () => {
+		const { db } = makeDb();
+		db.migrateUp();
+		const cols = (db.db.prepare("PRAGMA table_info(response_drafts)").all() as Array<{ name: string }>).map(
+			(row) => row.name,
+		);
+		expect(cols).toContain("rich_blocks_json");
+
+		db.db.exec("PRAGMA foreign_keys = OFF");
+		db.db
+			.prepare(
+				"INSERT INTO response_drafts (attempt_id, turn_execution_id, parent_invocation_id, thread_id, agent_id, created_at, updated_at) VALUES ('at1', 'te1', 'inv1', 't1', 'a1', 1, 1)",
+			)
+			.run();
+		const row = db.db
+			.prepare("SELECT rich_blocks_json FROM response_drafts WHERE turn_execution_id = 'te1'")
+			.get() as { rich_blocks_json: string };
+		expect(row.rich_blocks_json).toBe("[]");
+		expect(() =>
+			db.db.prepare("UPDATE response_drafts SET rich_blocks_json = '{}' WHERE turn_execution_id = 'te1'").run(),
+		).toThrow(/CHECK/i);
 	});
 
 	it("creates and drops the multi_mention tables (0007 §3.8)", () => {
@@ -124,6 +157,7 @@ describe("F018 greenfield migration harness", () => {
 		expect(tables).toContain("multi_mention_requests");
 		expect(tables).toContain("multi_mention_responses");
 		expect(tables).toContain("multi_mention_callbacks");
+		expect(db.migrateDown()).toBe(true); // rich-blocks
 		expect(db.migrateDown()).toBe(true); // thread-read-state
 		expect(db.migrateDown()).toBe(true); // multi-mention
 		const after = (

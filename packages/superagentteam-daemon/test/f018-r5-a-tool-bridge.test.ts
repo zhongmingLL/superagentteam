@@ -13,7 +13,7 @@ import superagentteamA2AExtension from "../src/workers/a2a-extension.ts";
 
 const dirs: string[] = [];
 const ACCOUNT: AccountConfig = { ref: "main", provider: "pi", apiKeyRef: "KEY", models: ["m1"] };
-const ALLOWED = ["post_message", "cross_post_message", "multi_mention", "thread_context"];
+const ALLOWED = ["post_message", "cross_post_message", "multi_mention", "thread_context", "create_rich_block"];
 
 function agentConfig(id: string): AgentConfig {
 	return {
@@ -261,7 +261,7 @@ describe("F018 R5-a A2A control bridge", () => {
 		expect((denied.error as { code: string }).code).toBe("tool_not_allowed");
 	});
 
-	it("registers only the four v1 tools and executes through the extension", async () => {
+	it("registers the five v1 tools and executes through the extension", async () => {
 		const w = makeWorld();
 		runtimes.push(w.runtime);
 		await w.runtime.control!.start();
@@ -276,6 +276,7 @@ describe("F018 R5-a A2A control bridge", () => {
 			},
 		});
 		expect([...tools.keys()].sort()).toEqual([
+			"superagentteam_create_rich_block",
 			"superagentteam_cross_post_message",
 			"superagentteam_multi_mention",
 			"superagentteam_post_message",

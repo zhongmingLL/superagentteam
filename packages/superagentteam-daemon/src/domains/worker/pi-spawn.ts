@@ -1,11 +1,10 @@
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { AccountConfig } from "@superagentteam/shared/types";
-import type { AgentSession } from "@superagentteam/shared/types";
-import { type AccountStore } from "../account/store.ts";
+import type { AccountConfig, AgentSession } from "@superagentteam/shared/types";
 import { resolveWorkerExtensionPath } from "../../workers/harness.ts";
 import { RpcConnection } from "../../workers/rpc-client.ts";
+import type { AccountStore } from "../account/store.ts";
 import type { SpawnedWorker, WorkerSpawnPort } from "./pool.ts";
 import type { WorkerPoolKey } from "./store.ts";
 
@@ -23,6 +22,8 @@ export interface PiSpawnOptions {
 	workerAgentDir: string;
 	extensionPath?: string;
 	controlSocketPath?: string;
+	/** F031: explicit curated skill path injected into the v1 worker. */
+	richMessagingSkillPath?: string;
 	env?: Record<string, string | undefined>;
 	/** F030: resolve account credentials and base URL for each worker. */
 	accountStore?: AccountStore;
@@ -83,6 +84,22 @@ export function resolveA2AExtensionPath(): string {
 	throw new Error("a2a_worker_extension_not_found");
 }
 
+/** F031: the shipped skill lives in the sibling skills package. */
+export function resolveRichMessagingSkillPath(): string | null {
+	const dir = dirname(fileURLToPath(import.meta.url));
+	const candidate = join(
+		dir,
+		"..",
+		"..",
+		"..",
+		"..",
+		"superagentteam-skills",
+		"skills",
+		"superagentteam-rich-messaging",
+	);
+	return existsSync(join(candidate, "SKILL.md")) ? candidate : null;
+}
+
 export class PiWorkerSpawnPort implements WorkerSpawnPort {
 	private readonly options: PiSpawnOptions;
 
@@ -117,6 +134,7 @@ export class PiWorkerSpawnPort implements WorkerSpawnPort {
 			this.options.extensionPath ?? resolveWorkerExtensionPath(),
 			"--no-context-files",
 			"--no-skills",
+			...(this.options.richMessagingSkillPath ? ["--skill", this.options.richMessagingSkillPath] : []),
 			"--no-prompt-templates",
 			"--no-themes",
 			"--no-mcp",

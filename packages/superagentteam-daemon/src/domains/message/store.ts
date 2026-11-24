@@ -5,6 +5,7 @@ import type {
 	MessageFrom,
 	MessageLifecycle,
 	QueueTarget,
+	RichBlock,
 	StoredMessage,
 	StoredToolEvent,
 } from "@superagentteam/shared/types";
@@ -262,19 +263,33 @@ export class MessageStore {
 	 */
 	updateResponseContent(
 		id: string,
-		payload: { content: string; thinking: string | null; toolEvents: readonly StoredToolEvent[] },
+		payload: {
+			content: string;
+			thinking: string | null;
+			toolEvents: readonly StoredToolEvent[];
+			richBlocks?: readonly RichBlock[];
+		},
 		now: number,
 	): boolean {
+		const current = this.get(id);
+		if (!current) return false;
+		const blocks = payload.richBlocks ?? [];
+		if (blocks.some((block) => (block as { kind?: unknown }).kind === "approval")) {
+			throw new Error("approval_rich_block_forbidden");
+		}
+		const extra =
+			blocks.length > 0 ? { ...(current.extra ?? {}), rich: { v: 1 as const, blocks: [...blocks] } } : null;
 		return (
 			this.db
 				.prepare(
-					"UPDATE messages SET body_md = ?, thinking = ?, tool_events_json = ?, content_json = ?, updated_at = ? WHERE id = ?",
+					"UPDATE messages SET body_md = ?, thinking = ?, tool_events_json = ?, content_json = ?, extra_json = COALESCE(?, extra_json), updated_at = ? WHERE id = ?",
 				)
 				.run(
 					payload.content,
 					payload.thinking,
 					JSON.stringify(payload.toolEvents),
 					JSON.stringify([{ type: "text", text: payload.content }]),
+					extra ? JSON.stringify(extra) : null,
 					now,
 					id,
 				).changes > 0

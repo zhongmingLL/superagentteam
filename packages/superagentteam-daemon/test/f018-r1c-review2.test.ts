@@ -162,6 +162,7 @@ describe("Draft review-round fixes (0017)", () => {
 			content: "orig",
 			toolEvents: [],
 			thinking: null,
+			richBlocks: [],
 			createdAt: 1,
 			updatedAt: 1,
 		});
@@ -194,6 +195,7 @@ describe("Draft review-round fixes (0017)", () => {
 				content: "",
 				toolEvents: [],
 				thinking: null,
+				richBlocks: [],
 				createdAt: 1,
 				updatedAt: 1,
 			}),
@@ -350,7 +352,8 @@ describe("004 down rebuilds attempts without session/worker FKs", () => {
 		dirs.push(dir);
 		const db = new F018Database({ path: join(dir, "f018.db"), noMigrate: true });
 		db.migrateUp();
-		db.migrateDown(); // drops 006 (thread read state) first
+		db.migrateDown(); // drops 007 (rich blocks)
+		db.migrateDown(); // drops 006 (thread read state)
 		db.migrateDown(); // drops 005 (multi_mention)
 		db.migrateDown(); // drops 004 tables
 		const fks = (db.db.prepare("PRAGMA foreign_key_list(invocation_attempts)").all() as Array<{ table: string }>).map(

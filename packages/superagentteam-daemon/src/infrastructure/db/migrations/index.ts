@@ -4,6 +4,7 @@ import { invocationQueueMigration } from "./003-invocation-queue.ts";
 import { authSessionWorkerMigration } from "./004-auth-session-worker.ts";
 import { multiMentionMigration } from "./005-multi-mention.ts";
 import { threadReadStateMigration } from "./006-thread-read-state.ts";
+import { richBlockMigration } from "./007-rich-blocks.ts";
 
 /**
  * F018 migration unit. 0005 §4.2 defines the v1 table set; migrations are
@@ -23,6 +24,7 @@ export const F018_MIGRATIONS: readonly ControlMigration[] = [
 	authSessionWorkerMigration,
 	multiMentionMigration,
 	threadReadStateMigration,
+	richBlockMigration,
 ];
 
 export function assertF018MigrationSet(migrations: readonly ControlMigration[]): void {

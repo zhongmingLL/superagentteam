@@ -1,11 +1,9 @@
 import type { DatabaseSync } from "node:sqlite";
-import type { MultiMentionStore } from "../multi-mention/store.ts";
-
 import type { InvocationAttempt, TurnExecution } from "@superagentteam/shared/types";
-
 import { runInTransaction } from "../../infrastructure/db/database.ts";
 import type { InvocationCredentialStore } from "../auth/store.ts";
 import type { AgentReadStateStore, MessageStore } from "../message/store.ts";
+import type { MultiMentionStore } from "../multi-mention/store.ts";
 import type { ResponseDraftStore } from "../response/store.ts";
 import type { AgentSessionStore } from "../session/store.ts";
 import type { ThreadStore } from "../thread/store.ts";
@@ -200,7 +198,12 @@ export class RouteResponseCommitter {
 				const body = draft?.content ?? input.content;
 				const thinking = draft?.thinking ?? input.thinking ?? null;
 				const toolEvents = draft?.toolEvents ?? [];
-				this.deps.messages.updateResponseContent(response.id, { content: body, thinking, toolEvents }, now);
+				const richBlocks = draft?.richBlocks ?? [];
+				this.deps.messages.updateResponseContent(
+					response.id,
+					{ content: body, thinking, toolEvents, richBlocks },
+					now,
+				);
 				this.deps.messages.updateLifecycle(
 					response.id,
 					{

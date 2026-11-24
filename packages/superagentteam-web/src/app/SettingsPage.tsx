@@ -134,7 +134,7 @@ export function SettingsPage({ initialTab = "accounts" }: SettingsPageProps) {
 					<small>{agents.length}</small>
 				</button>
 			</aside>
-			<section className="st-settings-content" aria-live="polite">
+			<section className="st-settings-content">
 				{tab === "accounts" ? (
 					<AccountsModal
 						open

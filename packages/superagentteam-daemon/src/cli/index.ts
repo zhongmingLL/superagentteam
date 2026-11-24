@@ -5,24 +5,30 @@ import { ControlError } from "../control/errors.ts";
 import { envValue } from "../env.ts";
 import { resolveDaemonPaths } from "../paths.ts";
 import { readStateFile } from "../state.ts";
-import { runApprovalCommand } from "./approval.ts";
 import { flag, option, parseArgs } from "./args.ts";
-import { runBacklogCommand } from "./backlog.ts";
-import { runBudgetCommand } from "./budget.ts";
-import { openCliContext } from "./context.ts";
+import { openCliCommandContext } from "./context.ts";
 import { runDaemonCommand } from "./daemon.ts";
-import { runDeploymentCommand } from "./deployment.ts";
-import { runEvalCommand } from "./eval.ts";
-import { runGateCommand } from "./gate.ts";
 import { runMemoryCommand } from "./memory.ts";
-import { runMergeCommand } from "./merge.ts";
 import { writeJson, writeLine } from "./output.ts";
-import { runProfileCommand } from "./profile.ts";
-import { runScheduleCommand } from "./schedule.ts";
-import { runSessionCommand } from "./session.ts";
-import { runSopCommand } from "./sop.ts";
-import { runTaskCommand, runThreadCommand } from "./thread.ts";
 import { runA2AThreadCommand } from "./thread-a2a.ts";
+
+// F032: these task-first commands lived on the frozen control.db runtime. A2A v1
+// uses `thread` plus the Hub API; keep a typed, actionable rejection instead of
+// letting callers fall through to a generic "unknown command".
+const RETIRED_COMMANDS = new Set([
+	"backlog",
+	"sop",
+	"task",
+	"approval",
+	"budget",
+	"deployment",
+	"schedule",
+	"session",
+	"profile",
+	"gate",
+	"merge",
+	"eval",
+]);
 
 export async function runCli(argv: readonly string[]): Promise<number> {
 	const { argvWithoutGlobals, globals } = extractGlobalOptions(argv);
@@ -52,38 +58,32 @@ export async function runCli(argv: readonly string[]): Promise<number> {
 		writeUsage();
 		return 0;
 	}
+	if (RETIRED_COMMANDS.has(command)) {
+		throw new ControlError(
+			"legacy_command_retired",
+			`the task-first legacy command "${command}" is retired; use the A2A v1 thread commands or the Hub API`,
+		);
+	}
 	if (command === "thread") {
-		const engine = option(args, "engine") ?? "a2a";
-		if (engine === "a2a") {
-			return await runA2AThreadCommand(args, {
-				dataDir: resolveControlDataDir(option(args, "data-dir")),
-				json: flag(args, "json"),
-			});
+		const engine = option(args, "engine");
+		if (engine !== undefined && engine !== "a2a") {
+			if (engine === "legacy") {
+				throw new ControlError(
+					"legacy_engine_retired",
+					"the legacy task-first thread engine is retired; `thread` uses A2A v1 only",
+				);
+			}
+			throw new ControlError("invalid_input", `unknown thread engine ${engine}; use a2a`);
 		}
-		if (engine !== "legacy") {
-			throw new ControlError("invalid_input", `unknown thread engine ${engine}; use a2a or legacy`);
-		}
+		return await runA2AThreadCommand(args, {
+			dataDir: resolveControlDataDir(option(args, "data-dir")),
+			json: flag(args, "json"),
+		});
 	}
-	const context = openCliContext(args);
-	try {
-		if (command === "backlog") return runBacklogCommand(args, context);
-		if (command === "sop") return runSopCommand(args, context);
-		if (command === "thread") return await runThreadCommand(args, context);
-		if (command === "task") return runTaskCommand(args, context);
-		if (command === "approval") return runApprovalCommand(args, context);
-		if (command === "budget") return runBudgetCommand(args, context);
-		if (command === "deployment") return runDeploymentCommand(args, context);
-		if (command === "daemon") return await runDaemonCommand(args, context);
-		if (command === "schedule") return runScheduleCommand(args, context);
-		if (command === "session") return runSessionCommand(args, context);
-		if (command === "profile") return runProfileCommand(args, context);
-		if (command === "gate") return runGateCommand(args, context);
-		if (command === "merge") return runMergeCommand(args, context);
-		if (command === "eval") return runEvalCommand(args, context);
-		throw new ControlError("invalid_input", `unknown command ${command}`);
-	} finally {
-		context.store.close();
+	if (command === "daemon") {
+		return await runDaemonCommand(args, openCliCommandContext(args));
 	}
+	throw new ControlError("invalid_input", `unknown command ${command}`);
 }
 
 function extractGlobalOptions(argv: readonly string[]): { argvWithoutGlobals: string[]; globals: string[] } {
@@ -149,38 +149,14 @@ function writeUsage(): void {
 	writeLine("commands:");
 	writeLine("  auth init [--data-dir <path>] [--rotate]");
 	writeLine("  auth console-link [--data-dir <path>] [--ttl-ms <ms>] [--hub-origin <url>]");
-	writeLine("  backlog <create|list|show|approve|dispatch|done|depend>");
-	writeLine("  sop <catalog|show|update|evidence>");
-	writeLine("  thread <create|list|show|post|tail> [--engine a2a|legacy]");
-	writeLine("  task <create|list|status|readiness>");
-	writeLine("  approval <request|list|show|approve|reject>");
-	writeLine("  budget <set|show> <taskId>");
-	writeLine("  deployment wait <register|status|sweep> ...");
+	writeLine("  thread <create|list|show|post|tail>");
 	writeLine("  daemon <status|stop>");
-	writeLine("  schedule <add|list|show|pause|resume|tick>");
-	writeLine("  session <list|show>");
-	writeLine("  profile <seed|add|list>");
-	writeLine("  gate <check|telemetry>");
-	writeLine("  merge <plan|execute|record>");
-	writeLine("  eval <list|open|overdue|show|accept-sunset>");
 	writeLine("  memory <index|status|recall|read|digest|trigger>");
 	writeLine("global options: --data-dir <path> --json");
 	writeLine("  global options may precede the command");
-	writeLine("backlog create: --title --summary --tag feature:<id> [--priority p0-p3] [--project]");
-	writeLine("backlog create dependencies: [--depends-on <backlogId> ...]");
-	writeLine("backlog depend: <id> [--on <backlogId> ... | --clear]");
-	writeLine("backlog dispatch: <id> --to <profile> [--phase coding|research|brainstorm] [--body]");
 	writeLine("thread create: --project-path <path> [--title <text>] [--id <threadId>]");
-	writeLine("thread post: <threadId> <body> [--to <agentId> ...] [--id <messageId>] [--engine a2a|legacy]");
+	writeLine("thread post: <threadId> <body> [--to <agentId> ...] [--id <messageId>]");
 	writeLine("thread post replay: same --id + omitted --to reuses stored targets; different --to conflicts");
 	writeLine("thread tail: <threadId> [--after-seq N] [--follow] [--interval-ms N]");
-	writeLine("sop evidence: <backlogId> <check> <evidenceRef> --subject-revision <sha>");
-	writeLine("sop update: <backlogId> --stage <stage> --baton <profile|operator> --focus <text>");
-	writeLine("approval request: --task --thread --kind --idempotency-key [--requester profile:<id>]");
-	writeLine("merge execute: --task --repo --worktree --base --head [--hard-gate --approval <id>]");
-	writeLine("budget set: <taskId> [--tokens N] [--cost N] [--wall-time-ms N]");
-	writeLine("deployment wait register: <taskId> (--revision <sha> | --new-boot) --to <profile> [--services daemon]");
-	writeLine("schedule add: --task --thread [--factory task_wake] [--every-ms N] [--to <profile> ...] [--body]");
-	writeLine("task create budget: [--budget-tokens N] [--budget-cost N] [--budget-wall-time-ms N]");
-	writeLine("task prepare: <taskId> --profile <profile> [--profile ...] [--role <role>] [--worktree <path>]");
+	writeLine("legacy task-first commands were retired in F032; use thread or the Hub API");
 }

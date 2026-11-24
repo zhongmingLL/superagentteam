@@ -65,7 +65,6 @@ describe("F024 failed-invocation retry API", () => {
 			installationRoot,
 			dataDir,
 			runningRevision: "f024",
-			controlPlane: false,
 			hubOrigin: HUB_ORIGIN,
 			a2aControlPlane: { pollIntervalMs: 3_600_000, sweepIntervalMs: 3_600_000 },
 		});

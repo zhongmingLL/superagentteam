@@ -62,7 +62,6 @@ describe("F025 agent create API", () => {
 			installationRoot,
 			dataDir,
 			runningRevision: "f025-test",
-			controlPlane: false,
 			hubOrigin: HUB_ORIGIN,
 			a2aControlPlane: { pollIntervalMs: 3_600_000, sweepIntervalMs: 3_600_000 },
 		});

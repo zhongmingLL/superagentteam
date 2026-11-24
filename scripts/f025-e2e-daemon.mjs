@@ -31,7 +31,6 @@ const daemon = await startDaemon({
 	installationRoot: repoRoot,
 	dataDir,
 	runningRevision: "f025-e2e",
-	controlPlane: false,
 	a2aControlPlane: { pollIntervalMs: 500, sweepIntervalMs: 30_000 },
 	hubOrigin,
 	devAutoLogin: process.env.SUPERAGENTTEAM_DEV_AUTO_LOGIN !== "0",

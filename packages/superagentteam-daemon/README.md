@@ -1,5 +1,10 @@
 # @superagentteam/daemon
 
+> **F032 status:** the A2A v1 runtime in `<dataDir>/f018.db` is the only supported
+> control plane. The task-first control store described below is frozen legacy; its
+> executable entrypoints (`--engine legacy`, `controlPlane`) have been retired and the
+> runtime is scheduled for deletion. New work must use `thread` plus the Hub API.
+
 Minimal daemon lifecycle for SuperAgentTeam: `SUPERAGENTTEAM_DATA_DIR` state, an append-only boot ledger, a
 single-writer fence, loopback `/health`, and `requested → ready → stopping → stopped/failed`.
 

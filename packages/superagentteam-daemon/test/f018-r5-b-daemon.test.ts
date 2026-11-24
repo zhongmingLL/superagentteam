@@ -212,7 +212,6 @@ describe("F018 R5-b A2A daemon control plane", () => {
 		try {
 			daemon.markReady();
 			expect(daemon.a2aControlPlane?.ready().started).toBe(true);
-			expect(daemon.controlPlane).toBeNull();
 		} finally {
 			await daemon.stop();
 			w.fd.close();

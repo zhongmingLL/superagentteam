@@ -55,7 +55,6 @@ describe("F026 dev auto-login", () => {
 			installationRoot,
 			dataDir,
 			runningRevision: "f026-test",
-			controlPlane: false,
 			hubOrigin: HUB_ORIGIN,
 			devAutoLogin,
 			a2aControlPlane: { pollIntervalMs: 3_600_000, sweepIntervalMs: 3_600_000 },

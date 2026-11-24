@@ -57,7 +57,6 @@ describe("F016c-M1 S4 agents/cats/config API", () => {
 			installationRoot,
 			dataDir,
 			runningRevision: "f016c-s4",
-			controlPlane: false,
 			hubOrigin: HUB_ORIGIN,
 			a2aControlPlane: { pollIntervalMs: 3_600_000, sweepIntervalMs: 3_600_000 },
 		});

@@ -58,10 +58,11 @@ describe("SuperAgentTeam daemon lifecycle", () => {
 			const daemon = await startDaemon({
 				installationRoot,
 				runningRevision: "rev-1",
-				controlPlane: {},
+				a2aControlPlane: false,
 			});
 			running.push(daemon);
-			expect(existsSync(join(home, ".superagentteam", "control.db"))).toBe(true);
+			expect(existsSync(join(home, ".superagentteam", "daemon-state.json"))).toBe(true);
+			expect(existsSync(join(home, ".superagentteam", "control.db"))).toBe(false);
 		} finally {
 			if (previousHome === undefined) delete process.env.HOME;
 			else process.env.HOME = previousHome;

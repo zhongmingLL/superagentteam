@@ -60,7 +60,6 @@ describe("F016c-M1 headless end-to-end", () => {
 			installationRoot,
 			dataDir,
 			runningRevision: "f016c-m1-e2e",
-			controlPlane: false,
 			hubOrigin: HUB_ORIGIN,
 			a2aControlPlane: { pollIntervalMs: 3_600_000, sweepIntervalMs: 3_600_000 },
 		});

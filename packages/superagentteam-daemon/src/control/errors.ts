@@ -43,7 +43,9 @@ export type ControlErrorCode =
 	| "lifecycle_record_invalid"
 	| "lifecycle_health_failed"
 	| "process_tree_unreadable"
-	| "command_failed";
+	| "command_failed"
+	| "legacy_engine_retired"
+	| "legacy_command_retired";
 
 export class ControlError extends Error {
 	readonly code: ControlErrorCode;

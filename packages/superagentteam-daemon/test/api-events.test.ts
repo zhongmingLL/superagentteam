@@ -73,7 +73,6 @@ describe("F016c-M2 S1 SSE invalidation", () => {
 			installationRoot,
 			dataDir,
 			runningRevision: "f016c-m2-s1",
-			controlPlane: false,
 			hubOrigin: HUB_ORIGIN,
 			eventHeartbeatMs,
 			a2aControlPlane: { pollIntervalMs: 3_600_000, sweepIntervalMs: 3_600_000 },

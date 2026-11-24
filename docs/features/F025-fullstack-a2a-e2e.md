@@ -2,12 +2,12 @@
 feature_ids: [superagentteam/F025]
 related_features: [superagentteam/F018, superagentteam/F020, superagentteam/F024]
 title: "F025: Full-stack A2A E2E — Hub agent management + real-provider chain"
-status: review
+status: done
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-22
-updated: 2026-11-22
+updated: 2026-11-24
 source_decision: "operator 2026-11-22: 用前端 Hub 跑一次完整前后端 E2E（多 agent、同 thread A2A、multi-mention、跨 thread A2A），缺口优先补，/home/ming/.env 提供真实 provider key"
 ---
 
@@ -126,5 +126,7 @@ operator 在 Hub 中：
   剩 operator close。
 - 剩余：operator close；P3（catalog 仅 append、multi-mention 多次唤醒、
   agent 正文夹 raw 工具参数）记入报告后续。
+- 2026-11-24：operator batch close（消息 `0001795523064349-000942-d9449e06`）；
+  F025–F031 一起收口，状态 → done。
 
 [宪宪/deepseek-flash🐾]

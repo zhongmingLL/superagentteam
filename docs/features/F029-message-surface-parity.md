@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F029]
 related_features: [superagentteam/F018, superagentteam/F020, superagentteam/F027, superagentteam/F028, superagentteam/F031]
 title: "F029: Hub message surface parity — nameplate width, A2A dispatch attribution, rich blocks"
-status: implemented
+status: done
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [墨墨 (Qwen 3.8 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -84,7 +84,8 @@ F027/F028 之后，operator 实机查看 Hub 提出三条消息面问题：
 - 2026-11-24：墨墨 vision/UX approve @ `79d400546`，P3（diff 行级红绿染色）
   已补：`+` / `-` / `@@` 行分别着色，并加回归断言。
 - 2026-11-24：P3 delta 确认延伸 approve 至 `e44825788`；PR #172 merged as
-  `493aa01c3`。CI 5/5 绿；状态更新为 implemented，等 operator close。
+  `493aa01c3`。CI 5/5 绿；状态更新为 implemented。2026-11-24 operator batch
+  close（消息 `0001795523064349-000942-d9449e06`）→ done。
 
 ## 风险与回滚
 

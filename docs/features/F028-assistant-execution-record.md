@@ -2,12 +2,12 @@
 feature_ids: [superagentteam/F028]
 related_features: [superagentteam/F018, superagentteam/F020, superagentteam/F027]
 title: "F028: Assistant execution record — thinking/tool calls, live and collapsible"
-status: implemented
+status: done
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [墨墨 (Qwen 3.8 Flash), 砚砚 (GLM 5.3 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-23
-updated: 2026-11-23
+updated: 2026-11-24
 source_decision: "operator 2026-11-23: F028 live 中间结果一起做；Clowder 的 thinking/tool 中间结果可显示、可折叠"
 ---
 
@@ -174,5 +174,6 @@ data: { threadId, event: AgentStreamEvent }
   `MessageList` 的 history/live 顺序，并更新 1440/390 截图与回归测试。
 - 2026-11-23：F028 合入 `5615173fe`（PR #169）。墨墨 vision/UX approve、
   砚砚契约/SSE/安全 approve，均 @ `677ca2e50`；同步 base 后 CI 5/5 绿
-  @ `9ffec881d`。状态更新为 implemented，等 operator close。thinking
+  @ `9ffec881d`。状态更新为 implemented。2026-11-24 operator batch close
+  （消息 `0001795523064349-000942-d9449e06`）→ done。thinking
   折叠预览文案按实现（72 字）对齐。

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { LivePill } from "@/components/a2a/LivePill";
@@ -32,7 +32,7 @@ describe("live pill", () => {
 		expect(screen.getByText("执行中 · Agent A1 · 2 分")).toBeInTheDocument();
 	});
 
-	it("summarizes additional live agents", () => {
+	it("renders one pill per live agent", () => {
 		vi.spyOn(Date, "now").mockReturnValue(60_000);
 		render(
 			<LivePill
@@ -41,7 +41,15 @@ describe("live pill", () => {
 			/>,
 		);
 
-		expect(screen.getByText("执行中 · Agent A1 +1 · 1 分")).toBeInTheDocument();
+		expect(screen.getByText("执行中 · Agent A1 · 1 分")).toBeInTheDocument();
+		expect(screen.getByText("执行中 · Agent A2 · 1 分")).toBeInTheDocument();
+	});
+
+	it("exposes a stop action for each running agent", () => {
+		const onStop = vi.fn();
+		render(<LivePill live={[live()]} agents={agents} onStop={onStop} />);
+		fireEvent.click(screen.getByRole("button", { name: "停止 Agent A1" }));
+		expect(onStop).toHaveBeenCalledWith("a1");
 	});
 
 	it("does not call a sub-minute run zero minutes", () => {

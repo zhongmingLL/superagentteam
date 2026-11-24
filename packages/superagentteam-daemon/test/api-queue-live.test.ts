@@ -320,4 +320,34 @@ describe("F016c-M1 S4 queue and live API", () => {
 		});
 		expect(ownQueue.status).toBe(200);
 	});
+
+	it("cancels a running agent slot and rejects when not running", async () => {
+		const base = await start();
+		const auth = await login(base);
+		const threadId = await createThread(base, auth, "thread-cancel");
+		const runtime = daemon!.a2aControlPlane!.runtime;
+		const controller = runtime.tracker.start(threadId, "a1", auth.userId, "te-cancel");
+		const cancelUrl = `${base}/api/threads/${encodeURIComponent(threadId)}/agents/a1/cancel`;
+		const response = await fetch(cancelUrl, {
+			method: "POST",
+			headers: writeHeaders(auth),
+		});
+		expect(response.status).toBe(202);
+		expect(await response.json()).toMatchObject({ status: "canceling", agentId: "a1" });
+		expect(controller.signal.aborted).toBe(true);
+		runtime.tracker.complete(threadId, "a1", "te-cancel");
+		const again = await fetch(cancelUrl, { method: "POST", headers: writeHeaders(auth) });
+		expect(again.status).toBe(409);
+	});
+
+	it("requires CSRF for cancel", async () => {
+		const base = await start();
+		const auth = await login(base);
+		const threadId = await createThread(base, auth, "thread-cancel-csrf");
+		const response = await fetch(`${base}/api/threads/${encodeURIComponent(threadId)}/agents/a1/cancel`, {
+			method: "POST",
+			headers: { cookie: auth.cookie, origin: HUB_ORIGIN, "content-type": "application/json" },
+		});
+		expect(response.status).toBe(403);
+	});
 });

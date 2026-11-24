@@ -25,8 +25,10 @@ superagentteam runtime <start|status|end|restart>
 
 | 角色 | worktree | WSL 端口 | Windows | data dir | env |
 |---|---|---|---|---|---|
-| runtime | `/home/ming/agent/superagentteam-runtime` | `3005` / `3014` | `3103` | `/tmp/f028-demo-1795448211/data` | `~/.config/superagentteam/runtime.env` |
+| runtime | `/home/ming/agent/superagentteam-runtime` | `3005` / `3014` | `3103` | `/home/ming/.superagentteam-runtime/data` | `~/.config/superagentteam/runtime.env` |
 | test | `/home/ming/agent/superagentteam-alpha` | `3007` / `3016` | 无 | `~/.superagentteam-alpha/data` | `~/.config/superagentteam/alpha.env` |
+
+> 2026-11-25: runtime 数据已从旧 F028 demo 的 `/tmp/f028-demo-1795448211/data` 迁到持久路径 `~/.superagentteam-runtime/data`；旧目录保留为退役快照，不再作为运行数据。
 
 `3003/3004` 属 Clowder AI，不在本 runbook 管理范围。
 
@@ -35,7 +37,7 @@ superagentteam runtime <start|status|end|restart>
 ```bash
 cd /home/ming/agent/superagentteam-runtime
 node packages/superagentteam-daemon/dist/cli.js \
-  --data-dir /tmp/f028-demo-1795448211/data \
+  --data-dir /home/ming/.superagentteam-runtime/data \
   runtime start \
   --worktree /home/ming/agent/superagentteam-runtime \
   --env-file /home/ming/.config/superagentteam/runtime.env
@@ -46,9 +48,9 @@ node packages/superagentteam-daemon/dist/cli.js \
 ## 状态 / 收尾 / 重启
 
 ```bash
-node packages/superagentteam-daemon/dist/cli.js --data-dir /tmp/f028-demo-1795448211/data runtime status
-node packages/superagentteam-daemon/dist/cli.js --data-dir /tmp/f028-demo-1795448211/data runtime end
-node packages/superagentteam-daemon/dist/cli.js --data-dir /tmp/f028-demo-1795448211/data runtime restart --worktree /home/ming/agent/superagentteam-runtime --env-file /home/ming/.config/superagentteam/runtime.env
+node packages/superagentteam-daemon/dist/cli.js --data-dir /home/ming/.superagentteam-runtime/data runtime status
+node packages/superagentteam-daemon/dist/cli.js --data-dir /home/ming/.superagentteam-runtime/data runtime end
+node packages/superagentteam-daemon/dist/cli.js --data-dir /home/ming/.superagentteam-runtime/data runtime restart --worktree /home/ming/agent/superagentteam-runtime --env-file /home/ming/.config/superagentteam/runtime.env
 ```
 
 `status` 六态：`not_started` / `running` / `degraded` / `stale` / `stopped` / `failed`。
@@ -95,7 +97,7 @@ node scripts/superagentteam/windows-proxy.mjs check
 ```
 
 输出 `ok` 表示 `127.0.0.1:3103` listener 存在，且 `http://localhost:3103/` 与 `/api/session` 都是 200。
-当前 proxy 脚本为 `%TEMP%\f028-wsl-proxy-3103.ps1`（Windows 侧）；生成模板仍是 Phase D follow-up，未在本 runbook 中自动替换正在工作的 proxy。
+Windows proxy 模板在 `scripts/superagentteam/windows-proxy.ps1`；`windows-proxy.mjs print` 给出重新生成命令，`check` 只验证当前 listener 与 HTTP，不会自动替换正在工作的 proxy。
 
 ## 故障处理
 

@@ -89,7 +89,7 @@ Clowder AI 的启动面已经把这些分清了，F033 借鉴机制而不复制�
 
 - B1 统一入口已合入：PR #188 → `e1ceb0e43`；reviewers 砚砚（identity/端口/env/state）+ 墨墨（operator 文案/迁移），CI `build-check-test` / `supply-chain` / `mcp-conformance` 全绿。
 - runtime worktree：`/home/ming/agent/superagentteam-runtime`，detached at `e1ceb0e43`。
-- 真实入口：`3005/3014` + Windows `3103`；daemon `runningRevision=e1ceb0e43`，health ready，`/`、`/api/session`、`/api/agents`、`/api/threads` 与 `http://localhost:3103/` 均 200；数据目录沿用 `/tmp/f028-demo-1795448211/data`。
+- 真实入口：`3005/3014` + Windows `3103`；daemon `runningRevision=e1ceb0e43`，health ready，`/`、`/api/session`、`/api/agents`、`/api/threads` 与 `http://localhost:3103/` 均 200；数据目录当时沿用 `/tmp/f028-demo-1795448211/data`；Phase D 已迁到 `~/.superagentteam-runtime/data`。
 - env：`~/.config/superagentteam/runtime.env`（0600），从旧 daemon 进程 env 迁移 `KIMI_API_KEY`，未打印、未入库。
 - 旧栈：4 套 data dir 快照到 `/home/ming/superagentteam-archive/20261124T173508Z/`；旧 WSL 栈已收尾，仅保留 `3005/3014`（另 `3003/3004` 属 Clowder AI）。
 - cron watchdog：改为调用统一入口，作为迁移期兜底；稳定观察后退役（Phase D）。
@@ -110,6 +110,7 @@ Clowder AI 的启动面已经把这些分清了，F033 借鉴机制而不复制�
 - runbook 落 `docs/runbooks/F033-local-runtime.md`：正式入口、runtime/test 布局、env、端口、Windows 3103、故障恢复。
 - Windows proxy 模板 `scripts/superagentteam/windows-proxy.ps1` + WSL bridge `wsl-tcp-bridge.py` + `windows-proxy.mjs check|print`；3103 listener/root/session 实测通过。
 - cron watchdog 已备份到 `/home/ming/superagentteam-archive/20261124T173508Z/cron/` 并退役；当前 runtime 无 cron 依赖，3103 仍 200。
+- 墨墨 P2 收口：runtime 数据从 `/tmp/f028-demo-1795448211/data` 迁到 `~/.superagentteam-runtime/data`；旧目录快照到 `/home/ming/superagentteam-archive/20261124T173508Z/runtime-data-before-persistent-migration/`；新路径启动后 3103/`/api/session` 仍 200。
 
 ## 验收方向
 

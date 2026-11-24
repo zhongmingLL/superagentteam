@@ -33,6 +33,8 @@ source_decision: "operator 2026-11-25: continue F033 to Phase D"
 - Windows proxy 模板 `windows-proxy.ps1` + bridge + `windows-proxy.mjs check` 已实测；`print` 给出重新生成命令。
 - 最终 runtime worktree ff-only 更新/rebuild/restart 在 PR 合入后执行。
 - 墨墨 P2：runtime data dir 从 `/tmp/f028-demo-1795448211/data` 迁到 `~/.superagentteam-runtime/data`；旧目录快照到 `/home/ming/superagentteam-archive/20261124T173508Z/runtime-data-before-persistent-migration/`。新路径启动后 3103/`/api/session` 200；runbook 全部示例已改持久路径。
+- live runtime worktree 已 ff-only 到 `bac20a684` 并 rebuild；`runtime end`→`runtime start` 后 daemon command = `scripts/superagentteam/runtime-daemon.mjs`，数据仍为 `~/.superagentteam-runtime/data`，3103/session 200。
+- alpha worktree 同步 `bac20a684`；test stack `3007/3016` start/status/end 闭环，端口释放，3103 不受影响。
 
 ## 验证
 

@@ -1,7 +1,9 @@
-import { existsSync, mkdirSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { AccountConfig } from "@superagentteam/shared/types";
 import type { AgentSession } from "@superagentteam/shared/types";
+import { type AccountStore } from "../account/store.ts";
 import { resolveWorkerExtensionPath } from "../../workers/harness.ts";
 import { RpcConnection } from "../../workers/rpc-client.ts";
 import type { SpawnedWorker, WorkerSpawnPort } from "./pool.ts";
@@ -22,8 +24,47 @@ export interface PiSpawnOptions {
 	extensionPath?: string;
 	controlSocketPath?: string;
 	env?: Record<string, string | undefined>;
+	/** F030: resolve account credentials and base URL for each worker. */
+	accountStore?: AccountStore;
 	offline?: boolean;
 	clock?: () => number;
+}
+
+function safeWorkerDirName(workerId: string): string {
+	const safe = workerId.replace(/[^A-Za-z0-9._-]/g, "-");
+	return safe.length > 0 ? safe : "worker";
+}
+
+function writePrivateJson(path: string, data: unknown): void {
+	writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
+}
+
+/**
+ * F030: every worker gets its own PI_CODING_AGENT_DIR so two accounts can use
+ * different keys/base URLs without racing on a shared auth.json/models.json.
+ * Stored secrets are written to auth.json; env-backed accounts fall back to
+ * pi's ambient provider env (legacy behavior).
+ */
+export function prepareWorkerAgentDir(
+	agentDir: string,
+	account: AccountConfig | undefined,
+	apiKey: string | undefined,
+): void {
+	mkdirSync(agentDir, { recursive: true, mode: 0o700 });
+	if (!account) return;
+	if (account.apiKeyRef.startsWith("secret:") && !apiKey) {
+		throw new Error(`worker_credential_missing: ${account.ref}`);
+	}
+	if (apiKey) {
+		writePrivateJson(join(agentDir, "auth.json"), {
+			[account.provider]: { type: "api_key", key: apiKey },
+		});
+	}
+	if (account.apiUrl) {
+		writePrivateJson(join(agentDir, "models.json"), {
+			providers: { [account.provider]: { baseUrl: account.apiUrl } },
+		});
+	}
 }
 
 export function freshPiSessionId(session: AgentSession, now: number): string {
@@ -59,6 +100,15 @@ export class PiWorkerSpawnPort implements WorkerSpawnPort {
 		const startedAt = this.options.clock?.() ?? Date.now();
 		const sessionFile =
 			input.session.piSessionFile && input.session.piSessionFile.length > 0 ? input.session.piSessionFile : null;
+		const agentDir = join(this.options.workerAgentDir, safeWorkerDirName(input.workerId));
+		const account = this.options.accountStore?.get(input.poolKey.accountRef);
+		const apiKey = account ? this.options.accountStore?.resolveApiKey(account) : undefined;
+		mkdirSync(agentDir, { recursive: true, mode: 0o700 });
+		for (const file of ["auth.json", "models.json"]) {
+			const source = join(this.options.workerAgentDir, file);
+			if (existsSync(source)) copyFileSync(source, join(agentDir, file));
+		}
+		prepareWorkerAgentDir(agentDir, account, apiKey);
 		const args = [
 			"--mode",
 			"rpc",
@@ -95,7 +145,7 @@ export class PiWorkerSpawnPort implements WorkerSpawnPort {
 			cwd: input.poolKey.projectPath,
 			env: {
 				...(this.options.env ?? process.env),
-				PI_CODING_AGENT_DIR: this.options.workerAgentDir,
+				PI_CODING_AGENT_DIR: agentDir,
 				SUPERAGENTTEAM_WORKER_ID: input.workerId,
 				...(this.options.controlSocketPath
 					? { SUPERAGENTTEAM_CONTROL_SOCKET: this.options.controlSocketPath }
@@ -105,7 +155,6 @@ export class PiWorkerSpawnPort implements WorkerSpawnPort {
 			args,
 		});
 		try {
-			mkdirSync(this.options.workerAgentDir, { recursive: true, mode: 0o700 });
 			mkdirSync(this.options.sessionDir, { recursive: true, mode: 0o700 });
 			await connection.start();
 			const state = (await connection.getState()) as { sessionId?: unknown; sessionFile?: unknown };

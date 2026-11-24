@@ -1,6 +1,13 @@
 import { create } from "zustand";
 
-import { type AccountView, type AgentApi, type AgentView, agentApi, type CreateAgentInput } from "./api.ts";
+import {
+	type AccountView,
+	type AgentApi,
+	type AgentView,
+	agentApi,
+	type CreateAgentInput,
+	type UpdateAgentInput,
+} from "./api.ts";
 
 export type AgentListStatus = "idle" | "loading" | "ready" | "error";
 
@@ -15,10 +22,11 @@ export interface AgentState {
 	refresh(): Promise<boolean>;
 	loadAccounts(): Promise<void>;
 	create(input: CreateAgentInput): Promise<AgentView>;
+	update(id: string, input: UpdateAgentInput): Promise<AgentView>;
 }
 
 export interface AgentStoreDeps {
-	api: Pick<AgentApi, "list" | "accounts" | "create">;
+	api: Pick<AgentApi, "list" | "accounts" | "create" | "update">;
 }
 
 function messageOf(error: unknown, fallback: string): string {
@@ -73,6 +81,12 @@ export function createAgentStore(deps: AgentStoreDeps) {
 
 		async create(input) {
 			const body = await deps.api.create(input);
+			await get().refresh();
+			return body.agent;
+		},
+
+		async update(id, input) {
+			const body = await deps.api.update(id, input);
 			await get().refresh();
 			return body.agent;
 		},

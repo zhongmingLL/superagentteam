@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import type { AgentStreamEvent } from "@superagentteam/shared/types";
 import { defaultA2AControlSocketPath } from "./domains/a2a/control.ts";
 import { type A2ARuntime, buildA2ARuntime } from "./domains/a2a/runtime.ts";
+import { AccountStore } from "./domains/account/store.ts";
 import type { AgentRegistry } from "./domains/agent/registry.ts";
 import { loadRegistryFromFiles } from "./domains/agent/registry.ts";
 import type { ChangeBus } from "./domains/events/bus.ts";
@@ -113,6 +114,10 @@ export class A2ADaemonControlPlane {
 			);
 		}
 		this.controlSocket = options.controlSocketPath ?? defaultA2AControlSocketPath(options.dataDir);
+		const accountStore = new AccountStore({
+			accountsPath: this.accountsPath,
+			credentialsPath: join(dirname(this.accountsPath), "credentials.json"),
+		});
 		let runtime: A2ARuntime;
 		try {
 			const spawn =
@@ -125,6 +130,7 @@ export class A2ADaemonControlPlane {
 					controlSocketPath: this.controlSocket,
 					offline: options.offline ?? true,
 					env: options.env,
+					accountStore,
 					clock: this.clock,
 				});
 			runtime = buildA2ARuntime({

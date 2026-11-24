@@ -86,7 +86,15 @@ describe("F016c-M1 S4 agents/cats/config API", () => {
 		expect(agents.agents).toHaveLength(2);
 		expect(agents.agents[0]).toMatchObject({ id: "a1", displayName: "Agent a1", enabled: true, status: "idle" });
 		expect(agents.agents[1]).toMatchObject({ id: "a2", enabled: false, status: "offline" });
-		expect(agents.agents[0]).not.toHaveProperty("accountRef");
+		expect(agents.agents[0]).toMatchObject({
+			accountRef: "main",
+			defaultModel: "m1",
+			mentionPatterns: ["@a1"],
+			roleId: "worker",
+			roleDescription: "does things",
+		});
+		expect(agents.agents[0]).not.toHaveProperty("apiKeyRef");
+		expect(agents.agents[0]).not.toHaveProperty("apiUrl");
 
 		const catsResponse = await fetch(`${base}/api/cats`, { headers: { cookie: auth.cookie } });
 		expect(catsResponse.status).toBe(200);

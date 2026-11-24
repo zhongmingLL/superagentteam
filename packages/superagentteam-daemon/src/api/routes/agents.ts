@@ -1,12 +1,17 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { dirname, join } from "node:path";
 
-import type { AgentConfig } from "@superagentteam/shared/types";
+import type { AccountConfig, AgentConfig } from "@superagentteam/shared/types";
 
+import { ACCOUNT_PROVIDERS, findAccountProvider } from "../../domains/account/providers.ts";
+import { AccountError, AccountStore, type AccountView } from "../../domains/account/store.ts";
 import {
 	appendAgent,
 	type CreateAgentInput,
 	readCatalogFile,
 	toAgentConfig,
+	type UpdateAgentInput,
+	updateAgent,
 	validateCandidate,
 	writeCatalogAtomic,
 } from "../../domains/agent/catalog-store.ts";
@@ -25,12 +30,11 @@ export interface AgentView {
 	color?: { primary: string; secondary: string };
 	enabled: boolean;
 	status?: AgentStatus;
-}
-
-export interface AccountView {
-	ref: string;
-	provider: string;
-	models: string[];
+	accountRef: string;
+	defaultModel: string;
+	mentionPatterns: string[];
+	roleId: string;
+	roleDescription: string;
 }
 
 export interface HubCatView extends AgentView {
@@ -51,6 +55,7 @@ export interface AgentRoutesOptions {
 	tracker: InvocationTracker;
 	catalogPath?: string;
 	accountsPath?: string;
+	credentialsPath?: string;
 	clock?: () => number;
 }
 
@@ -65,7 +70,76 @@ function toView(agent: AgentConfig, activeAgents: ReadonlySet<string>): AgentVie
 		...(agent.color ? { color: { ...agent.color } } : {}),
 		enabled: agent.enabled,
 		status,
+		accountRef: agent.accountRef,
+		defaultModel: agent.defaultModel,
+		mentionPatterns: [...agent.mentionPatterns],
+		roleId: agent.roleId,
+		roleDescription: agent.roleDescription,
 	};
+}
+
+interface ParsedUpdate {
+	ok: true;
+	input: UpdateAgentInput;
+}
+
+function parseUpdateInput(body: Record<string, unknown>): ParsedUpdate | ParsedCreateError {
+	const input: UpdateAgentInput = {};
+	if (body.displayName !== undefined) {
+		const displayName = readRequiredString(body, "displayName", 200);
+		if (!displayName) return { ok: false, message: "displayName must be 1-200 chars" };
+		input.displayName = displayName;
+	}
+	if (body.mentionPatterns !== undefined) {
+		const mentionPatterns = parseMentionPatterns(body.mentionPatterns);
+		if (!mentionPatterns) return { ok: false, message: "mentionPatterns must be a non-empty string or string array" };
+		input.mentionPatterns = mentionPatterns;
+	}
+	for (const [key, maxLength] of [
+		["accountRef", 200],
+		["defaultModel", 200],
+		["roleId", 100],
+	] as const) {
+		if (body[key] === undefined) continue;
+		const value = readRequiredString(body, key, maxLength);
+		if (!value) return { ok: false, message: `${key} must be 1-${maxLength} chars` };
+		input[key] = value;
+	}
+	if (body.roleDescription !== undefined) {
+		const roleDescription = readOptionalString(body, "roleDescription", 4096);
+		if (roleDescription === null) return { ok: false, message: "roleDescription must be a string (<=4096 chars)" };
+		input.roleDescription = roleDescription ?? "";
+	}
+	if (body.contextWindow !== undefined) {
+		const value = body.contextWindow;
+		if (!Number.isInteger(value) || (value as number) <= 0 || (value as number) > 10_000_000) {
+			return { ok: false, message: "contextWindow must be a positive integer" };
+		}
+		input.contextWindow = value as number;
+	}
+	if (body.enabled !== undefined) {
+		if (typeof body.enabled !== "boolean") return { ok: false, message: "enabled must be a boolean" };
+		input.enabled = body.enabled;
+	}
+	if (body.avatar !== undefined) {
+		if (body.avatar === null) input.avatar = null;
+		else {
+			const avatar = readOptionalString(body, "avatar", 2048);
+			if (avatar === null) return { ok: false, message: "avatar must be a string (<=2048 chars) or null" };
+			input.avatar = avatar ?? "";
+		}
+	}
+	if (body.color !== undefined) {
+		if (body.color === null) input.color = null;
+		else {
+			const color = parseColor(body.color);
+			if (color === null || color === undefined) {
+				return { ok: false, message: "color must be {primary, secondary} strings or null" };
+			}
+			input.color = color;
+		}
+	}
+	return { ok: true, input };
 }
 
 interface ParsedCreate {
@@ -189,6 +263,8 @@ function catalogErrorToHttp(error: CatalogError): { status: number; code: string
 			return { status: 409, code: "mention_pattern_conflict", message: error.message };
 		case "account_ref_unresolved":
 			return { status: 422, code: "account_not_found", message: error.message };
+		case "agent_not_found":
+			return { status: 404, code: "agent_not_found", message: error.message };
 		case "default_model_not_in_account":
 			return { status: 422, code: "model_not_in_account", message: error.message };
 		case "catalog_invalid_json":
@@ -201,6 +277,215 @@ function catalogErrorToHttp(error: CatalogError): { status: number; code: string
 export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
 	const { registry, tracker } = options;
 	const clock = options.clock ?? Date.now;
+
+	function accountStore(): AccountStore | null {
+		if (!options.accountsPath) return null;
+		return new AccountStore({
+			accountsPath: options.accountsPath,
+			credentialsPath: options.credentialsPath ?? join(dirname(options.accountsPath), "credentials.json"),
+		});
+	}
+
+	function accountView(store: AccountStore, account: AccountConfig, boundAgentIds: string[]): AccountView {
+		const provider = findAccountProvider(account.provider);
+		return {
+			ref: account.ref,
+			...(account.displayName ? { displayName: account.displayName } : {}),
+			provider: account.provider,
+			providerLabel: provider?.label ?? account.provider,
+			...(account.apiUrl ? { apiUrl: account.apiUrl } : {}),
+			models: [...account.models],
+			credential: store.credentialKind(account),
+			boundAgentIds,
+		};
+	}
+
+	function accountViews(store: AccountStore): AccountView[] {
+		const agents = [...registry.agents.values()];
+		return store.list().map((account) =>
+			accountView(
+				store,
+				account,
+				agents
+					.filter((agent) => agent.accountRef === account.ref)
+					.map((agent) => agent.id)
+					.sort(),
+			),
+		);
+	}
+
+	function reloadFromFiles(): void {
+		const catalogPaths = paths();
+		if (!catalogPaths) return;
+		const { catalog, accounts } = readCatalogFile(catalogPaths);
+		reloadRegistry(registry, catalog, accounts);
+	}
+
+	function accountErrorToHttp(error: AccountError): { status: number; code: string; message: string } {
+		switch (error.code) {
+			case "account_exists":
+				return { status: 409, code: error.code, message: error.message };
+			case "account_not_found":
+				return { status: 404, code: error.code, message: error.message };
+			case "accounts_invalid_json":
+				return { status: 500, code: error.code, message: error.message };
+			default:
+				return { status: 422, code: error.code, message: error.message };
+		}
+	}
+
+	function csrfOk(request: IncomingMessage, response: ServerResponse, context: ApiRouteContext): boolean {
+		const csrf = request.headers["x-csrf-token"];
+		const csrfToken = Array.isArray(csrf) ? csrf[0] : csrf;
+		if (!requireCsrf(context.session, csrfToken)) {
+			sendError(response, 403, "csrf_failed", "invalid CSRF token");
+			return false;
+		}
+		return true;
+	}
+
+	async function readBody(
+		request: IncomingMessage,
+		response: ServerResponse,
+	): Promise<Record<string, unknown> | null> {
+		let body: unknown;
+		try {
+			body = await readJsonBody(request);
+		} catch (error) {
+			if (error instanceof HttpError) {
+				sendError(response, error.status, error.code, error.message);
+				return null;
+			}
+			throw error;
+		}
+		if (!isRecord(body)) {
+			sendError(response, 400, "invalid_input", "request body must be a JSON object");
+			return null;
+		}
+		return body;
+	}
+
+	function readModels(value: unknown): string[] | null {
+		if (!Array.isArray(value)) return null;
+		return value.filter((item): item is string => typeof item === "string");
+	}
+
+	async function handleAccounts(
+		request: IncomingMessage,
+		response: ServerResponse,
+		url: URL,
+		context: ApiRouteContext,
+	): Promise<boolean> {
+		const store = accountStore();
+		if (!store) return false;
+		if (url.pathname === "/api/providers") {
+			if (request.method !== "GET") return false;
+			sendJson(response, 200, { providers: ACCOUNT_PROVIDERS });
+			return true;
+		}
+		if (url.pathname === "/api/accounts") {
+			if (request.method === "GET") {
+				sendJson(response, 200, { accounts: accountViews(store) });
+				return true;
+			}
+			if (request.method === "POST") {
+				if (!csrfOk(request, response, context)) return true;
+				const body = await readBody(request, response);
+				if (!body) return true;
+				const models = readModels(body.models);
+				if (models === null) {
+					sendError(response, 400, "invalid_input", "models must be an array of strings");
+					return true;
+				}
+				try {
+					const account = store.create({
+						ref: typeof body.ref === "string" ? body.ref : "",
+						...(typeof body.displayName === "string" ? { displayName: body.displayName } : {}),
+						provider: typeof body.provider === "string" ? body.provider : "",
+						...(typeof body.apiUrl === "string" ? { apiUrl: body.apiUrl } : {}),
+						models,
+						...(typeof body.apiKey === "string" ? { apiKey: body.apiKey } : {}),
+						...(typeof body.envName === "string" ? { envName: body.envName } : {}),
+					});
+					reloadFromFiles();
+					sendJson(response, 201, { account: accountView(store, account, []) });
+				} catch (error) {
+					if (error instanceof AccountError) {
+						const mapped = accountErrorToHttp(error);
+						sendError(response, mapped.status, mapped.code, mapped.message);
+						return true;
+					}
+					throw error;
+				}
+				return true;
+			}
+			return false;
+		}
+		const match = /^\/api\/accounts\/([^/]+)$/.exec(url.pathname);
+		if (!match) return false;
+		const ref = decodeURIComponent(match[1]!);
+		if (request.method === "PATCH") {
+			if (!csrfOk(request, response, context)) return true;
+			const body = await readBody(request, response);
+			if (!body) return true;
+			const models = body.models === undefined ? undefined : readModels(body.models);
+			if (models === null) {
+				sendError(response, 400, "invalid_input", "models must be an array of strings");
+				return true;
+			}
+			try {
+				const account = store.update(ref, {
+					...(typeof body.displayName === "string" ? { displayName: body.displayName } : {}),
+					...(body.displayName === null ? { displayName: null } : {}),
+					...(typeof body.provider === "string" ? { provider: body.provider } : {}),
+					...(typeof body.apiUrl === "string" ? { apiUrl: body.apiUrl } : {}),
+					...(body.apiUrl === null ? { apiUrl: null } : {}),
+					...(models !== undefined ? { models } : {}),
+					...(typeof body.apiKey === "string" ? { apiKey: body.apiKey } : {}),
+					...(typeof body.envName === "string" ? { envName: body.envName } : {}),
+				});
+				reloadFromFiles();
+				sendJson(response, 200, { account: accountView(store, account, []) });
+			} catch (error) {
+				if (error instanceof AccountError) {
+					const mapped = accountErrorToHttp(error);
+					sendError(response, mapped.status, mapped.code, mapped.message);
+					return true;
+				}
+				throw error;
+			}
+			return true;
+		}
+		if (request.method === "DELETE") {
+			if (!csrfOk(request, response, context)) return true;
+			const boundAgentIds = [...registry.agents.values()]
+				.filter((agent) => agent.accountRef === ref)
+				.map((agent) => agent.id)
+				.sort();
+			if (boundAgentIds.length > 0) {
+				sendJson(response, 409, {
+					error: "account_in_use",
+					message: "account is bound to agents",
+					agentIds: boundAgentIds,
+				});
+				return true;
+			}
+			try {
+				store.remove(ref);
+				reloadFromFiles();
+				sendJson(response, 200, { ok: true });
+			} catch (error) {
+				if (error instanceof AccountError) {
+					const mapped = accountErrorToHttp(error);
+					sendError(response, mapped.status, mapped.code, mapped.message);
+					return true;
+				}
+				throw error;
+			}
+			return true;
+		}
+		return false;
+	}
 
 	function activeAgentIds(): Set<string> {
 		return new Set(tracker.listStaleSlots(clock(), 0).map((slot) => slot.agentId));
@@ -274,12 +559,52 @@ export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
 		return true;
 	}
 
+	async function updateAgentRoute(
+		request: IncomingMessage,
+		response: ServerResponse,
+		context: ApiRouteContext,
+		id: string,
+	): Promise<true> {
+		if (!csrfOk(request, response, context)) return true;
+		const catalogPaths = paths();
+		if (!catalogPaths) {
+			sendError(response, 503, "agent_management_unavailable", "agent catalog paths are not configured");
+			return true;
+		}
+		const body = await readBody(request, response);
+		if (!body) return true;
+		const parsed = parseUpdateInput(body);
+		if (!parsed.ok) {
+			sendError(response, 400, "invalid_input", parsed.message);
+			return true;
+		}
+		try {
+			const { catalog, accounts } = readCatalogFile(catalogPaths);
+			const candidate = updateAgent(catalog, id, parsed.input);
+			validateCandidate(candidate, accounts);
+			writeCatalogAtomic(catalogPaths.catalogPath, candidate);
+			reloadRegistry(registry, candidate, accounts);
+			const updated = candidate.agents.find((agent) => agent.id === id)!;
+			sendJson(response, 200, { agent: toView(updated, new Set()) });
+		} catch (error) {
+			if (error instanceof CatalogError) {
+				const mapped = catalogErrorToHttp(error);
+				sendError(response, mapped.status, mapped.code, mapped.message);
+				return true;
+			}
+			const message = error instanceof Error ? error.message : String(error);
+			sendError(response, 500, "catalog_write_failed", message);
+		}
+		return true;
+	}
+
 	async function handle(
 		request: IncomingMessage,
 		response: ServerResponse,
 		url: URL,
 		context: ApiRouteContext,
 	): Promise<boolean> {
+		if (await handleAccounts(request, response, url, context)) return true;
 		if (url.pathname === "/api/agents") {
 			if (request.method === "GET") {
 				sendJson(response, 200, { agents: views() });
@@ -288,14 +613,11 @@ export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
 			if (request.method === "POST") return createAgent(request, response, context);
 			return false;
 		}
-		if (request.method !== "GET") return false;
-		if (url.pathname === "/api/accounts") {
-			const accounts: AccountView[] = [...registry.accounts.values()]
-				.map((account) => ({ ref: account.ref, provider: account.provider, models: [...account.models] }))
-				.sort((a, b) => a.ref.localeCompare(b.ref));
-			sendJson(response, 200, { accounts });
-			return true;
+		const agentMatch = /^\/api\/agents\/([^/]+)$/.exec(url.pathname);
+		if (agentMatch && request.method === "PATCH") {
+			return await updateAgentRoute(request, response, context, decodeURIComponent(agentMatch[1]!));
 		}
+		if (request.method !== "GET") return false;
 		if (url.pathname === "/api/cats") {
 			const cats: HubCatView[] = views().map((agent) => ({ ...agent, catId: agent.id }));
 			sendJson(response, 200, { cats });

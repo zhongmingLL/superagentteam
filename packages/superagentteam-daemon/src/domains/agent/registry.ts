@@ -19,7 +19,8 @@ export type CatalogErrorCode =
 	| "role_id_empty"
 	| "account_ref_unresolved"
 	| "default_model_not_in_account"
-	| "account_models_empty";
+	| "account_models_empty"
+	| "agent_not_found";
 
 export class CatalogError extends Error {
 	readonly code: CatalogErrorCode;

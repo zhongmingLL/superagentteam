@@ -172,6 +172,8 @@ export interface AgentConfig {
 
 export interface AccountConfig {
 	ref: string;
+	/** Human-readable account label shown in Hub. */
+	displayName?: string;
 	provider: string;
 	apiUrl?: string;
 	/** env/secret ref; never a raw key. */

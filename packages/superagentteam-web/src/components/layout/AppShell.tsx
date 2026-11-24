@@ -36,6 +36,7 @@ export function AppShell() {
 	const accountsError = useAgentStore((state) => state.accountsError);
 	const loadAccounts = useAgentStore((state) => state.loadAccounts);
 	const createAgent = useAgentStore((state) => state.create);
+	const updateAgent = useAgentStore((state) => state.update);
 	const location = useLocation();
 	const navigate = useNavigate();
 	const dialogOpen = useNewThreadDialog((state) => state.open);
@@ -124,6 +125,7 @@ export function AppShell() {
 							accountsError={accountsError}
 							onLoadAccounts={() => void loadAccounts()}
 							onCreate={createAgent}
+							onUpdate={updateAgent}
 							openSignal={agentSignal}
 						/>
 					</div>

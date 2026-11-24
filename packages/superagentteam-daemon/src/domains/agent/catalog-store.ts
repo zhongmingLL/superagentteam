@@ -24,6 +24,19 @@ export interface CreateAgentInput {
 	color?: { primary: string; secondary: string };
 }
 
+export interface UpdateAgentInput {
+	displayName?: string;
+	mentionPatterns?: readonly string[];
+	accountRef?: string;
+	defaultModel?: string;
+	roleId?: string;
+	roleDescription?: string;
+	contextWindow?: number;
+	enabled?: boolean;
+	avatar?: string | null;
+	color?: { primary: string; secondary: string } | null;
+}
+
 export interface CatalogFile {
 	catalog: AgentCatalog;
 	accounts: AccountConfig[];
@@ -75,6 +88,30 @@ export function validateCandidate(catalog: AgentCatalog, accounts: readonly Acco
 
 export function appendAgent(catalog: AgentCatalog, agent: AgentConfig): AgentCatalog {
 	return { version: 1, agents: [...catalog.agents, agent] };
+}
+
+export function updateAgent(catalog: AgentCatalog, id: string, input: UpdateAgentInput): AgentCatalog {
+	const index = catalog.agents.findIndex((agent) => agent.id === id);
+	if (index < 0) throw new CatalogError("agent_not_found", `agent ${id} not found`);
+	const current = catalog.agents[index]!;
+	const next: AgentConfig = {
+		...current,
+		...(input.displayName !== undefined ? { displayName: input.displayName.trim() } : {}),
+		...(input.mentionPatterns !== undefined ? { mentionPatterns: [...input.mentionPatterns] } : {}),
+		...(input.accountRef !== undefined ? { accountRef: input.accountRef.trim() } : {}),
+		...(input.defaultModel !== undefined ? { defaultModel: input.defaultModel.trim() } : {}),
+		...(input.roleId !== undefined ? { roleId: input.roleId.trim() } : {}),
+		...(input.roleDescription !== undefined ? { roleDescription: input.roleDescription.trim() } : {}),
+		...(input.contextWindow !== undefined ? { contextWindow: input.contextWindow } : {}),
+		...(input.enabled !== undefined ? { enabled: input.enabled } : {}),
+	};
+	if (input.avatar === null) delete next.avatar;
+	else if (input.avatar !== undefined) next.avatar = input.avatar.trim();
+	if (input.color === null) delete next.color;
+	else if (input.color !== undefined) next.color = { ...input.color };
+	const agents = [...catalog.agents];
+	agents[index] = next;
+	return { version: 1, agents };
 }
 
 export function writeCatalogAtomic(path: string, catalog: AgentCatalog): void {

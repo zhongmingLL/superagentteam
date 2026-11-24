@@ -1,8 +1,15 @@
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import type { AccountView, AgentView, CreateAgentInput } from "@/domains/agent/api";
+import type {
+	AccountView,
+	AgentView,
+	CreateAgentInput,
+	UpdateAgentInput,
+} from "@/domains/agent/api";
 import { agentStatusLabel } from "@/domains/agent/labels";
 import { Icon } from "@/components/ui/Icon";
+import { AccountsModal } from "./AccountsModal";
+import { AgentEditorModal } from "./AgentEditorModal";
 
 export interface AgentPopoverProps {
 	agents: AgentView[];
@@ -14,15 +21,8 @@ export interface AgentPopoverProps {
 	accountsError?: string;
 	onLoadAccounts?: () => void;
 	onCreate?: (input: CreateAgentInput) => Promise<AgentView>;
+	onUpdate?: (id: string, input: UpdateAgentInput) => Promise<AgentView>;
 	openSignal?: number;
-}
-
-function splitPatterns(value: string): string[] {
-	return value
-		.split(/[\s,]+/u)
-		.map((item) => item.trim())
-		.filter((item) => item !== "")
-		.map((item) => (item.startsWith("@") ? item : `@${item}`));
 }
 
 export function AgentPopover({
@@ -35,20 +35,15 @@ export function AgentPopover({
 	accountsError,
 	onLoadAccounts,
 	onCreate,
+	onUpdate,
 	openSignal = 0,
 }: AgentPopoverProps) {
 	const [open, setOpen] = useState(false);
-	const [showCreate, setShowCreate] = useState(false);
-	const [id, setId] = useState("");
-	const [displayName, setDisplayName] = useState("");
-	const [mentionPatterns, setMentionPatterns] = useState("");
-	const [accountRef, setAccountRef] = useState("");
-	const [defaultModel, setDefaultModel] = useState("");
-	const [roleId, setRoleId] = useState("worker");
-	const [roleDescription, setRoleDescription] = useState("");
-	const [busy, setBusy] = useState(false);
-	const [formError, setFormError] = useState<string | undefined>();
-	const [createdName, setCreatedName] = useState<string | undefined>();
+	const [accountsOpen, setAccountsOpen] = useState(false);
+	const [editorOpen, setEditorOpen] = useState(false);
+	const [editorMode, setEditorMode] = useState<"create" | "edit">("create");
+	const [editingAgent, setEditingAgent] = useState<AgentView | undefined>();
+	const [notice, setNotice] = useState<string | undefined>();
 	const rootRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -71,60 +66,19 @@ export function AgentPopover({
 		if (openSignal > 0) setOpen(true);
 	}, [openSignal]);
 
-	useEffect(() => {
-		if (!open || !showCreate) return;
-		if (accounts.length === 0) {
-			if (accountsStatus === "idle") onLoadAccounts?.();
-			return;
-		}
-		const selected = accounts.find((account) => account.ref === accountRef) ?? accounts[0]!;
-		if (selected.ref !== accountRef) {
-			setAccountRef(selected.ref);
-			return;
-		}
-		if (!selected.models.includes(defaultModel)) setDefaultModel(selected.models[0] ?? "");
-	}, [open, showCreate, accounts, accountsStatus, accountRef, defaultModel, onLoadAccounts]);
+	function openCreate(): void {
+		setNotice(undefined);
+		setEditingAgent(undefined);
+		setEditorMode("create");
+		setEditorOpen(true);
+	}
 
-	const resetForm = (): void => {
-		setId("");
-		setDisplayName("");
-		setMentionPatterns("");
-		setRoleId("worker");
-		setRoleDescription("");
-		setFormError(undefined);
-	};
-
-	const submit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
-		event.preventDefault();
-		if (busy || !onCreate) return;
-		const patterns = splitPatterns(mentionPatterns);
-		if (!id.trim() || !displayName.trim() || patterns.length === 0 || !accountRef || !defaultModel) {
-			setFormError("id、显示名、mention patterns、account 和 model 都是必填。 ");
-			return;
-		}
-		setBusy(true);
-		setFormError(undefined);
-		try {
-			const created = await onCreate({
-				id: id.trim(),
-				displayName: displayName.trim(),
-				mentionPatterns: patterns,
-				accountRef,
-				defaultModel,
-				roleId: roleId.trim() || "worker",
-				...(roleDescription.trim() !== "" ? { roleDescription: roleDescription.trim() } : {}),
-			});
-			setCreatedName(created.displayName);
-			setShowCreate(false);
-			resetForm();
-		} catch (caught) {
-			setFormError(caught instanceof Error ? caught.message : "创建 agent 失败");
-		} finally {
-			setBusy(false);
-		}
-	};
-
-	const account = accounts.find((item) => item.ref === accountRef);
+	function openEdit(agent: AgentView): void {
+		setNotice(undefined);
+		setEditingAgent(agent);
+		setEditorMode("edit");
+		setEditorOpen(true);
+	}
 
 	return (
 		<div className="st-agent-popover" ref={rootRef}>
@@ -143,102 +97,21 @@ export function AgentPopover({
 				<div className="st-agent-panel" role="dialog" aria-label="Agents">
 					<div className="st-agent-panel-header">
 						<span>Agents</span>
-						{onCreate ? (
-							<button
-								type="button"
-								className="st-link-button"
-								onClick={() => {
-									setShowCreate((value) => !value);
-									setFormError(undefined);
-									setCreatedName(undefined);
-								}}
-							>
-								{showCreate ? "收起" : "新建"}
+						<span className="st-agent-panel-actions">
+							<button type="button" className="st-link-button" onClick={() => setAccountsOpen(true)}>
+								账号
 							</button>
-						) : null}
-					</div>
-					{createdName ? (
-						<p className="st-agent-created" role="status">
-							已创建 {createdName}
-						</p>
-					) : null}
-					{showCreate ? (
-						<form className="st-agent-form" onSubmit={(event) => void submit(event)}>
-							<label>
-								id
-								<input value={id} onChange={(event) => setId(event.target.value)} disabled={busy} required />
-							</label>
-							<label>
-								显示名
-								<input
-									value={displayName}
-									onChange={(event) => setDisplayName(event.target.value)}
-									disabled={busy}
-									required
-								/>
-							</label>
-							<label>
-								mention patterns
-								<input
-									value={mentionPatterns}
-									onChange={(event) => setMentionPatterns(event.target.value)}
-									placeholder="@agentA, @a"
-									disabled={busy}
-									required
-								/>
-							</label>
-							<label>
-								account
-								<select
-									value={accountRef}
-									onChange={(event) => setAccountRef(event.target.value)}
-									disabled={busy || accounts.length === 0}
-								>
-									{accounts.length === 0 ? <option value="">{accountsStatus === "loading" ? "加载中…" : "无 account"}</option> : null}
-									{accounts.map((item) => (
-										<option value={item.ref} key={item.ref}>
-											{item.ref} ({item.provider})
-										</option>
-									))}
-								</select>
-							</label>
-							<label>
-								model
-								<select
-									value={defaultModel}
-									onChange={(event) => setDefaultModel(event.target.value)}
-									disabled={busy || !account || account.models.length === 0}
-								>
-									{!account || account.models.length === 0 ? <option value="">无 model</option> : null}
-									{account?.models.map((model) => (
-										<option value={model} key={model}>
-											{model}
-										</option>
-									))}
-								</select>
-							</label>
-							<label>
-								role id
-								<input value={roleId} onChange={(event) => setRoleId(event.target.value)} disabled={busy} />
-							</label>
-							<label>
-								角色描述
-								<input
-									value={roleDescription}
-									onChange={(event) => setRoleDescription(event.target.value)}
-									disabled={busy}
-								/>
-							</label>
-							{accountsError ? <p className="st-error">{accountsError}</p> : null}
-							{formError ? (
-								<p className="st-error" role="alert">
-									{formError}
-								</p>
+							{onCreate ? (
+								<button type="button" className="st-link-button" onClick={openCreate}>
+									新建
+								</button>
 							) : null}
-							<button type="submit" className="st-button" disabled={busy || accounts.length === 0}>
-								{busy ? "创建中…" : "创建"}
-							</button>
-						</form>
+						</span>
+					</div>
+					{notice ? (
+						<p className="st-agent-created" role="status">
+							{notice}
+						</p>
 					) : null}
 					{status === "loading" && agents.length === 0 ? <p className="st-page-note">正在加载 agents…</p> : null}
 					{status === "ready" && agents.length === 0 ? <p className="st-page-note">还没有注册的 agent。</p> : null}
@@ -259,10 +132,40 @@ export function AgentPopover({
 								{agent.displayName}
 							</span>
 							<span className="st-agent-status">{agentStatusLabel(agent.status)}</span>
+							{onUpdate ? (
+								<button type="button" className="st-link-button st-agent-edit" onClick={() => openEdit(agent)}>
+									编辑
+								</button>
+							) : null}
 						</div>
 					))}
 				</div>
 			) : null}
+			<AccountsModal
+				open={accountsOpen}
+				onClose={() => setAccountsOpen(false)}
+				onChanged={() => onLoadAccounts?.()}
+			/>
+			<AgentEditorModal
+				open={editorOpen}
+				mode={editorMode}
+				agent={editingAgent}
+				accounts={accounts}
+				accountsStatus={accountsStatus}
+				accountsError={accountsError}
+				onLoadAccounts={onLoadAccounts}
+				onClose={() => {
+					setEditorOpen(false);
+					setEditingAgent(undefined);
+				}}
+				onCreate={onCreate}
+				onUpdate={onUpdate}
+				onSaved={(agent) => {
+					setNotice(`${editorMode === "create" ? "已创建" : "已保存"} ${agent.displayName}`);
+					setEditorOpen(false);
+					setEditingAgent(undefined);
+				}}
+			/>
 		</div>
 	);
 }

@@ -151,7 +151,7 @@ function writeUsage(): void {
 	writeLine("  auth console-link [--data-dir <path>] [--ttl-ms <ms>] [--hub-origin <url>]");
 	writeLine("  thread <create|list|show|post|tail>");
 	writeLine("  daemon <status|stop>");
-	writeLine("  memory <index|status|recall|read|digest|trigger>");
+	writeLine("  memory <index|status|recall|read|trigger>");
 	writeLine("global options: --data-dir <path> --json");
 	writeLine("  global options may precede the command");
 	writeLine("thread create: --project-path <path> [--title <text>] [--id <threadId>]");

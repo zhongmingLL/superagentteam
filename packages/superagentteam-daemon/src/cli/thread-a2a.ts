@@ -35,7 +35,7 @@ export async function runA2AThreadCommand(args: ParsedArgs, context: A2ACliConte
 		if (option(args, legacyOption) !== undefined) {
 			throw new ControlError(
 				"invalid_input",
-				`--${legacyOption} is a legacy task-first option; pass --engine legacy to use it`,
+				`--${legacyOption} is a retired task-first option; thread commands use A2A v1 (create/list/show/post/tail)`,
 			);
 		}
 	}

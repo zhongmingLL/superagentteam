@@ -102,7 +102,10 @@ NODE_ENV=development npm test -w @superagentteam/skills
 - 2026-11-24：F032.0 完成。tag `archive/task-first-v1` 已推送，指向
   `dd29e1cabbcf7907ee001c6c9440164697d0747e`；inventory 报告
   `docs/reports/2026-11-24-f032-legacy-inventory.md` 已落。
-- 下一步：F032.1 移除 `--engine legacy` / `controlPlane` / legacy-only CLI，
-  再进 F032.2 删除运行时。
+- 2026-11-24：F032.1 完成。`thread --engine legacy` 与 12 个 legacy-only CLI
+  command 已 typed reject；`startDaemon` 只接受 A2A control plane；`daemon status`
+  不再打开 `control.db`。legacy CLI/daemon tests 与仅服务它们的 helper 已移除。
+- 下一步：F032.2 删除 `src/legacy/task-first/`、旧 path shim、剩余 legacy tests 与
+  allowlist 条目，再进 F032.3 防回流和 F032.4 full gate。
 
 [宪宪/deepseek-flash🐾]

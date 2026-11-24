@@ -49,7 +49,6 @@ describe("F018 R5-c2 default daemon entry", () => {
 		});
 		try {
 			daemon.markReady();
-			expect(daemon.controlPlane).toBeNull();
 			expect(daemon.a2aControlPlane?.ready().started).toBe(true);
 			expect(existsSync(join(dir, "f018.db"))).toBe(true);
 			expect(existsSync(join(dir, "control.db"))).toBe(false);
@@ -58,34 +57,18 @@ describe("F018 R5-c2 default daemon entry", () => {
 		}
 	});
 
-	it("keeps explicit legacy opt-in and health-only opt-out", async () => {
-		const legacyDir = makeDataDir();
-		const legacy = await startDaemon({
-			installationRoot: legacyDir,
-			dataDir: legacyDir,
-			runningRevision: "r5c2",
-			controlPlane: {},
-		});
-		try {
-			legacy.markReady();
-			expect(legacy.controlPlane?.ready().started).toBe(true);
-			expect(legacy.a2aControlPlane).toBeNull();
-			expect(existsSync(join(legacyDir, "control.db"))).toBe(true);
-		} finally {
-			await legacy.stop();
-		}
-
+	it("keeps the health-only opt-out", async () => {
 		const healthDir = makeDataDir();
 		const health = await startDaemon({
 			installationRoot: healthDir,
 			dataDir: healthDir,
 			runningRevision: "r5c2",
-			controlPlane: false,
+			a2aControlPlane: false,
 		});
 		try {
 			health.markReady();
-			expect(health.controlPlane).toBeNull();
 			expect(health.a2aControlPlane).toBeNull();
+			expect(existsSync(join(healthDir, "control.db"))).toBe(false);
 		} finally {
 			await health.stop();
 		}

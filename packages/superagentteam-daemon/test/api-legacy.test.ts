@@ -60,7 +60,6 @@ describe("F016c-M1 S5 legacy surface shells", () => {
 			installationRoot,
 			dataDir,
 			runningRevision: "f016c-s5",
-			controlPlane: false,
 			hubOrigin: HUB_ORIGIN,
 			a2aControlPlane: { pollIntervalMs: 3_600_000, sweepIntervalMs: 3_600_000 },
 		});

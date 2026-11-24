@@ -84,7 +84,6 @@ describe("F020 H5 static SPA serving", () => {
 			installationRoot,
 			dataDir,
 			runningRevision: "f020-h5",
-			controlPlane: false,
 			staticDir,
 			a2aControlPlane: { pollIntervalMs: 3_600_000, sweepIntervalMs: 3_600_000 },
 		});
@@ -160,7 +159,6 @@ describe("F020 H5 static SPA serving", () => {
 			installationRoot,
 			dataDir,
 			runningRevision: "f020-h5-dev",
-			controlPlane: false,
 			staticDir,
 			hubOrigin: "http://localhost:3000",
 			a2aControlPlane: { pollIntervalMs: 3_600_000, sweepIntervalMs: 3_600_000 },

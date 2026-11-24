@@ -13,6 +13,11 @@ export interface CliContext {
 	readonly json: boolean;
 }
 
+export interface CliCommandContext {
+	readonly dataDir: string;
+	readonly json: boolean;
+}
+
 export interface OperatorContext {
 	readonly id: string;
 	readonly privateKey: KeyObject;
@@ -22,6 +27,10 @@ export interface OperatorContext {
 export function openCliContext(args: ParsedArgs): CliContext {
 	const dataDir = resolveControlDataDir(option(args, "data-dir"));
 	return { dataDir, store: openControlStore({ dataDir }), json: flag(args, "json") };
+}
+
+export function openCliCommandContext(args: ParsedArgs): CliCommandContext {
+	return { dataDir: resolveControlDataDir(option(args, "data-dir")), json: flag(args, "json") };
 }
 
 export function requireOperator(context: Pick<CliContext, "dataDir">): OperatorContext {

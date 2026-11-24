@@ -5,7 +5,6 @@ import { type BrowserApi, createBrowserApi } from "./api/browser.ts";
 import { createStaticHandler } from "./api/static.ts";
 import { appendBootRecord, nextBootSequence } from "./boot-ledger.ts";
 import { A2ADaemonControlPlane, type A2ADaemonControlPlaneOptions } from "./daemon-a2a.ts";
-import { DaemonControlPlane, type DaemonControlPlaneOptions } from "./daemon-runtime.ts";
 import { ChangeBus } from "./domains/events/bus.ts";
 import { envValue } from "./env.ts";
 import { DaemonError } from "./errors.ts";
@@ -33,9 +32,7 @@ export interface StartDaemonOptions {
 	eventHeartbeatMs?: number;
 	/** Defaults to a local observability runtime; pass false to disable telemetry. */
 	observability?: ObservabilityRuntime | false;
-	/** Legacy task-first control plane (frozen); use {} for its defaults. */
-	controlPlane?: Omit<DaemonControlPlaneOptions, "dataDir"> | false;
-	/** A2A runtime control plane; the default when neither option is provided. */
+	/** A2A runtime control plane; enabled by default, pass false for health-only tests. */
 	a2aControlPlane?: Omit<A2ADaemonControlPlaneOptions, "dataDir"> | false;
 	/** Hub origin allowed to use the browser API; defaults to SUPERAGENTTEAM_HUB_ORIGIN or http://localhost:3000. */
 	hubOrigin?: string;
@@ -82,7 +79,6 @@ export interface DaemonHandle {
 	boot: DaemonBoot;
 	healthUrl: string;
 	observability: ObservabilityRuntime;
-	controlPlane: DaemonControlPlane | null;
 	a2aControlPlane: A2ADaemonControlPlane | null;
 	state(): DaemonState;
 	health(): DaemonHealth;
@@ -118,14 +114,7 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 	const paths = resolveDaemonPaths(options.dataDir);
 	const installation = resolveInstallation(options.installationRoot);
 	const deploymentId = validateDeploymentId(options.deploymentId);
-	const legacyRequested = typeof options.controlPlane === "object" && options.controlPlane !== null;
-	const a2aRequested = options.a2aControlPlane !== undefined && options.a2aControlPlane !== false;
-	const defaultEntry = options.controlPlane === undefined && options.a2aControlPlane === undefined;
-	if (a2aRequested && legacyRequested) {
-		throw new DaemonError("invalid_state", "controlPlane and a2aControlPlane are mutually exclusive");
-	}
-	const useA2A = a2aRequested || defaultEntry;
-	const useLegacy = legacyRequested;
+	const useA2A = options.a2aControlPlane !== false;
 	const bootId = randomUUID();
 	const bootSequence = nextBootSequence(paths.ledgerFile);
 	const declaredServices = [...(options.services ?? [])];
@@ -193,39 +182,27 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 	persist();
 	const observability = createRuntime(options, paths.dataDir);
 
-	let controlPlane: DaemonControlPlane | null = null;
 	let a2aControlPlane: A2ADaemonControlPlane | null = null;
-	if (useA2A || useLegacy) {
+	if (useA2A) {
 		try {
-			if (useA2A) {
-				const a2aOptions =
-					options.a2aControlPlane === undefined || options.a2aControlPlane === false
-						? {}
-						: options.a2aControlPlane;
-				const injectedStream = a2aOptions.onStreamEvent;
-				a2aControlPlane = new A2ADaemonControlPlane({
-					...a2aOptions,
-					dataDir: paths.dataDir,
-					changeBus,
-					onStreamEvent: (event, threadId) => {
-						injectedStream?.(event, threadId);
-						changeBus.publishStream(threadId, event);
-					},
-				});
-				await a2aControlPlane.start();
-			} else {
-				const legacyOptions =
-					options.controlPlane === false || options.controlPlane === undefined ? {} : options.controlPlane;
-				controlPlane = new DaemonControlPlane({ ...legacyOptions, dataDir: paths.dataDir });
-				await controlPlane.start();
-			}
+			const a2aOptions = options.a2aControlPlane === false ? {} : (options.a2aControlPlane ?? {});
+			const injectedStream = a2aOptions.onStreamEvent;
+			a2aControlPlane = new A2ADaemonControlPlane({
+				...a2aOptions,
+				dataDir: paths.dataDir,
+				changeBus,
+				onStreamEvent: (event, threadId) => {
+					injectedStream?.(event, threadId);
+					changeBus.publishStream(threadId, event);
+				},
+			});
+			await a2aControlPlane.start();
 		} catch (error) {
 			state = "failed";
 			persist();
 			record("failed", error instanceof Error ? error.message : String(error), "startup_failed");
 			record("exited", "startup_failed", "startup_failed");
 			await a2aControlPlane?.close().catch(() => {});
-			await controlPlane?.close().catch(() => {});
 			releaseFence(paths.lockFile, bootId);
 			await observability.close();
 			throw new DaemonError(
@@ -239,7 +216,6 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 		if (state === "failed") return "failed";
 		if (state === "stopping" || state === "stopped") return "stopping";
 		if (state !== "ready") return "starting";
-		if (controlPlane && !controlPlane.ready().started) return "degraded";
 		if (a2aControlPlane && !a2aControlPlane.ready().started) return "degraded";
 		return observability.readiness().status === "ready" ? "ready" : "degraded";
 	};
@@ -248,7 +224,6 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 		...health(),
 		status: readyStatus(),
 		telemetry: observability.readiness(),
-		controlPlane: controlPlane?.ready() ?? null,
 		a2aControlPlane: a2aControlPlane?.ready() ?? null,
 	});
 
@@ -314,7 +289,6 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 		record("failed", error instanceof Error ? error.message : String(error), "startup_failed");
 		record("exited", "startup_failed", "startup_failed");
 		await a2aControlPlane?.close().catch(() => {});
-		await controlPlane?.close().catch(() => {});
 		releaseFence(paths.lockFile, bootId);
 		await observability.close();
 		throw new DaemonError(
@@ -381,7 +355,6 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 				server.close(() => resolve());
 			});
 			await a2aControlPlane?.close().catch(() => {});
-			await controlPlane?.close().catch(() => {});
 			state = "stopped";
 			persist();
 			record("stopped");
@@ -402,7 +375,6 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 		},
 		healthUrl: `http://127.0.0.1:${healthPort ?? 0}/health`,
 		observability,
-		controlPlane,
 		a2aControlPlane,
 		state: () => state,
 		health,

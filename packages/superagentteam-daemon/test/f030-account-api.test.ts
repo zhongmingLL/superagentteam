@@ -37,7 +37,6 @@ describe("F030 account API", () => {
 			installationRoot,
 			dataDir,
 			runningRevision: "f030-test",
-			controlPlane: false,
 			hubOrigin: HUB_ORIGIN,
 			a2aControlPlane: { pollIntervalMs: 3_600_000, sweepIntervalMs: 3_600_000 },
 		});

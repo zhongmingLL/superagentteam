@@ -6,10 +6,10 @@ import { authorizationPayload, StopOperationService } from "../lifecycle/index.t
 import { resolveDaemonPaths } from "../paths.ts";
 import { readStateFile } from "../state.ts";
 import { option, type ParsedArgs } from "./args.ts";
-import { type CliContext, requireOperator } from "./context.ts";
+import { type CliCommandContext, requireOperator } from "./context.ts";
 import { writeJson, writeLine } from "./output.ts";
 
-function daemonService(context: CliContext, args: ParsedArgs): StopOperationService {
+function daemonService(context: CliCommandContext, args: ParsedArgs): StopOperationService {
 	return new StopOperationService({
 		dataDir: context.dataDir,
 		deploymentId: option(args, "deployment-id") ?? envValue(process.env, "DEPLOYMENT_ID") ?? "local",
@@ -18,7 +18,7 @@ function daemonService(context: CliContext, args: ParsedArgs): StopOperationServ
 	});
 }
 
-export async function runDaemonCommand(args: ParsedArgs, context: CliContext): Promise<number> {
+export async function runDaemonCommand(args: ParsedArgs, context: CliCommandContext): Promise<number> {
 	const subcommand = args.positionals[0];
 	if (subcommand === "status") {
 		const status = daemonService(context, args).status();

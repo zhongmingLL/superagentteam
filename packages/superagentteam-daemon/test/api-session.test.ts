@@ -37,8 +37,8 @@ describe("F016c-M1 S1 browser session", () => {
 			installationRoot,
 			dataDir,
 			runningRevision: "f016c-s1",
-			controlPlane: false,
 			hubOrigin: "http://localhost:3000",
+			a2aControlPlane: false,
 		});
 		daemon.markReady();
 		return new URL(daemon.healthUrl).origin;

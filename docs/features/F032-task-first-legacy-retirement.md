@@ -96,6 +96,12 @@ legacy control-plane 入口。operator 已确认：**没有真实 legacy 使用�
   `docs/reports/2026-11-24-f032-legacy-inventory.md` 记录 88 files / 800K legacy code、
   55 allowlist entries、52 个非 legacy shim 文件、3 个直接 import legacy 的测试，
   以及 legacy CLI/daemon 入口。下一步 F032.1 入口退场。
+- 2026-11-24：F032.1 完成。CLI 现在只暴露 `auth` / `thread` / `daemon` / `memory`；
+  `thread --engine legacy` 与 `backlog/sop/task/approval/budget/deployment/schedule/
+  session/profile/gate/merge/eval` 返回 typed `legacy_engine_retired` /
+  `legacy_command_retired`。`startDaemon` 移除 legacy `controlPlane` option，默认且
+  唯一 control plane 是 A2A v1；`daemon status` 不再打开 `control.db`。直接依赖
+  legacy 入口的 CLI/daemon tests 同步移除。下一步 F032.2 删除运行时与剩余 shim。
 
 ## 非目标
 

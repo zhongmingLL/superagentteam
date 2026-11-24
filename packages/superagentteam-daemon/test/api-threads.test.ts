@@ -68,7 +68,6 @@ describe("F016c-M1 S2 thread API", () => {
 			installationRoot,
 			dataDir,
 			runningRevision: "f016c-s2",
-			controlPlane: false,
 			hubOrigin: HUB_ORIGIN,
 			a2aControlPlane: { pollIntervalMs: 3_600_000, sweepIntervalMs: 3_600_000 },
 		});

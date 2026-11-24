@@ -132,7 +132,6 @@ describe("F021 real worker busy live state", () => {
 			installationRoot,
 			dataDir,
 			runningRevision: "f021-busy-live",
-			controlPlane: false,
 			hubOrigin: HUB_ORIGIN,
 			a2aControlPlane: {
 				cliPath: PI_CLI_PATH,

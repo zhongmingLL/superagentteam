@@ -8,13 +8,21 @@ related_features: [codeteam/F018]
 
 # Task-first legacy (frozen)
 
-Single source of truth for what is frozen: `docs/architecture/0006-task-first-legacy.md`.
-This index maps the physical relocation done in F018 R1-0.
+> **F032.2 archive（2026-11-24）：** the task-first runtime and all old-path
+> shims were deleted from main. This directory is a non-normative historical
+> index only; recover code from tag `archive/task-first-v1`
+> (`dd29e1cabbcf7907ee001c6c9440164697d0747e`). Current v1 truth is
+> `docs/architecture/0005-thread-first-runtime.md`.
 
-## Code layout
+Historical source of truth for what was frozen: `docs/architecture/0006-task-first-legacy.md`.
+This index records the physical relocation done in F018 R1-0 and the F032.2 deletion.
 
-All task-first implementation lives under
-`packages/superagentteam-daemon/src/legacy/task-first/`. Shim coverage is
+## Code layout (historical; files deleted)
+
+All task-first implementation used to live under
+`packages/superagentteam-daemon/src/legacy/task-first/`. F032.2 deleted that
+directory, its path shims, control stores, and legacy-only tests. The historical
+shim coverage was
 deliberately two-tier: the top-level domains and `a2a/` keep **per-file
 re-export shims** at their old paths; the moved control stores expose a
 **single deprecated barrel** (`control/stores/types.ts`) plus the
@@ -24,7 +32,7 @@ consumers were rewritten to the new locations (store VALUE access goes
 through `control/store.ts`, which is allowlisted). Shims carry no logic and
 are removed in R5.
 
-| Old path (shim remains) | New location | Removal |
+| Old path (historical) | Relocated location (deleted) | Removal |
 |---|---|---|
 | `src/{dispatch,scheduling,review,merge,gates,sop,managed-work,deployment-wait,custody}/` | same name under `src/legacy/task-first/` | R5 |
 | `src/a2a/*` (task-bound impl incl. legacy handler class) | `src/legacy/task-first/a2a/` | R2/R3 (v1 surface rebuild) |
@@ -32,9 +40,9 @@ are removed in R5.
 | `src/control/read-models.ts` | `src/legacy/task-first/control/read-models.ts` | R5 |
 | `src/control/migrations/` (task-first table DDL) | `src/legacy/task-first/control/migrations/` | R5 (applied by legacy `control/database.ts`, allowlisted owner R5); the F018 v1 migration harness lands in `src/infrastructure/db/migrations/` in R1-a |
 
-Shared modules that are NOT moved in R1-0 (`workers/`, `auth/`, `policy/`,
-remaining `control/stores/`) carry `TASK-BOUND LEGACY` boundary markers on
-their task-bound files; they split in later rounds.
+Shared modules that were not moved in R1-0 (`workers/`, `auth/`, `policy/`,
+remaining `control/stores/`) were split or deleted in F032.2; only the v1
+pieces (`workers/rpc-client.ts`, `workers/a2a-extension.ts`, v1 auth) remain.
 
 ## Enforcement
 
@@ -52,13 +60,12 @@ SuperAgentTeam lane):
   (`tasks`, `handoffs`, `custody_events`, `budgets`, `reviews`, `merges`);
 - stale allowlist entries fail, so the list only shrinks.
 
-The baseline allowlist lives in `scripts/legacy-boundary-allowlist.json`
-(file → owner → removal stage). Machine-enforced: unlisted imports, stale
-entries, shared-package and `src/domains/` imports all fail. NOT
-machine-enforced: an author adding an entry and an import in the same commit
-— additions are visible as diffs to that JSON file and reviewers must reject
-them ("only shrinks" is a review rule backed by diff visibility, not a
-cryptographic guarantee).
+The baseline allowlist lives in `scripts/legacy-boundary-allowlist.json` and is
+now empty (`{}`). Machine-enforced: unlisted imports, stale entries,
+shared-package and `src/domains/` imports all fail. The guard also runs a
+negative self-test that proves it still detects reintroduced legacy paths,
+retired tools (`a2a_send`, `handoff_*`), and frozen tables (`tasks`,
+`handoffs`, `custody_events`, `budgets`, `reviews`, `merges`).
 
 ## Docs layout
 
@@ -78,4 +85,4 @@ Mixed/still-referenced docs (F004/F005/F015/F016 families, W-numbered plans,
 - Legacy type barrel `control/stores/types.ts` is `@deprecated`; v1 types
   come from `@superagentteam/shared/types` only. No file may depend on both
   generations.
-- Nothing is deleted before R5.
+- F032.2 deleted the frozen runtime; nothing may be reintroduced into v1 paths.

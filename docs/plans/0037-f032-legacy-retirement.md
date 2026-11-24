@@ -105,7 +105,13 @@ NODE_ENV=development npm test -w @superagentteam/skills
 - 2026-11-24：F032.1 完成。`thread --engine legacy` 与 12 个 legacy-only CLI
   command 已 typed reject；`startDaemon` 只接受 A2A control plane；`daemon status`
   不再打开 `control.db`。legacy CLI/daemon tests 与仅服务它们的 helper 已移除。
-- 下一步：F032.2 删除 `src/legacy/task-first/`、旧 path shim、剩余 legacy tests 与
-  allowlist 条目，再进 F032.3 防回流和 F032.4 full gate。
+  PR #183 合入 `7a41a2c8c`。
+- 2026-11-24：F032.2 完成。删除 legacy runtime、旧 path shim、control stores、
+  dispatch/review/merge/gates/sop/scheduling/eval/policy/deployment-wait/custody
+  及 legacy-only tests/fixtures；allowlist 清空。v1 只保留 A2A/daemon/memory/
+  observability/auth/lifecycle/paths/state。daemon 469 tests + `npm run check` 绿。
+- 2026-11-24：F032.3 进行中。历史文档加 non-normative 删除声明；boundary guard
+  增加负向自测（legacy path/retired tool/frozen table）。
+- 下一步：F032.4 full build/check/test + A2A CLI/provider E2E，然后收口。
 
 [宪宪/deepseek-flash🐾]

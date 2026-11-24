@@ -1,12 +1,8 @@
 # @superagentteam/daemon
 
-> **F032 status:** the A2A v1 runtime in `<dataDir>/f018.db` is the only supported
-> control plane. The task-first control store described below is frozen legacy; its
-> executable entrypoints (`--engine legacy`, `controlPlane`) have been retired and the
-> runtime is scheduled for deletion. New work must use `thread` plus the Hub API.
-
-Minimal daemon lifecycle for SuperAgentTeam: `SUPERAGENTTEAM_DATA_DIR` state, an append-only boot ledger, a
-single-writer fence, loopback `/health`, and `requested → ready → stopping → stopped/failed`.
+SuperAgentTeam A2A v1 daemon: one thread-first runtime backed by
+`<dataDir>/f018.db`, an append-only boot ledger, a single-writer fence,
+loopback `/health`, and `requested → ready → stopping → stopped/failed`.
 
 ```ts
 import { startDaemon } from "@superagentteam/daemon";
@@ -21,30 +17,22 @@ console.log(daemon.healthUrl);
 await daemon.stop();
 ```
 
-The daemon never reports ready before `markReady`, and `markReady` fails closed if a declared service
-is missing or an undeclared one is reported. W5's authorization/reverification chain is out of scope.
+`startDaemon` starts the A2A control plane by default. `a2aControlPlane: false`
+keeps the health/state surface only for tests. The legacy task-first
+`controlPlane` option and `--engine legacy` are retired; their runtime files
+were deleted in F032.2 and remain recoverable only from the
+`archive/task-first-v1` tag.
 
-## Control store (W1)
+The daemon never reports ready before `markReady`, and `markReady` fails closed
+if a declared service is missing or an undeclared one is reported.
 
-`openControlDatabase({ dataDir })` creates `<dataDir>/control.db` with `0600` permissions inside a
-`0700` data directory, enables WAL, foreign keys, and a 5000 ms busy timeout, then applies
-forward-only migrations. The control store owns threads, messages, queue entries, tasks, runs,
-handoffs, approvals, reviews, and the rest of the W1 schema; it is not the pi transcript.
-`ControlStore` exposes the identity/thread/chat/queue and work/SOP/artifact/inbox stores, plus the
-transactional `dispatchBacklog` and `cutoverQueueEntry` services.
+## Operator surfaces
 
-```ts
-import { openControlDatabase } from "@superagentteam/daemon";
+- CLI: `superagentteam auth`, `thread`, `daemon`, `memory`.
+- Hub API: A2A threads/messages/queue/invocations/events/agents/accounts.
+- Data: A2A v1 tables in `f018.db`; memory uses `memory.db`; daemon state uses
+  `daemon-state.json` + `boot-ledger.jsonl`.
 
-const control = openControlDatabase({ dataDir: process.env.SUPERAGENTTEAM_DATA_DIR });
-console.log(control.schemaVersion);
-control.close();
-```
-
-Migration heads are contiguous and checked against `schema_migrations`; a failed migration rolls
-back atomically, and a database with an unknown/ahead version fails closed. `SUPERAGENTTEAM_SQLITE_BUSY_TIMEOUT_MS`
-overrides the default busy timeout.
-
-WAL and `-shm` files are created by SQLite with the process umask; their confidentiality relies on
-the `0700` data directory. Set `umask 077` or pre-create the files if a deployment requires explicit
-modes.
+Task-first CLI commands, control stores, eval/policy/review/merge/gate modules,
+and their tests were removed with the runtime. Historical design notes live
+under `docs/architecture/0006-task-first-legacy.md` and `docs/legacy/task-first/`.

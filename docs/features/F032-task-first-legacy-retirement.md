@@ -82,11 +82,11 @@ legacy control-plane 入口。operator 已确认：**没有真实 legacy 使用�
 
 ## 验收标准
 
-- [ ] AC-1：archive tag 存在，记录最后 legacy commit SHA；删除前后可回滚。
-- [ ] AC-2：默认 CLI/daemon 不再提供 legacy engine/control-plane 入口；帮助与错误文案一致。
-- [ ] AC-3：legacy code/shim/tests/allowlist 条目删除；无活跃 import。
-- [ ] AC-4：历史文档保留且明确 non-normative；F032 删除报告记录文件清单与验证命令。
-- [ ] AC-5：没有删除用户数据；旧 control.db 按“无读取需求”归档说明处理。
+- [x] AC-1：archive tag 存在，记录最后 legacy commit SHA；删除前后可回滚。
+- [x] AC-2：默认 CLI/daemon 不再提供 legacy engine/control-plane 入口；帮助与错误文案一致。
+- [x] AC-3：legacy code/shim/tests/allowlist 条目删除；无活跃 import。
+- [x] AC-4：历史文档保留且明确 non-normative；F032 删除报告记录文件清单与验证命令。
+- [x] AC-5：没有删除用户数据；旧 control.db 按“无读取需求”归档说明处理。
 - [ ] AC-6：full build/check/test + A2A E2E 绿；boundary guard negative test 生效。
 
 ## 进展
@@ -101,7 +101,14 @@ legacy control-plane 入口。operator 已确认：**没有真实 legacy 使用�
   session/profile/gate/merge/eval` 返回 typed `legacy_engine_retired` /
   `legacy_command_retired`。`startDaemon` 移除 legacy `controlPlane` option，默认且
   唯一 control plane 是 A2A v1；`daemon status` 不再打开 `control.db`。直接依赖
-  legacy 入口的 CLI/daemon tests 同步移除。下一步 F032.2 删除运行时与剩余 shim。
+  legacy 入口的 CLI/daemon tests 同步移除。PR #183 合入 `7a41a2c8c`。
+- 2026-11-24：F032.2 完成。删除 `src/legacy/task-first/`、旧 path shim、control
+  stores、dispatch/review/merge/gates/sop/scheduling/eval/policy/deployment-wait/
+  custody 及其 legacy-only tests/fixtures；`legacy-boundary-allowlist.json` 清空。
+  保留 v1 需要的 `control/errors.ts`、`data-dir.ts`、read-only memory control
+  adapter 和 Hub disabled-route shim。净删除约 45.5K 行；daemon 68 files / 469
+  tests 通过，`npm run check` 全绿。F032.3 已补文档与 boundary 负向自测，剩余
+  F032.4 full gate。
 
 ## 非目标
 

@@ -139,6 +139,51 @@ function importsLegacy(rel, src) {
   });
 }
 
+function v1ReferenceErrors(rel, src) {
+  const errors = [];
+  for (const tool of RETIRED_TOOL_NAMES) {
+    if (src.includes(tool)) errors.push(`${rel}: v1 path references retired tool '${tool}'`);
+  }
+  for (const table of LEGACY_TABLES) {
+    if (new RegExp(`\\b${table}\\b`).test(src)) {
+      errors.push(`${rel}: v1 path references frozen legacy table '${table}'`);
+    }
+  }
+  return errors;
+}
+
+// F032.3 negative test: prove the guard still detects reintroduction before it
+// scans the real tree. A silently broken guard would otherwise pass forever.
+function selfTest() {
+  const failures = [];
+  const check = (label, actual, expected) => {
+    if (actual !== expected) failures.push(`${label}: expected ${expected}, got ${actual}`);
+  };
+  check(
+    "direct legacy import",
+    importsLegacy("domains/x.ts", 'import { x } from "../legacy/task-first/a2a/tools.ts";'),
+    true,
+  );
+  check("old shim import", importsLegacy("domains/x.ts", 'import { x } from "../dispatch/service.ts";'), true);
+  check(
+    "deprecated control barrel",
+    importsLegacy("domains/x.ts", 'import type { X } from "../control/stores/types.ts";'),
+    true,
+  );
+  check("normal v1 import", importsLegacy("domains/x.ts", 'import { x } from "./store.ts";'), false);
+  check("retired tool", v1ReferenceErrors("domains/x.ts", 'const tool = "a2a_send";').length, 1);
+  check("retired handoff tool", v1ReferenceErrors("domains/x.ts", 'const tool = "handoff_create";').length, 1);
+  check("frozen table", v1ReferenceErrors("domains/x.ts", "SELECT * FROM tasks;").length, 1);
+  check("clean v1 source", v1ReferenceErrors("domains/x.ts", "SELECT * FROM threads;").length, 0);
+  if (failures.length > 0) {
+    console.error("check-legacy-boundary: self-test failed");
+    for (const failure of failures) console.error(`  - ${failure}`);
+    process.exit(1);
+  }
+}
+
+selfTest();
+
 const rawAllowlist = JSON.parse(readFileSync(ALLOWLIST_PATH, "utf8"));
 for (const [rel, entry] of Object.entries(rawAllowlist)) {
   if (!entry || typeof entry.owner !== "string" || !entry.owner || typeof entry.why !== "string" || !entry.why) {
@@ -180,14 +225,7 @@ for (const file of walk(DAEMON_SRC)) {
   }
 
   if (inV1) {
-    for (const tool of RETIRED_TOOL_NAMES) {
-      if (src.includes(tool)) errors.push(`${rel}: v1 path references retired tool '${tool}'`);
-    }
-    for (const table of LEGACY_TABLES) {
-      if (new RegExp(`\\b${table}\\b`).test(src)) {
-        errors.push(`${rel}: v1 path references frozen legacy table '${table}'`);
-      }
-    }
+    errors.push(...v1ReferenceErrors(rel, src));
   }
 }
 

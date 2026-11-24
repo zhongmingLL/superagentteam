@@ -72,10 +72,10 @@ F025 的真实 provider E2E 通过 `/home/ming/.env` 提供 key，是临时方�
 
 - [x] 账号可在 Hub 创建/编辑/删除；secret 不回显、不写 accounts.json、不进日志。
 - [ ] agent 创建/编辑可选 account 与 model，provider/model 显示正确。
-- [ ] 新建 account 后无需改 `.env` 或重启 daemon 即可用于新 agent 回合。
-- [ ] 不同 account 的 key/baseUrl 在各自 worker 生效，互不串用。
-- [ ] 真实 provider E2E：account → agent → turn 成功；缺失/错误凭据 fail-closed。
-- [ ] web/daemon tests、typecheck、build、doc-index 全绿；1440/390 截图。
+- [x] 新建 account 后无需改 `.env` 或重启 daemon 即可用于新 agent 回合。
+- [x] 不同 account 的 key/baseUrl 在各自 worker 生效，互不串用。
+- [x] 真实 provider E2E：account → agent → turn 成功；缺失/错误凭据 fail-closed。
+- [x] web/daemon tests、typecheck、build、doc-index 全绿；1440/390 截图。
 
 ## 进展
 
@@ -87,7 +87,16 @@ F025 的真实 provider E2E 通过 `/home/ming/.env` 提供 key，是临时方�
   - 实机 3104 验证：新建 `OpenAI Test` 账号成功，accounts.json 无明文 key，
     credentials.json 存 `openai-test`，UI 显示「已存 API Key」。
   - 验证：daemon 134 files / 895 tests；web 99 tests；web build pass。
-  - 剩余：F030.3 agent 编辑页升级、F030.4 per-worker 凭据隔离 + 真实 E2E。
+  - 剩余：F030.3 agent 编辑页升级。
+- 2026-11-24：F030.4 per-worker 凭据隔离完成。
+  - 每个 worker 使用独立 `PI_CODING_AGENT_DIR`；spawn 前把 account key 写入
+    `auth.json`，有 `apiUrl` 时写 `models.json` 的 provider baseUrl override；
+    基础 worker-agent 的既有 auth/models 会先复制，再被账户配置覆盖。
+  - 真实 E2E：新 daemon **不带 ambient KIMI_API_KEY**，把真实 key 写入 account
+    credentials；Agent A 回合成功返回「F030 account key 生效。」，worker
+    `auth.json` 含 `kimi-coding` api_key。
+  - 证据：`docs/design/F030/account-key-turn-1440.png`、`accounts-390-light.png`。
+  - 验证：daemon 135 files / 900 tests；web 99 tests；build/doc-index pass。
 
 ## 风险与回滚
 

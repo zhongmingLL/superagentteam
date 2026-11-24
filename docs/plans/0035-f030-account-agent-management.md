@@ -42,6 +42,10 @@ agent 选择 account/model，worker 按 account 隔离 key 与 baseUrl。
 - 写 `auth.json`（api_key）与 `models.json`（baseUrl override）。
 - 真实 provider E2E；缺失凭据 fail-closed；secret 扫描日志/DB/API。
 
+状态（2026-11-24）：F030.4 完成。per-worker `PI_CODING_AGENT_DIR` + `auth.json` /
+`models.json`；真实 Kimi 回合在 daemon 无 ambient key 的情况下成功。
+F030.3 agent 编辑页升级仍待完成。
+
 ## 测试矩阵
 
 | 层 | 用例 |

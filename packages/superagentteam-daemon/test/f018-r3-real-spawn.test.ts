@@ -5,6 +5,7 @@ import type { AgentSession } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { freshPiSessionId, PiWorkerSpawnPort } from "../src/domains/worker/pi-spawn.ts";
+import { AccountStore } from "../src/domains/account/store.ts";
 
 // F018 R3-d: real child-process spawn contract. This is not a mock spawn port:
 // PiWorkerSpawnPort launches a Node process over stdio and speaks the pi RPC
@@ -111,7 +112,7 @@ describe("F018 R3-d real worker spawn surface", () => {
 				controlToken: string;
 			};
 			expect(contract.cwd).toBe(projectPath);
-			expect(contract.agentDir).toBe(workerAgentDir);
+			expect(contract.agentDir).toBe(join(workerAgentDir, "worker-1"));
 			expect(contract.workerId).toBe("worker-1");
 			expect(contract.controlSocket).toBe("/tmp/superagentteam-a2a.sock");
 			expect(contract.controlToken).toBe("ct1.test.secret");
@@ -143,6 +144,58 @@ describe("F018 R3-d real worker spawn surface", () => {
 			const prompted = await spawned.connection.promptAndWait("hello", { timeoutMs: 10_000 });
 			expect(prompted.aborted).toBe(false);
 			expect(events).toEqual(expect.arrayContaining(["message_update", "message_end", "agent_settled"]));
+		} finally {
+			await spawned.connection.finish();
+		}
+	});
+
+	it("isolates account credentials and base URL into the worker agent dir", async () => {
+		const dir = mkdtempSync(join(tmpdir(), "f018-r3d-account-"));
+		dirs.push(dir);
+		const projectPath = join(dir, "project");
+		const workerAgentDir = join(dir, "agent");
+		const accountsPath = join(dir, "accounts.json");
+		const credentialsPath = join(dir, "credentials.json");
+		writeFileSync(
+			accountsPath,
+			JSON.stringify([
+				{
+					ref: "main",
+					provider: "openrouter",
+					apiKeyRef: "secret:main",
+					apiUrl: "https://gateway.example/v1",
+					models: ["model-1"],
+				},
+			]),
+		);
+		writeFileSync(credentialsPath, JSON.stringify({ main: { apiKey: "sk-account-key" } }), { mode: 0o600 });
+		mkdirSync(projectPath, { recursive: true });
+		const port = new PiWorkerSpawnPort({
+			cliPath: join(dir, "stub-cli.cjs"),
+			sessionDir: join(dir, "sessions"),
+			workerAgentDir,
+			env: { ...process.env, SPAWN_CONTRACT_FILE: join(dir, "contract.json") },
+			offline: true,
+			accountStore: new AccountStore({ accountsPath, credentialsPath }),
+		});
+		writeFileSync(join(dir, "stub-cli.cjs"), STUB);
+		const spawned = await port.spawn({
+			workerId: "worker-cred",
+			poolKey: { projectPath, accountRef: "main", provider: "openrouter", model: "model-1" },
+			session: makeSession(projectPath),
+			now: 1_000,
+			credentialToken: "ct1.test.secret",
+		});
+		try {
+			const agentDir = join(workerAgentDir, "worker-cred");
+			const contract = JSON.parse(readFileSync(join(dir, "contract.json"), "utf8")) as { agentDir: string };
+			expect(contract.agentDir).toBe(agentDir);
+			expect(JSON.parse(readFileSync(join(agentDir, "auth.json"), "utf8"))).toEqual({
+				openrouter: { type: "api_key", key: "sk-account-key" },
+			});
+			expect(JSON.parse(readFileSync(join(agentDir, "models.json"), "utf8"))).toEqual({
+				providers: { openrouter: { baseUrl: "https://gateway.example/v1" } },
+			});
 		} finally {
 			await spawned.connection.finish();
 		}

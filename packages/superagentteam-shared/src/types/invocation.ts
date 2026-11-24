@@ -1,4 +1,4 @@
-import type { MessageSender, QueueTarget, StoredToolEvent } from "./message.ts";
+import type { MessageSender, QueueTarget, RichBlock, StoredToolEvent } from "./message.ts";
 
 // F018 v1 shared contract types — invocation/queue/turn family
 // (0007 §3.1/§3.2/§3.3/§3.6, 0011). Dual-generation rule applies.
@@ -297,6 +297,10 @@ export interface DraftRecord {
 	content: string;
 	toolEvents: StoredToolEvent[];
 	thinking: string | null;
+	richBlocks: RichBlock[];
 	createdAt: number;
 	updatedAt: number;
 }
+
+/** Content flush input: rich blocks have their own writer and are never overwritten. */
+export type DraftContentSnapshot = Omit<DraftRecord, "richBlocks">;

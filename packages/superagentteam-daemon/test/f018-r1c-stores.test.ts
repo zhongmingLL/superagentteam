@@ -1,8 +1,8 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { RichBlock } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it } from "vitest";
-
 import { InvocationCredentialStore } from "../src/domains/auth/store.ts";
 import { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "../src/domains/invocation/store.ts";
 import { ResponseDraftStore } from "../src/domains/response/store.ts";
@@ -174,6 +174,7 @@ describe("ResponseDraftStore (0017)", () => {
 			content: "",
 			toolEvents: [],
 			thinking: null,
+			richBlocks: [],
 			createdAt: 1,
 			updatedAt: 1,
 		});
@@ -193,10 +194,46 @@ describe("ResponseDraftStore (0017)", () => {
 				content: "",
 				toolEvents: [],
 				thinking: null,
+				richBlocks: [],
 				createdAt: 2,
 				updatedAt: 2,
 			}),
 		).toThrow(/not_found|mismatch/);
+	});
+
+	it("stores rich blocks independently; content flush never overwrites them", () => {
+		const world = makeWorld();
+		const seeded = seedDraftChain(world);
+		const card: RichBlock = { id: "card-1", kind: "card", v: 1, title: "Result", bodyMarkdown: "ok" };
+		const first = world.drafts.upsertRichBlock(seeded.turnId, card);
+		expect(first?.map((block) => block.id)).toEqual(["card-1"]);
+
+		const replaced = world.drafts.upsertRichBlock(seeded.turnId, { ...card, title: "Updated" });
+		expect(replaced).toEqual([{ ...card, title: "Updated" }]);
+
+		const flushed = world.drafts.upsert({
+			attemptId: seeded.attemptId,
+			turnExecutionId: seeded.turnId,
+			parentInvocationId: "inv1",
+			threadId: "t1",
+			agentId: "a1",
+			content: "hello world",
+			toolEvents: [],
+			thinking: null,
+			createdAt: 1,
+			updatedAt: 6,
+		})!;
+		expect(flushed.content).toBe("hello world");
+		expect(flushed.richBlocks).toEqual([{ ...card, title: "Updated" }]);
+
+		const second = world.drafts.upsertRichBlock(seeded.turnId, {
+			id: "check-1",
+			kind: "checklist",
+			v: 1,
+			items: [{ id: "i1", text: "done", checked: true }],
+		});
+		expect(second?.map((block) => block.id)).toEqual(["card-1", "check-1"]);
+		expect(world.drafts.getByTurn(seeded.turnId)?.richBlocks).toHaveLength(2);
 	});
 
 	it("upsert is a full snapshot; late flush after delete returns null, does not recreate", () => {

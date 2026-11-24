@@ -43,8 +43,12 @@ describe("curated skill catalog", () => {
 		const catalog = loadCuratedCatalog({ catalogRoot: packageRoot });
 
 		expect(catalog.diagnostics).toEqual([]);
-		expect(catalog.skills.map((skill) => skill.skillId)).toEqual(["superagentteam-verify", "superagentteam-review"]);
-		expect(catalog.skillPaths).toHaveLength(2);
+		expect(catalog.skills.map((skill) => skill.skillId)).toEqual([
+			"superagentteam-verify",
+			"superagentteam-review",
+			"superagentteam-rich-messaging",
+		]);
+		expect(catalog.skillPaths).toHaveLength(3);
 		expect(catalog.skills[0]?.description).toContain("verification");
 		expect(catalog.skills[0]?.triggers).toEqual(["before claiming done", "after code changes", "before PR"]);
 		expect(catalog.skills[0]?.next).toBe("superagentteam-review");

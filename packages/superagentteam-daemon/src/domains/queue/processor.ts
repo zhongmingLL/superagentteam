@@ -1,7 +1,7 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { AgentConfig, QueueEntry, QueueTarget } from "@superagentteam/shared/types";
 import { runInTransaction } from "../../infrastructure/db/database.ts";
-import { A2A_CREDENTIAL_TOOL_NAMES } from "../a2a/tool-service.ts";
+import { WORKER_CREDENTIAL_TOOL_NAMES } from "../a2a/tool-service.ts";
 import type { AgentRegistry } from "../agent/registry.ts";
 import type { InvocationCredentialStore } from "../auth/store.ts";
 import { aggregateParent } from "../invocation/aggregate.ts";
@@ -596,7 +596,7 @@ export class QueueProcessor {
 							agentId: prepared.agentId,
 							agentSessionId: session.id,
 							userId,
-							allowedTools: [...A2A_CREDENTIAL_TOOL_NAMES],
+							allowedTools: [...WORKER_CREDENTIAL_TOOL_NAMES],
 							now,
 						});
 						if (!minted.token) throw new Error("phase_b_credential_token_missing");
@@ -610,6 +610,7 @@ export class QueueProcessor {
 							content: "",
 							toolEvents: [],
 							thinking: null,
+							richBlocks: [],
 							createdAt: now,
 							updatedAt: now,
 						});

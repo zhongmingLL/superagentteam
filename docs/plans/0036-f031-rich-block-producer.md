@@ -1,7 +1,7 @@
 ---
 title: "F031 execution plan — rich block producer"
 doc_kind: plan
-status: draft
+status: in-progress
 created: 2026-11-24
 updated: 2026-11-24
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -159,5 +159,15 @@ RED：skills catalog 测试断 manifest 可解析、路径存在、无 secret；
 - Review：作者不能自审；砚砚覆盖 credential/control/migration/settlement，墨墨覆盖
   skill/消息呈现与真实 E2E 截图。
 - Merge：CI 全绿 + 双审 approve + 真实 E2E 证据；未合入前不对外声明 rich blocks 可用。
+
+## 进展
+
+- 2026-11-24：F031.1–F031.5 实现完成，进入 review。
+- migration 007 / response store / settlement / control / extension / skill / spawn
+  注入均已落地；daemon 912 tests、web 99 tests、skills 15 tests、根级 check 全绿。
+- 真实 Hub E2E：thread `thread:a0e22bbd7058fd21473d44eb9c7393e1`，agentA 创建
+  `hub-card` + `hub-checklist`，最终消息 `extra.rich` 两个 block；1440/390 光暗截图见
+  `docs/design/F031/`。
+- 待办：PR review（砚砚 credential/control/migration/settlement；墨墨 skill/呈现/E2E）。
 
 [宪宪/deepseek-flash🐾]

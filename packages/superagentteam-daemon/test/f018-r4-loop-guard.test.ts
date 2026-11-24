@@ -151,6 +151,7 @@ function addDraft(
 				? [{ toolCallId: "tool-1", name: options.toolName, status: "completed", at: 5 }]
 				: [],
 		thinking: null,
+		richBlocks: [],
 		createdAt: 5,
 		updatedAt: 5,
 	});

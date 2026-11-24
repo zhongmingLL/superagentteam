@@ -1,7 +1,13 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AccountConfig, AgentCatalog, AgentConfig, AgentStreamEvent } from "@superagentteam/shared/types";
+import type {
+	AccountConfig,
+	AgentCatalog,
+	AgentConfig,
+	AgentStreamEvent,
+	RichBlock,
+} from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it } from "vitest";
 import { OperatorMessageIngress } from "../src/domains/a2a/router.ts";
 import type { AgentRegistry } from "../src/domains/agent/registry.ts";
@@ -281,6 +287,7 @@ describe("T1/T2 full flow (0007 §3.6/§3.9)", () => {
 		expect(response.thinking).toBe("pondering");
 		expect(response.toolEvents).toHaveLength(1);
 		expect(response.toolEvents?.[0]).toMatchObject({ toolCallId: "tc-9", status: "completed" });
+		expect(response.extra?.rich).toBeUndefined();
 		expect(w.drafts.getByTurn(turnId)).toBeNull();
 		expect(attempt.settlement).toBe("settled");
 
@@ -352,6 +359,122 @@ describe("T1/T2 full flow (0007 §3.6/§3.9)", () => {
 // T2 guards
 // ------------------------------------------------------------------
 describe("T2 RouteResponseCommitter", () => {
+	function seedRichResponse(w: ReturnType<typeof makeWorld>, richBlocks: RichBlock[]) {
+		const invocationId = "inv-rich";
+		w.records.create({
+			invocationId,
+			threadId: "t1",
+			userId: "u1",
+			sourceRecordId: "src-rich",
+			userMessageId: null,
+			targetAgentIds: ["a1"],
+			now: 10,
+		});
+		w.turns.createRunning({
+			turnExecutionId: "te-rich",
+			parentInvocationId: invocationId,
+			threadId: "t1",
+			userId: "u1",
+			agentId: "a1",
+			executionKind: "ordinary",
+			causal: { triggerMessageId: "m-rich" },
+			startedAt: 100,
+		});
+		const session = w.sessions.ensureActive({
+			threadId: "t1",
+			agentId: "a1",
+			userId: "u1",
+			workingDirectory: "/p",
+			now: 1,
+		});
+		w.db
+			.prepare(
+				`INSERT OR IGNORE INTO workers (id, project_path, account_ref, provider, model, state, heartbeat_at, lease_expires_at, created_at, updated_at)
+				 VALUES ('w-rich', '/p', 'main', 'p', 'm', 'online', 1, 999999, 1, 1)`,
+			)
+			.run();
+		const attempt = w.attempts.appendQueued({
+			attemptId: "at-rich",
+			parentInvocationId: invocationId,
+			queueEntryId: "q-rich",
+			threadId: "t1",
+			targetAgentId: "a1",
+			attempt: 1,
+			now: 10,
+		}).record;
+		w.attempts.markStarting(attempt.attemptId, { agentSessionId: session.id, now: 20 });
+		w.messages.append({
+			id: "rm-rich",
+			threadId: "t1",
+			from: { kind: "agent", agentId: "a1" },
+			content: "",
+			lifecycle: {
+				kind: "response",
+				parentInvocationId: invocationId,
+				turnExecutionId: "te-rich",
+				target: { kind: "agent", id: "a1" },
+				status: "processing",
+				startedAt: 100,
+			},
+			now: 100,
+		});
+		w.attempts.bindAppended(attempt.attemptId, {
+			turnExecutionId: "te-rich",
+			agentSessionId: session.id,
+			workerId: "w-rich",
+			provider: "p",
+			model: "m",
+			modelFamily: "f",
+			responseMessageId: "rm-rich",
+			now: 30,
+		});
+		w.attempts.markPromptDelivered(attempt.attemptId, { deliveryBoundarySeq: 0, now: 40 });
+		w.drafts.create({
+			attemptId: attempt.attemptId,
+			turnExecutionId: "te-rich",
+			parentInvocationId: invocationId,
+			threadId: "t1",
+			agentId: "a1",
+			content: "body",
+			toolEvents: [],
+			thinking: null,
+			richBlocks,
+			createdAt: 1,
+			updatedAt: 1,
+		});
+		w.lifecycle.invokeTerminal({
+			turnExecutionId: "te-rich",
+			status: "completed",
+			endedAt: 200,
+			userVisibleOutput: true,
+		});
+	}
+
+	it("commits draft rich blocks into the final response extra.rich", () => {
+		const w = makeWorld();
+		const card: RichBlock = { id: "card-1", kind: "card", v: 1, title: "Result", bodyMarkdown: "ok" };
+		seedRichResponse(w, [card]);
+		const outcome = w.committer.commit({ turnExecutionId: "te-rich", content: "body" });
+		expect(outcome.outcome).toBe("committed");
+		expect(w.messages.get("rm-rich")?.extra?.rich).toEqual({ v: 1, blocks: [card] });
+		expect(w.drafts.getByTurn("te-rich")).toBeNull();
+	});
+
+	it("T4 recovery preserves draft rich blocks when T2 did not run", () => {
+		const w = makeWorld();
+		const checklist: RichBlock = {
+			id: "check-1",
+			kind: "checklist",
+			v: 1,
+			items: [{ id: "i1", text: "done", checked: true }],
+		};
+		seedRichResponse(w, [checklist]);
+		const result = w.recovery.runOnce();
+		expect(result.settled).toBe(1);
+		expect(w.messages.get("rm-rich")?.extra?.rich).toEqual({ v: 1, blocks: [checklist] });
+		expect(w.drafts.getByTurn("te-rich")).toBeNull();
+	});
+
 	it("child still running → child_running, R stays processing, pending kept", async () => {
 		const w = makeWorld();
 		const submitted = w.ingress.submit({ threadId: "t1", userId: "u1", body: "go @a1", now: 10 });

@@ -40,11 +40,18 @@ export type RichBlockKind =
 	| "html_widget"
 	| "file";
 
+/** F031: one producer-created block; kind-specific fields stay open by design. */
+export type RichBlock = { id: string; kind: RichBlockKind; v: 1; [key: string]: unknown };
+
 /** Hub presentation container; block shapes follow the 0001 RichBlock contract. */
 export interface RichMessageExtra {
 	v: 1;
-	blocks: Array<{ id: string; kind: RichBlockKind; v: 1; [key: string]: unknown }>;
+	blocks: RichBlock[];
 }
+
+/** F031 limits are shared by the tool, store, and renderer. */
+export const MAX_RICH_BLOCKS = 20;
+export const MAX_RICH_BLOCK_BYTES = 64 * 1024;
 
 /**
  * Execution replay; content-level, distinct from contentBlocks.

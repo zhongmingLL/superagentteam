@@ -1,12 +1,14 @@
 import { connect, type Socket } from "node:net";
 import { Type } from "typebox";
 import { A2A_V1_TOOL_SPECS } from "../domains/a2a/tool-surface.ts";
+import { RICH_BLOCK_TOOL_NAME, RICH_BLOCK_TOOL_SPEC } from "../domains/rich-block/tool-surface.ts";
 import { envValue } from "../env.ts";
 
-// F018 R5-a: v1 pi worker extension. It registers ONLY the four canonical
-// `superagentteam_*` tools and forwards each call to the daemon's local A2A
-// control socket. The credential token is a child-TurnExecution capability
-// delivered through the worker environment; it never appears in model input.
+// F018 R5-a / F031: v1 pi worker extension. It registers the four canonical
+// A2A tools plus the rich-block producer and forwards each call to the
+// daemon's local control socket. The credential token is a child-TurnExecution
+// capability delivered through the worker environment; it never appears in
+// model input.
 
 const REQUEST_TIMEOUT_MS = 2_000;
 const A2A_REQUEST_TIMEOUT_MS = 30_000;
@@ -74,6 +76,14 @@ class A2AControlClient {
 	async a2aCall(toolName: string, input: Record<string, unknown>, piExtToolCallId: string): Promise<unknown> {
 		const response = await this.request(
 			{ type: "a2a_call", toolName, input, piExtToolCallId },
+			A2A_REQUEST_TIMEOUT_MS,
+		);
+		return response.result;
+	}
+
+	async richBlockCall(block: unknown, piExtToolCallId: string): Promise<unknown> {
+		const response = await this.request(
+			{ type: "rich_block_create", input: { block }, piExtToolCallId },
 			A2A_REQUEST_TIMEOUT_MS,
 		);
 		return response.result;
@@ -214,4 +224,23 @@ export default function superagentteamA2AExtension(pi: ExtensionAPI): void {
 			},
 		});
 	}
+
+	pi.registerTool({
+		name: RICH_BLOCK_TOOL_NAME,
+		label: "Rich block",
+		description: RICH_BLOCK_TOOL_SPEC.description,
+		promptGuidelines: [
+			"Create a rich block only when it helps the reader scan the answer; 1-3 blocks is usually enough.",
+			"interactive is display-only in v1; never imply that its options can be clicked.",
+			"Never create approval or permission cards; use text and ask the operator instead.",
+		],
+		parameters: Type.Unsafe(RICH_BLOCK_TOOL_SPEC.inputSchema),
+		async execute(toolCallId, params) {
+			const result = await client.richBlockCall(params.block, `${RICH_BLOCK_TOOL_NAME}:${toolCallId}`);
+			return {
+				content: [{ type: "text", text: JSON.stringify(result ?? null) }],
+				details: { tool: RICH_BLOCK_TOOL_NAME, result: result ?? null },
+			};
+		},
+	});
 }

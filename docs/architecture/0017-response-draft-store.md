@@ -32,6 +32,8 @@ source: "Clowder DraftStore/response-draft-settlement; F018 F-15 gap"
 5. **无 TTL**：draft 活到 R terminal；T2 删除失败不阻塞 R terminal，但 attempt 保持
    `response_pending`，由 T4 重试删除后再 settle。
 6. **删除后不允许复活**：T2/T4 删除后的 late flush 返回 `null`，不重建 draft。
+7. **富块单独写**：`rich_blocks_json` 与 content flush 分离；T2/T4 把
+   `draft.richBlocks` 写入最终 response message 的 `extra.rich`。
 
 ## 1. 现状与缺口（F-15）
 
@@ -39,6 +41,7 @@ source: "Clowder DraftStore/response-draft-settlement; F018 F-15 gap"
 
 - `0007` §4.3.2 的 `response_drafts` 表：`attempt_id` / `turn_execution_id` 1:1，
   `content` / `tool_events_json` / `thinking` / 时间。
+- F031：`rich_blocks_json` 存 producer 创建的富块，独立于 content flush。
 - `0007` §3.6.1 的行为草图：stream → draft；`message_end` 覆盖；T2 删除；T4 恢复。
 
 缺：
@@ -79,16 +82,18 @@ interface DraftRecord {
   content: string;            // streamed plain text body
   toolEvents: StoredToolEvent[]; // execution replay；merged by provider toolCallId (F028)
   thinking: string | null;
+  richBlocks: RichBlock[];    // F031: producer-created blocks; separate writer
 
   createdAt: number;
   updatedAt: number;
 }
 ```
 
-不存 `userId`、`rich`、`metadata`、`extra`、message `seq`、draft `seq`、
+不存 `userId`、message `seq`、draft `seq`、
 `contentBlocks`。F028 收敛：T2 把最终 text 写成 text-only `contentBlocks`；
 `toolEvents` 单独承载 execution replay（merged record），不再声称由它重建语义
-contentBlocks。draft 只保存恢复所需的最小现场。draft 不是 message history。
+contentBlocks。F031 增加 `richBlocks`：draft 保存响应内的富块，T2 才生成最终
+message 的 `extra.rich`。draft 只保存恢复所需的最小现场。draft 不是 message history。
 
 ## 4. Store interface
 
@@ -107,6 +112,13 @@ interface ResponseDraftStore {
    * 行不存在（未 create 或已被 T2/T4 删除）→ null，不重建。
    */
   upsert(draft: DraftRecord): DraftRecord | null;
+
+  /**
+   * F031: rich-block tool writer. Same id replaces (idempotent retry);
+   * new id appends until MAX_RICH_BLOCKS; missing/deleted draft → null.
+   * This path never touches content/toolEvents/thinking.
+   */
+  upsertRichBlock(turnExecutionId: string, block: RichBlock, now?: number): RichBlock[] | null;
 
   getByTurn(turnExecutionId: string): DraftRecord | null;
   getByThread(threadId: string, opts?: {
@@ -148,6 +160,15 @@ interface ResponseDraftStore {
   一起 `upsert`。
 - 不做 draft 版本链；只保留最新 snapshot。
 
+### 5.4 富块写（F031）
+
+- `rich_blocks_json` 是独立列；`upsert` 不更新它，避免 content flush 覆盖
+  工具刚写入的富块。
+- `upsertRichBlock` 由 daemon control 路径调用；同 id 替换，新 id 追加，最多 20 个，
+  单块 ≤ 64 KiB。
+- T2/T4 读取 `draft.richBlocks`，写入最终 response message 的 `extra.rich`；
+  没有富块时不写空 `rich`。
+
 ### 5.3 删除后的 late flush
 
 T2/T4 删除 draft 后，provider/worker 的 late event 可能仍到达 `WorkerEventSink`。
@@ -164,7 +185,7 @@ Store 返回 `null`；Sink 不得再 `create`，只记录
 ```text
 create({
   attemptId, turnExecutionId, parentInvocationId, threadId, agentId,
-  content: "", toolEvents: [], thinking: null,
+  content: "", toolEvents: [], thinking: null, richBlocks: [],
   createdAt: now, updatedAt: now
 })
 ```
@@ -185,9 +206,9 @@ settlement=`response_pending`；draft 继续保留给 T2/T4。
 
 顺序：
 
-1. `commitLifecycleResponseTerminal(R, final body, final contentBlocks/toolEvents/thinking)`；
+1. `commitLifecycleResponseTerminal(R, final body, final contentBlocks/toolEvents/thinking/richBlocks)`；
    其中 `contentBlocks = derive(final text, draft.toolEvents)`；`final content/toolEvents/
-   thinking` 来自 draft（正常路径）或 route 的最终结果（recovery 时以 draft 为准）；
+   thinking/richBlocks` 来自 draft（正常路径）或 route 的最终结果（recovery 时以 draft 为准）；
 2. `settleLifecycleResponseInputs(R)` / `advanceLifecycleInputDispatch(settled)`；
 3. `draftStore.delete(turnExecutionId)`；
 4. `attempt.setSettlement('settled')` + `clearResponsePending`；
@@ -267,6 +288,8 @@ settlement=`response_pending`；draft 继续保留给 T2/T4。
 - T2：R terminal 由 final text + toolEvents 生成 contentBlocks；delete 成功 → attempt
   settled + clear pending；delete 失败 →
   response_pending 保留；T4 只重试 delete，不重复 R commit。
+- F031 rich blocks：同 id replace；content flush 不覆盖 `rich_blocks_json`；T2/T4 把
+  draft 富块写入 R 的 `extra.rich`；无富块时不写空 `rich`。
 - T4：R processing + draft → 提交 R；R terminal + draft → 只删/清；draft missing +
   R processing → response_missing；draft missing + R terminal → 只清 pending。
 - crash：create/flush/T1/T2/delete 各窗口。

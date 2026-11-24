@@ -27,6 +27,11 @@ export const A2A_CREDENTIAL_TOOL_NAMES = [
 
 export type A2ACredentialTool = (typeof A2A_CREDENTIAL_TOOL_NAMES)[number];
 
+/** F031: response presentation tools share the same child credential fence. */
+export const RESPONSE_CREDENTIAL_TOOL_NAMES = ["create_rich_block"] as const;
+
+export const WORKER_CREDENTIAL_TOOL_NAMES = [...A2A_CREDENTIAL_TOOL_NAMES, ...RESPONSE_CREDENTIAL_TOOL_NAMES] as const;
+
 export type A2AToolErrorCode =
 	| "invalid_input"
 	| "body_empty"

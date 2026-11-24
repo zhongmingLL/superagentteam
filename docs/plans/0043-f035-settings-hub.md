@@ -42,6 +42,11 @@ source_decision: "operator 2026-11-25: settings entry + accounts/agents pages li
 - `AccountsModal` in page mode drops the close button, Escape handler and backdrop click;
   it renders as `role="region"` instead of `role="dialog"`.
 - `SettingsPage` owns tab state and triggers `load` / `loadAccounts` only when the stores are idle.
+- Accounts are read twice on first paint: the modal keeps its own editor list, while the agent
+  store feeds the agent form's account picker. `onChanged` refreshes both. Accepted for v1 —
+  removing it means lifting the modal's list state into a shared hook for one GET.
+- Browser verification targets the isolated alpha stack (`3016`), not live `3014`, to keep
+  user data out of the loop.
 - Done: route, nav entries, page layout, unit tests (web 101 passed), typecheck.
 - Next: browser screenshots at 1440/390 and one real account/agent create against 3103,
   then review by 墨墨 (UX/copy) and 砚砚 (contract/state consistency).

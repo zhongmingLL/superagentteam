@@ -7,10 +7,15 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [烁烁 (Kimi K3), 砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 operator_signoff: "approved 2026-10-24"
 created: 2026-10-24
-updated: 2026-10-24
+updated: 2026-11-24
 ---
 
 # P0 复用卡：Approval Index
+
+> **Thread-first revalidation (2026-11-24): deferred / not-in-v1.** F018 v1 没有
+> `approvals` 表，也没有 runtime approval producer registry；审批仍由 operator/human
+> 流程承担，`approval` rich block 明确禁止（F031）。等 runtime approval store 重新立项
+> 再复用。详见 `../reports/2026-11-24-reuse-thread-first-revalidation.md`。
 
 > **DP-MERGE-1=D 影响注（2026-10-25）**：Q3 已冻结——approval decide（operator-only）与 merge:execute（daemon service principal，无 MCP/REST 暴露）是两个 auth 面。详见 `../architecture/merge-authority-drift-audit.md` §9。
 
@@ -37,7 +42,7 @@ updated: 2026-10-24
 - **代码面**：`ApprovalPanel`、`ApprovalItemCard`、`ApprovalProvenanceLinks`、`F306ApprovalAdapter`、`DispatchProposalStore`、`F139ApprovalAdapter`。
 - **不采用**：聊天里的 approval rich block、agent 通过正文伪造审批、approved 但无 effect proof。
 
-## codeteam mapping
+## Historical task-first mapping (superseded; not v1)
 
 - W1/W4 建 `approvals`；覆盖 critical design / spec_change / merge / blocker / budget-pause；approval decide 只接受 operator credential；routine merge 按 `DP-MERGE-1=D` 由 daemon `service:merge-owner` 执行（无 MCP/REST 暴露）。
 - W1 `approvals` 先加 `decided_note` 自由文本；dogfood 期 reject/changes_requested 必须带 note；结构化 F281 why 在 W4+ 接入。

@@ -3,7 +3,7 @@ title: "P0 cell 复用决策卡索引"
 doc_kind: index
 status: approved
 created: 2026-10-24
-updated: 2026-10-25
+updated: 2026-11-24
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 ---
 
@@ -19,6 +19,12 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 > A2-1 已签：`../architecture/reuse-review/sop-bulletin.md`（`c934705b-ad43-449c-87e0-963cef37b64b`；三猫无 P1，P2/P3 已回写；0001 §12.2/§7.3 已同步；operator 2026-10-25）。
 > A2-2 已签：`../architecture/reuse-review/managed-work.md`（`a02b5016-5cb6-463c-9cb3-485eb9ec1379`；P1 retry DP-A2-2-1=A sticky retry；operator 2026-10-25）。
 > A2-3 已签：`../architecture/reuse-review/approval-index.md`（`c7e62ae7-2b1f-47cb-b6e7-8ad3c6427d48`；P1-1/P2/P3 已回写；operator 2026-10-25）。
+
+> **2026-11-24 thread-first revalidation：** P0 卡是 2026-10-24 task-first 时代的决策记录。
+> F018 v1 的 current mapping 以 `REUSE-MATRIX.md` 的「thread-first v1 mapping」表和
+> `../reports/2026-11-24-reuse-thread-first-revalidation.md` 为准；`ball-custody` /
+> `managed-work` / `approval-index` / `sop-bulletin` / `harness-eval` 在 v1 为 deferred，
+> 不要按旧卡直接写 v1 代码。`github-signals` 需 W8 preflight。
 
 ## 分档口径（2026-10-24 operator）
 
@@ -46,7 +52,8 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 
 ## 使用方式（开发前）
 
-1. 先在 `REUSE-MATRIX.md` 找到对应 cell 和 decision（R0 / R1 / R2 / N1 / N2）。
+1. 先在 `REUSE-MATRIX.md` 找到对应 cell 和 decision（R0 / R1 / R2 / N1 / N2），并确认
+   「thread-first v1 mapping」表的 verdict；deferred / preflight-required 的卡不能直接实施。
 2. 读对应 `docs/reuse/<cell>.md` 的 `Current truth`、`代码面`、`codeteam mapping`、`风险与回滚`。
 3. 到 Clowder AI 源码里读 `代码面` 列出的文件，把它当**参考实现**，不复制运行时依赖。
 4. 只搬契约、语义和状态机；storage、transport、auth、execution wiring 按 codeteam 适配。

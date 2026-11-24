@@ -7,10 +7,16 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [烁烁 (Kimi K3), 砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 operator_signoff: "approved 2026-10-24"
 created: 2026-10-24
-updated: 2026-10-24
+updated: 2026-11-24
 ---
 
 # P0 复用卡：SOP Bulletin（P0 slice）
+
+> **Thread-first revalidation (2026-11-24): deferred / not-in-v1.** F018 v1 没有
+> `backlog_items` / `workflow_sops` runtime 表，也没有 `tasks.backlog_item_id`。
+> 当前 SOP/backlog 真相是 `BACKLOG.md` + `docs/SOP.md` + skills，不是 runtime store。
+> 不要从本卡建第二套 backlog/SOP。详见
+> `../reports/2026-11-24-reuse-thread-first-revalidation.md`。
 
 > 这不是第 36 个 ownership cell，而是跨 `hub-action-surface` + `managed-work` 的 P0 切片。cell 级分档仍以 35 行为准；本卡只锁定 W0–W4 首闭环需要的 SOP 数据契约。
 
@@ -37,7 +43,7 @@ updated: 2026-10-24
 - **completion 在 feature/backlog 级**：task 完成只产生 merge receipt，不自动把 `workflow_sops.stage` 推到 `completion`；`stage=completion` 只能由 completion gate 证据 + operator 确认写入。
 - **代码面**：`packages/api/src/domains/cats/services/stores/ports/WorkflowSopStore.ts`、`RedisWorkflowSopStore.ts`、`backlog.ts`、`sop-definitions/development.yaml`。
 
-## codeteam mapping
+## Historical task-first mapping (superseded; not v1)
 
 - W1：`backlog_items` + `workflow_sops` 两表；`backlog_items` 全字段复用（含 `lease` / `audit` / `dependencies`；lease 守卫 dogfood 期单 writer 可空转，W5 起启用）；`tasks.backlog_item_id` 必填；`thread_events.kind` 含 `backlog_item_open/suggested/approved/dispatched/done` 与 `workflow_sop_updated`；W1 task 3 的 thread event kind 枚举以本卡为准。
 - W4：`codeteam backlog create/dispatch/list`、`codeteam_update_workflow`、`get_workflow_sop`；`update_workflow` 走 CAS version，不接受 stage 控制器语义。

@@ -512,6 +512,12 @@ interface ForgeEvent {
 
 ### W8 github-signals implementation slice
 
+> **2026-11-24 thread-first revalidation:** 本节 GS-1..GS-10 仍把 collector state /
+> wait / delivery dedup 映射到 task-first 的 `tasks` / `waits` / `forge_deliveries`。
+> F018 v1 没有这些表；本切片不能直接实施。W8 Phase A 必须先按
+> `../reports/2026-11-24-reuse-thread-first-revalidation.md` §3 重新决定 thread-first
+> tracking subject / cursor / typed wait / delivery dedup，再冻结实现切片。
+
 > Review request `8290c9ca-3611-495a-8b59-c7b596959916`（2026-10-25，三猫）：烁烁 accept；砚砚 accept-with-modify；墨墨 accept-with-modify；无 reject；P2/P3 已回写，GS-1..GS-10 冻结。
 >
 > 回写：GS-8→8a（renderer，随 GS-5）/8b（tracking status，随 W7a 6b）；删除旧 W8 Tasks 1–7 双源；GS-10 补 draft/reset、identityUnknown over-deliver、expired/rearm/terminal 自述；GS-4 补 429 backoff + F139 TaskSpec/no private polling；GS-6 补 timingSafeEqual + secret 存储；GS-2 对齐 A2-1 G15（`system:forge:<provider>` + `user_id=operator`）；GS-7 补 `humanGuidance` inbox；GS-9 migration v1 null。

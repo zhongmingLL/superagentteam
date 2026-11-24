@@ -8,10 +8,16 @@ reviewers: [烁烁 (Kimi K3), 砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 review_request: "2ee84938-532c-4ae6-9f93-2e4f0f1f7402"
 operator_signoff: "DP-GH-1=A, DP-GH-2=A (2026-10-25)"
 created: 2026-10-25
-updated: 2026-10-25
+updated: 2026-11-24
 ---
 
 # P1 复用卡：GitHub Signals
+
+> **Thread-first preflight required (2026-11-24).** 本卡仍写
+> `tasks(kind=pr_tracking)` / `waits` / `forge_deliveries`；这些在 F018 v1 schema
+> 中都不存在。W8 不能按本卡直接实现；Phase A 必须先定 thread-first tracking subject、
+> collector state、typed wait、delivery dedup。详见
+> `../reports/2026-11-24-reuse-thread-first-revalidation.md` §3。
 
 ## 结论
 

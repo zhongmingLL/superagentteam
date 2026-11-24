@@ -7,10 +7,15 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [烁烁 (Kimi K3), 砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 operator_signoff: "approved 2026-10-24"
 created: 2026-10-24
-updated: 2026-11-06
+updated: 2026-11-24
 ---
 
 # P0 复用卡：Callback Auth
+
+> **Thread-first revalidation (2026-11-24): current.** 2026-11-06 修订已把 credential
+> 绑到 child `TurnExecution`/thread/agent/session/user；无 task/run 坐标。本卡无需改
+> 映射，只保留这次重核记录。详见
+> `../reports/2026-11-24-reuse-thread-first-revalidation.md`。
 
 > **DP-MERGE-1=D 影响注（2026-10-25）**：approval decide 仍 operator-only；routine own-PR merge 由 daemon `service:merge-owner` 执行，per-merge short-TTL credential 绑 `(repo, PR, exact HEAD)`，mint 前置 = daemon E1–E5 核验，执行后撤销。详见 `../architecture/merge-authority-drift-audit.md` §9。
 

@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F031]
 related_features: [superagentteam/F018, superagentteam/F028, superagentteam/F029, superagentteam/F030]
 title: "F031: Rich block producer — agent-created rich blocks in responses"
-status: review
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -124,16 +124,16 @@ Clowder 的参考链路是 **skill 负责判断、tool 负责写入、draft 负�
 
 ## 验收标准
 
-- [ ] AC-1：`superagentteam_create_rich_block` 出现在 v1 worker 工具面，credential
+- [x] AC-1：`superagentteam_create_rich_block` 出现在 v1 worker 工具面，credential
       allowlist 包含 `create_rich_block`。
-- [ ] AC-2：真实回合中 agent 创建的 card / checklist 出现在最终 agent 回复的
+- [x] AC-2：真实回合中 agent 创建的 card / checklist 出现在最终 agent 回复的
       `extra.rich.blocks`，Hub 刷新后仍渲染。
-- [ ] AC-3：同一 block id 重试不重复；超过 20 个、超过 64 KiB、未知 kind、approval
+- [x] AC-3：同一 block id 重试不重复；超过 20 个、超过 64 KiB、未知 kind、approval
       block 均 typed reject，正文不受影响。
-- [ ] AC-4：T4 recovery 从 draft 恢复富块，不丢失、不重复。
-- [ ] AC-5：`superagentteam-rich-messaging` skill 已注册且只注入 v1 worker；worker
+- [x] AC-4：T4 recovery 从 draft 恢复富块，不丢失、不重复。
+- [x] AC-5：`superagentteam-rich-messaging` skill 已注册且只注入 v1 worker；worker
       能说明何时用哪种 block。
-- [ ] AC-6：migration up/down、store、control、settlement、web 渲染测试全绿；
+- [x] AC-6：migration up/down、store、control、settlement、web 渲染测试全绿；
       真实 E2E 与 1440/390 截图有记录。
 
 ## 进展
@@ -154,6 +154,9 @@ Clowder 的参考链路是 **skill 负责判断、tool 负责写入、draft 负�
   thread `thread:a0e22bbd7058fd21473d44eb9c7393e1`，agentA 实际调用两次 producer，
   最终回复 `extra.rich` 包含 card + checklist，刷新后仍在，browser console 0 error。
   截图：`docs/design/F031/rich-blocks-{1440,390}-{light,dark}.png`。
+- 2026-11-24：PR #177 合入 `839b22f4a`；砚砚 contract/security approve @
+  `656ebfec3`，墨墨 vision/UX approve @ `656ebfec3`，CI 5/5。状态 → implemented，
+  等 operator close。
 
 ## 依赖与风险
 

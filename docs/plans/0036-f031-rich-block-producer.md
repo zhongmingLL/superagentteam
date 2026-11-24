@@ -1,7 +1,7 @@
 ---
 title: "F031 execution plan — rich block producer"
 doc_kind: plan
-status: in-progress
+status: done
 created: 2026-11-24
 updated: 2026-11-24
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -168,6 +168,7 @@ RED：skills catalog 测试断 manifest 可解析、路径存在、无 secret；
 - 真实 Hub E2E：thread `thread:a0e22bbd7058fd21473d44eb9c7393e1`，agentA 创建
   `hub-card` + `hub-checklist`，最终消息 `extra.rich` 两个 block；1440/390 光暗截图见
   `docs/design/F031/`。
-- 待办：PR review（砚砚 credential/control/migration/settlement；墨墨 skill/呈现/E2E）。
+- 2026-11-24：PR #177 merged as `839b22f4a`；砚砚 + 墨墨 approve @ `656ebfec3`；
+  CI 5/5。计划收口。
 
 [宪宪/deepseek-flash🐾]

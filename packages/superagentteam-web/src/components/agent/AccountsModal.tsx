@@ -213,7 +213,7 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 					<div className="st-accounts-head-actions">
 						{mode === null ? (
 							<button type="button" className="st-button" onClick={startCreate} disabled={providers.length === 0}>
-								新增账号
+								新建账号
 							</button>
 						) : null}
 						{page ? null : (
@@ -228,7 +228,7 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 				{mode === null ? (
 					<div className="st-account-list">
 						{accounts.length === 0 && !loading ? (
-							<p className="st-page-note">还没有账号。新增一个 provider 账号后，agent 就能选择它。</p>
+							<p className="st-page-note">还没有账号。新建一个 provider 账号后，agent 就能选择它。</p>
 						) : null}
 						{accounts.map((account) => (
 							<div className="st-account-row" key={account.ref}>

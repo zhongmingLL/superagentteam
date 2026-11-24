@@ -66,6 +66,7 @@ W0b upstream/CI 治理：与 W1–W4 并行，W5 前完成
 | [`0031-f016c-m2-events.md`](0031-f016c-m2-events.md) | F016c-M2 计划：SSE invalidation channel、HTTP history refetch、polling fallback、queue/live/message 事件、canonical rich JSON 与 compat 边界 | 墨墨（vision/UX）+ 砚砚（API/security） |
 | [`0032-f025-fullstack-a2a-e2e.md`](0032-f025-fullstack-a2a-e2e.md) | F025 计划：Hub agent management、registry 热更新、prompt roster、跨帖 provenance、真实 provider 全链路 E2E | 砚砚（API/security）+ 墨墨（UX/vision） |
 | [`0036-f031-rich-block-producer.md`](0036-f031-rich-block-producer.md) | F031 计划：producer tool、draft rich blocks、settlement 落最终消息、rich-messaging skill、真实 E2E | 砚砚（credential/control/migration）+ 墨墨（skill/呈现/E2E） |
+| [`0037-f032-legacy-retirement.md`](0037-f032-legacy-retirement.md) | F032 计划：archive tag、legacy inventory、入口退场、删除 runtime/shims/tests、历史留存、full verification | 砚砚（CLI/安全/删除边界）+ 墨墨（文案/历史文档可读性） |
 
 ## W0–W8 一览
 

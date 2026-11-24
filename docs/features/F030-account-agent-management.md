@@ -70,12 +70,24 @@ F025 的真实 provider E2E 通过 `/home/ming/.env` 提供 key，是临时方�
 
 ## 验收标准
 
-- [ ] 账号可在 Hub 创建/编辑/删除；secret 不回显、不写 accounts.json、不进日志。
+- [x] 账号可在 Hub 创建/编辑/删除；secret 不回显、不写 accounts.json、不进日志。
 - [ ] agent 创建/编辑可选 account 与 model，provider/model 显示正确。
 - [ ] 新建 account 后无需改 `.env` 或重启 daemon 即可用于新 agent 回合。
 - [ ] 不同 account 的 key/baseUrl 在各自 worker 生效，互不串用。
 - [ ] 真实 provider E2E：account → agent → turn 成功；缺失/错误凭据 fail-closed。
 - [ ] web/daemon tests、typecheck、build、doc-index 全绿；1440/390 截图。
+
+## 进展
+
+- 2026-11-24：F030.1 Account store/API 与 F030.2 Account UI 完成。
+  - `accounts.json` 只存元数据；`credentials.json`（0600）按 accountRef 存 API key；
+  - provider catalog + `ENV:` / legacy bare env / `secret:` ref 解析；
+  - `/api/providers` 与 `/api/accounts` CRUD（CSRF、绑定删除保护、响应无 secret）；
+  - Hub `AccountsModal`：账号目录、新增/编辑/删除、凭据状态、绑定 agent；
+  - 实机 3104 验证：新建 `OpenAI Test` 账号成功，accounts.json 无明文 key，
+    credentials.json 存 `openai-test`，UI 显示「已存 API Key」。
+  - 验证：daemon 134 files / 895 tests；web 99 tests；web build pass。
+  - 剩余：F030.3 agent 编辑页升级、F030.4 per-worker 凭据隔离 + 真实 E2E。
 
 ## 风险与回滚
 

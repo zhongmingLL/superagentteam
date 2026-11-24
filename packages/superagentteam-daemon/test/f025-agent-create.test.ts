@@ -112,9 +112,27 @@ describe("F025 agent create API", () => {
 		const response = await fetch(`${base}/api/accounts`, { headers: { cookie: auth.cookie } });
 		expect(response.status).toBe(200);
 		const body = (await response.json()) as {
-			accounts: Array<{ ref: string; provider: string; models: string[]; apiKeyRef?: string; apiUrl?: string }>;
+			accounts: Array<{
+				ref: string;
+				provider: string;
+				providerLabel: string;
+				models: string[];
+				credential: { kind: string; envName?: string };
+				boundAgentIds: string[];
+				apiKeyRef?: string;
+				apiUrl?: string;
+			}>;
 		};
-		expect(body.accounts).toEqual([{ ref: "main", provider: "kimi-coding", models: ["kimi-for-coding"] }]);
+		expect(body.accounts).toMatchObject([
+			{
+				ref: "main",
+				provider: "kimi-coding",
+				providerLabel: "Kimi For Coding",
+				models: ["kimi-for-coding"],
+				credential: { kind: "env", envName: "KIMI_API_KEY" },
+				boundAgentIds: ["a1", "a2"],
+			},
+		]);
 		expect(body.accounts[0]).not.toHaveProperty("apiKeyRef");
 		expect(body.accounts[0]).not.toHaveProperty("apiUrl");
 	});

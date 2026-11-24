@@ -1,5 +1,6 @@
 import { api } from "@/lib/api";
 import type { ApiClient } from "@/lib/api/client.ts";
+import type { AccountView } from "@/domains/account/api";
 
 export type AgentStatus = "idle" | "thinking" | "working" | "error" | "offline";
 
@@ -12,11 +13,7 @@ export interface AgentView {
 	status?: AgentStatus;
 }
 
-export interface AccountView {
-	ref: string;
-	provider: string;
-	models: string[];
-}
+export type { AccountView } from "@/domains/account/api";
 
 export interface CreateAgentInput {
 	id: string;

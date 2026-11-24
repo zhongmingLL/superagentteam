@@ -4,7 +4,14 @@ import { describe, expect, it, vi } from "vitest";
 import { AgentPopover } from "@/components/agent/AgentPopover";
 import type { CreateAgentInput } from "@/domains/agent/api";
 
-const ACCOUNT = { ref: "main", provider: "kimi-coding", models: ["kimi-for-coding"] };
+const ACCOUNT = {
+	ref: "main",
+	provider: "kimi-coding",
+	providerLabel: "Kimi For Coding",
+	models: ["kimi-for-coding"],
+	credential: { kind: "stored" as const },
+	boundAgentIds: [],
+};
 
 function openForm(onCreate: React.ComponentProps<typeof AgentPopover>["onCreate"]) {
 	render(

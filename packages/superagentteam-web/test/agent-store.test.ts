@@ -46,7 +46,16 @@ describe("agent store", () => {
 					agents: [{ id: "a1", displayName: "Agent A1", enabled: true, status: "idle" as const }],
 				}),
 			accounts: vi.fn(async () => ({
-				accounts: [{ ref: "main", provider: "kimi-coding", models: ["kimi-for-coding"] }],
+				accounts: [
+					{
+						ref: "main",
+						provider: "kimi-coding",
+						providerLabel: "Kimi For Coding",
+						models: ["kimi-for-coding"],
+						credential: { kind: "stored" as const },
+						boundAgentIds: [],
+					},
+				],
 			})),
 			create: vi.fn(async () => ({
 				agent: { id: "a1", displayName: "Agent A1", enabled: true, status: "idle" as const },

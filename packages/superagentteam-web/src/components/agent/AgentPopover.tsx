@@ -3,6 +3,7 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import type { AccountView, AgentView, CreateAgentInput } from "@/domains/agent/api";
 import { agentStatusLabel } from "@/domains/agent/labels";
 import { Icon } from "@/components/ui/Icon";
+import { AccountsModal } from "./AccountsModal";
 
 export interface AgentPopoverProps {
 	agents: AgentView[];
@@ -49,6 +50,7 @@ export function AgentPopover({
 	const [busy, setBusy] = useState(false);
 	const [formError, setFormError] = useState<string | undefined>();
 	const [createdName, setCreatedName] = useState<string | undefined>();
+	const [accountsOpen, setAccountsOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -143,19 +145,24 @@ export function AgentPopover({
 				<div className="st-agent-panel" role="dialog" aria-label="Agents">
 					<div className="st-agent-panel-header">
 						<span>Agents</span>
-						{onCreate ? (
-							<button
-								type="button"
-								className="st-link-button"
-								onClick={() => {
-									setShowCreate((value) => !value);
-									setFormError(undefined);
-									setCreatedName(undefined);
-								}}
-							>
-								{showCreate ? "收起" : "新建"}
+						<span className="st-agent-panel-actions">
+							<button type="button" className="st-link-button" onClick={() => setAccountsOpen(true)}>
+								账号
 							</button>
-						) : null}
+							{onCreate ? (
+								<button
+									type="button"
+									className="st-link-button"
+									onClick={() => {
+										setShowCreate((value) => !value);
+										setFormError(undefined);
+										setCreatedName(undefined);
+									}}
+								>
+									{showCreate ? "收起" : "新建"}
+								</button>
+							) : null}
+						</span>
 					</div>
 					{createdName ? (
 						<p className="st-agent-created" role="status">
@@ -197,7 +204,7 @@ export function AgentPopover({
 									{accounts.length === 0 ? <option value="">{accountsStatus === "loading" ? "加载中…" : "无 account"}</option> : null}
 									{accounts.map((item) => (
 										<option value={item.ref} key={item.ref}>
-											{item.ref} ({item.provider})
+											{item.displayName ?? item.ref} ({item.providerLabel})
 										</option>
 									))}
 								</select>
@@ -263,6 +270,11 @@ export function AgentPopover({
 					))}
 				</div>
 			) : null}
+			<AccountsModal
+				open={accountsOpen}
+				onClose={() => setAccountsOpen(false)}
+				onChanged={() => onLoadAccounts?.()}
+			/>
 		</div>
 	);
 }

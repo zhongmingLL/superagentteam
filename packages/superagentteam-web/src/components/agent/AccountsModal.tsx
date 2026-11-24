@@ -1,0 +1,388 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import {
+	type AccountProviderView,
+	type AccountView,
+	accountApi,
+} from "@/domains/account/api";
+import { ApiError } from "@/lib/api/client";
+
+export interface AccountsModalProps {
+	open: boolean;
+	onClose: () => void;
+	onChanged?: () => void;
+}
+
+type FormMode = "create" | "edit";
+type CredentialMode = "stored" | "env";
+
+interface FormState {
+	ref: string;
+	displayName: string;
+	provider: string;
+	modelsText: string;
+	apiUrl: string;
+	credentialMode: CredentialMode;
+	apiKey: string;
+	envName: string;
+}
+
+function emptyForm(provider?: AccountProviderView): FormState {
+	return {
+		ref: "",
+		displayName: "",
+		provider: provider?.id ?? "",
+		modelsText: "",
+		apiUrl: "",
+		credentialMode: "stored",
+		apiKey: "",
+		envName: provider?.envName ?? "",
+	};
+}
+
+function formFromAccount(account: AccountView): FormState {
+	return {
+		ref: account.ref,
+		displayName: account.displayName ?? "",
+		provider: account.provider,
+		modelsText: account.models.join(", "),
+		apiUrl: account.apiUrl ?? "",
+		credentialMode: account.credential.kind === "env" ? "env" : "stored",
+		apiKey: "",
+		envName: account.credential.envName ?? "",
+	};
+}
+
+function credentialLabel(account: AccountView): string {
+	if (account.credential.kind === "stored") return "已存 API Key";
+	if (account.credential.kind === "env") return `环境变量 ${account.credential.envName ?? ""}`;
+	return "未配置凭据";
+}
+
+export function AccountsModal({ open, onClose, onChanged }: AccountsModalProps) {
+	const [accounts, setAccounts] = useState<AccountView[]>([]);
+	const [providers, setProviders] = useState<AccountProviderView[]>([]);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | undefined>();
+	const [mode, setMode] = useState<FormMode | null>(null);
+	const [form, setForm] = useState<FormState>({ ...emptyForm() });
+	const [saving, setSaving] = useState(false);
+	const dialogRef = useRef<HTMLDivElement>(null);
+	const onCloseRef = useRef(onClose);
+	onCloseRef.current = onClose;
+
+	const provider = useMemo(
+		() => providers.find((item) => item.id === form.provider),
+		[providers, form.provider],
+	);
+
+	async function refresh(): Promise<void> {
+		setLoading(true);
+		setError(undefined);
+		try {
+			const [accountBody, providerBody] = await Promise.all([accountApi.list(), accountApi.providers()]);
+			setAccounts(accountBody.accounts);
+			setProviders(providerBody.providers);
+		} catch (caught) {
+			setError(caught instanceof Error ? caught.message : "加载账号失败");
+		} finally {
+			setLoading(false);
+		}
+	}
+
+	useEffect(() => {
+		if (!open) return;
+		void refresh();
+		setMode(null);
+		setError(undefined);
+	}, [open]);
+
+	useEffect(() => {
+		if (!open) return;
+		const onKey = (event: KeyboardEvent): void => {
+			if (event.key === "Escape") onCloseRef.current();
+		};
+		window.addEventListener("keydown", onKey);
+		return () => window.removeEventListener("keydown", onKey);
+	}, [open]);
+
+	if (!open) return null;
+
+	const patch = (next: Partial<FormState>): void => setForm((current) => ({ ...current, ...next }));
+
+	function startCreate(): void {
+		setMode("create");
+		setForm(emptyForm(providers[0]));
+		setError(undefined);
+	}
+
+	function startEdit(account: AccountView): void {
+		setMode("edit");
+		setForm(formFromAccount(account));
+		setError(undefined);
+	}
+
+	async function save(): Promise<void> {
+		if (saving) return;
+		const models = form.modelsText
+			.split(/[\n,]+/u)
+			.map((model) => model.trim())
+			.filter((model) => model !== "");
+		if (mode === "create" && form.ref.trim() === "") {
+			setError("ref 必填");
+			return;
+		}
+		if (form.provider === "") {
+			setError("请选择 provider");
+			return;
+		}
+		if (models.length === 0) {
+			setError("至少填写一个 model");
+			return;
+		}
+		if (form.credentialMode === "stored" && mode === "create" && form.apiKey.trim() === "") {
+			setError("请填写 API Key，或改用环境变量");
+			return;
+		}
+		if (form.credentialMode === "env" && form.envName.trim() === "") {
+			setError("请填写环境变量名");
+			return;
+		}
+		setSaving(true);
+		setError(undefined);
+		try {
+			const input = {
+				...(mode === "create" ? { ref: form.ref.trim() } : {}),
+				...(form.displayName.trim() !== "" ? { displayName: form.displayName.trim() } : {}),
+				provider: form.provider,
+				...(form.apiUrl.trim() !== "" ? { apiUrl: form.apiUrl.trim() } : {}),
+				models,
+				...(form.credentialMode === "stored" && form.apiKey.trim() !== ""
+					? { apiKey: form.apiKey.trim() }
+					: {}),
+				...(form.credentialMode === "env" ? { envName: form.envName.trim() } : {}),
+			};
+			if (mode === "create") await accountApi.create(input);
+			else await accountApi.update(form.ref, input);
+			await refresh();
+			setMode(null);
+			onChanged?.();
+		} catch (caught) {
+			setError(caught instanceof Error ? caught.message : "保存账号失败");
+		} finally {
+			setSaving(false);
+		}
+	}
+
+	async function remove(account: AccountView): Promise<void> {
+		if (!window.confirm(`删除账号 ${account.displayName ?? account.ref}？`)) return;
+		setError(undefined);
+		try {
+			await accountApi.remove(account.ref);
+			await refresh();
+			onChanged?.();
+		} catch (caught) {
+			if (caught instanceof ApiError && caught.code === "account_in_use") {
+				const body = caught.body as { agentIds?: string[] } | undefined;
+				setError(`账号仍被 ${body?.agentIds?.join("、") ?? "agent"} 使用，先解绑再删。`);
+			} else {
+				setError(caught instanceof Error ? caught.message : "删除账号失败");
+			}
+		}
+	}
+
+	return (
+		<div className="st-dialog-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+			<div ref={dialogRef} className="st-dialog is-wide" role="dialog" aria-modal="true" aria-labelledby="st-accounts-title">
+				<div className="st-accounts-head">
+					<div>
+						<h2 id="st-accounts-title">账号</h2>
+						<p className="st-accounts-sub">provider、模型与凭据。API Key 只写入，不回显。</p>
+					</div>
+					<div className="st-accounts-head-actions">
+						{mode === null ? (
+							<button type="button" className="st-button" onClick={startCreate} disabled={providers.length === 0}>
+								新增账号
+							</button>
+						) : null}
+						<button type="button" className="st-button st-button-secondary" onClick={onClose}>
+							关闭
+						</button>
+					</div>
+				</div>
+				{error ? <p className="st-error" role="alert">{error}</p> : null}
+				{loading ? <p className="st-page-note">正在加载账号…</p> : null}
+				{mode === null ? (
+					<div className="st-account-list">
+						{accounts.length === 0 && !loading ? (
+							<p className="st-page-note">还没有账号。新增一个 provider 账号后，agent 就能选择它。</p>
+						) : null}
+						{accounts.map((account) => (
+							<div className="st-account-row" key={account.ref}>
+								<div className="st-account-main">
+									<div className="st-account-title">
+										<strong>{account.displayName ?? account.ref}</strong>
+										<span className="st-account-ref">{account.ref}</span>
+									</div>
+									<div className="st-account-meta">
+										{account.providerLabel} · {credentialLabel(account)}
+										{account.apiUrl ? ` · ${account.apiUrl}` : ""}
+									</div>
+									<div className="st-account-models">
+										{account.models.map((model) => (
+											<span className="st-account-model" key={model}>
+												{model}
+											</span>
+										))}
+									</div>
+									{account.boundAgentIds.length > 0 ? (
+										<div className="st-account-bound">绑定：{account.boundAgentIds.join("、")}</div>
+									) : null}
+								</div>
+								<div className="st-account-actions">
+									<button type="button" className="st-link-button" onClick={() => startEdit(account)}>
+										编辑
+									</button>
+									<button type="button" className="st-link-button is-danger" onClick={() => void remove(account)}>
+										删除
+									</button>
+								</div>
+							</div>
+						))}
+					</div>
+				) : (
+					<form
+						className="st-account-form"
+						onSubmit={(event) => {
+							event.preventDefault();
+							void save();
+						}}
+					>
+						<div className="st-account-form-grid">
+							<label className="st-field">
+								<span>ref</span>
+								<input
+									value={form.ref}
+									onChange={(event) => patch({ ref: event.target.value })}
+									disabled={mode === "edit" || saving}
+									placeholder="kimi-main"
+									autoComplete="off"
+								/>
+							</label>
+							<label className="st-field">
+								<span>显示名（可选）</span>
+								<input
+									value={form.displayName}
+									onChange={(event) => patch({ displayName: event.target.value })}
+									disabled={saving}
+									placeholder="Kimi Main"
+									autoComplete="off"
+								/>
+							</label>
+							<label className="st-field">
+								<span>Provider</span>
+								<select
+									value={form.provider}
+									onChange={(event) => {
+										const next = providers.find((item) => item.id === event.target.value);
+										patch({
+											provider: event.target.value,
+											envName: next?.envName ?? form.envName,
+										});
+									}}
+									disabled={saving}
+								>
+									{providers.map((item) => (
+										<option value={item.id} key={item.id}>
+											{item.label} ({item.id})
+										</option>
+									))}
+								</select>
+							</label>
+							<label className="st-field">
+								<span>Base URL（可选）</span>
+								<input
+									value={form.apiUrl}
+									onChange={(event) => patch({ apiUrl: event.target.value })}
+									disabled={saving}
+									placeholder="https://api.example.com/v1"
+									autoComplete="off"
+								/>
+							</label>
+						</div>
+						<label className="st-field">
+							<span>Models（逗号或换行分隔）</span>
+							<textarea
+								value={form.modelsText}
+								onChange={(event) => patch({ modelsText: event.target.value })}
+								disabled={saving}
+								rows={2}
+								placeholder="kimi-for-coding"
+							/>
+						</label>
+						<div className="st-account-credential">
+							<span className="st-account-credential-label">凭据</span>
+							<label className="st-account-radio">
+								<input
+									type="radio"
+									name="credential-mode"
+									checked={form.credentialMode === "stored"}
+									onChange={() => patch({ credentialMode: "stored" })}
+									disabled={saving}
+								/>
+								API Key
+							</label>
+							<label className="st-account-radio">
+								<input
+									type="radio"
+									name="credential-mode"
+									checked={form.credentialMode === "env"}
+									onChange={() => patch({ credentialMode: "env" })}
+									disabled={saving}
+								/>
+								环境变量
+							</label>
+						</div>
+						{form.credentialMode === "stored" ? (
+							<label className="st-field">
+								<span>{mode === "edit" ? "API Key（留空保留现有）" : "API Key"}</span>
+								<input
+									type="password"
+									autoComplete="new-password"
+									value={form.apiKey}
+									onChange={(event) => patch({ apiKey: event.target.value })}
+									disabled={saving}
+									placeholder={mode === "edit" ? "••••••••" : "sk-…"}
+								/>
+							</label>
+						) : (
+							<label className="st-field">
+								<span>环境变量名</span>
+								<input
+									value={form.envName}
+									onChange={(event) => patch({ envName: event.target.value })}
+									disabled={saving}
+									placeholder={provider?.envName ?? "PROVIDER_API_KEY"}
+									autoComplete="off"
+								/>
+							</label>
+						)}
+						<div className="st-dialog-actions">
+							<button
+								type="button"
+								className="st-button st-button-secondary"
+								onClick={() => setMode(null)}
+								disabled={saving}
+							>
+								取消
+							</button>
+							<button type="submit" className="st-button" disabled={saving || providers.length === 0}>
+								{saving ? "保存中…" : mode === "create" ? "创建账号" : "保存"}
+							</button>
+						</div>
+					</form>
+				)}
+			</div>
+		</div>
+	);
+}

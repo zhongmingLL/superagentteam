@@ -1,7 +1,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { dirname, join } from "node:path";
 
-import type { AgentConfig } from "@superagentteam/shared/types";
+import type { AccountConfig, AgentConfig } from "@superagentteam/shared/types";
 
+import { ACCOUNT_PROVIDERS, findAccountProvider } from "../../domains/account/providers.ts";
+import { AccountError, AccountStore, type AccountView } from "../../domains/account/store.ts";
 import {
 	appendAgent,
 	type CreateAgentInput,
@@ -27,12 +30,6 @@ export interface AgentView {
 	status?: AgentStatus;
 }
 
-export interface AccountView {
-	ref: string;
-	provider: string;
-	models: string[];
-}
-
 export interface HubCatView extends AgentView {
 	catId: string;
 }
@@ -51,6 +48,7 @@ export interface AgentRoutesOptions {
 	tracker: InvocationTracker;
 	catalogPath?: string;
 	accountsPath?: string;
+	credentialsPath?: string;
 	clock?: () => number;
 }
 
@@ -202,6 +200,215 @@ export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
 	const { registry, tracker } = options;
 	const clock = options.clock ?? Date.now;
 
+	function accountStore(): AccountStore | null {
+		if (!options.accountsPath) return null;
+		return new AccountStore({
+			accountsPath: options.accountsPath,
+			credentialsPath: options.credentialsPath ?? join(dirname(options.accountsPath), "credentials.json"),
+		});
+	}
+
+	function accountView(store: AccountStore, account: AccountConfig, boundAgentIds: string[]): AccountView {
+		const provider = findAccountProvider(account.provider);
+		return {
+			ref: account.ref,
+			...(account.displayName ? { displayName: account.displayName } : {}),
+			provider: account.provider,
+			providerLabel: provider?.label ?? account.provider,
+			...(account.apiUrl ? { apiUrl: account.apiUrl } : {}),
+			models: [...account.models],
+			credential: store.credentialKind(account),
+			boundAgentIds,
+		};
+	}
+
+	function accountViews(store: AccountStore): AccountView[] {
+		const agents = [...registry.agents.values()];
+		return store.list().map((account) =>
+			accountView(
+				store,
+				account,
+				agents
+					.filter((agent) => agent.accountRef === account.ref)
+					.map((agent) => agent.id)
+					.sort(),
+			),
+		);
+	}
+
+	function reloadFromFiles(): void {
+		const catalogPaths = paths();
+		if (!catalogPaths) return;
+		const { catalog, accounts } = readCatalogFile(catalogPaths);
+		reloadRegistry(registry, catalog, accounts);
+	}
+
+	function accountErrorToHttp(error: AccountError): { status: number; code: string; message: string } {
+		switch (error.code) {
+			case "account_exists":
+				return { status: 409, code: error.code, message: error.message };
+			case "account_not_found":
+				return { status: 404, code: error.code, message: error.message };
+			case "accounts_invalid_json":
+				return { status: 500, code: error.code, message: error.message };
+			default:
+				return { status: 422, code: error.code, message: error.message };
+		}
+	}
+
+	function csrfOk(request: IncomingMessage, response: ServerResponse, context: ApiRouteContext): boolean {
+		const csrf = request.headers["x-csrf-token"];
+		const csrfToken = Array.isArray(csrf) ? csrf[0] : csrf;
+		if (!requireCsrf(context.session, csrfToken)) {
+			sendError(response, 403, "csrf_failed", "invalid CSRF token");
+			return false;
+		}
+		return true;
+	}
+
+	async function readBody(
+		request: IncomingMessage,
+		response: ServerResponse,
+	): Promise<Record<string, unknown> | null> {
+		let body: unknown;
+		try {
+			body = await readJsonBody(request);
+		} catch (error) {
+			if (error instanceof HttpError) {
+				sendError(response, error.status, error.code, error.message);
+				return null;
+			}
+			throw error;
+		}
+		if (!isRecord(body)) {
+			sendError(response, 400, "invalid_input", "request body must be a JSON object");
+			return null;
+		}
+		return body;
+	}
+
+	function readModels(value: unknown): string[] | null {
+		if (!Array.isArray(value)) return null;
+		return value.filter((item): item is string => typeof item === "string");
+	}
+
+	async function handleAccounts(
+		request: IncomingMessage,
+		response: ServerResponse,
+		url: URL,
+		context: ApiRouteContext,
+	): Promise<boolean> {
+		const store = accountStore();
+		if (!store) return false;
+		if (url.pathname === "/api/providers") {
+			if (request.method !== "GET") return false;
+			sendJson(response, 200, { providers: ACCOUNT_PROVIDERS });
+			return true;
+		}
+		if (url.pathname === "/api/accounts") {
+			if (request.method === "GET") {
+				sendJson(response, 200, { accounts: accountViews(store) });
+				return true;
+			}
+			if (request.method === "POST") {
+				if (!csrfOk(request, response, context)) return true;
+				const body = await readBody(request, response);
+				if (!body) return true;
+				const models = readModels(body.models);
+				if (models === null) {
+					sendError(response, 400, "invalid_input", "models must be an array of strings");
+					return true;
+				}
+				try {
+					const account = store.create({
+						ref: typeof body.ref === "string" ? body.ref : "",
+						...(typeof body.displayName === "string" ? { displayName: body.displayName } : {}),
+						provider: typeof body.provider === "string" ? body.provider : "",
+						...(typeof body.apiUrl === "string" ? { apiUrl: body.apiUrl } : {}),
+						models,
+						...(typeof body.apiKey === "string" ? { apiKey: body.apiKey } : {}),
+						...(typeof body.envName === "string" ? { envName: body.envName } : {}),
+					});
+					reloadFromFiles();
+					sendJson(response, 201, { account: accountView(store, account, []) });
+				} catch (error) {
+					if (error instanceof AccountError) {
+						const mapped = accountErrorToHttp(error);
+						sendError(response, mapped.status, mapped.code, mapped.message);
+						return true;
+					}
+					throw error;
+				}
+				return true;
+			}
+			return false;
+		}
+		const match = /^\/api\/accounts\/([^/]+)$/.exec(url.pathname);
+		if (!match) return false;
+		const ref = decodeURIComponent(match[1]!);
+		if (request.method === "PATCH") {
+			if (!csrfOk(request, response, context)) return true;
+			const body = await readBody(request, response);
+			if (!body) return true;
+			const models = body.models === undefined ? undefined : readModels(body.models);
+			if (models === null) {
+				sendError(response, 400, "invalid_input", "models must be an array of strings");
+				return true;
+			}
+			try {
+				const account = store.update(ref, {
+					...(typeof body.displayName === "string" ? { displayName: body.displayName } : {}),
+					...(body.displayName === null ? { displayName: null } : {}),
+					...(typeof body.provider === "string" ? { provider: body.provider } : {}),
+					...(typeof body.apiUrl === "string" ? { apiUrl: body.apiUrl } : {}),
+					...(body.apiUrl === null ? { apiUrl: null } : {}),
+					...(models !== undefined ? { models } : {}),
+					...(typeof body.apiKey === "string" ? { apiKey: body.apiKey } : {}),
+					...(typeof body.envName === "string" ? { envName: body.envName } : {}),
+				});
+				reloadFromFiles();
+				sendJson(response, 200, { account: accountView(store, account, []) });
+			} catch (error) {
+				if (error instanceof AccountError) {
+					const mapped = accountErrorToHttp(error);
+					sendError(response, mapped.status, mapped.code, mapped.message);
+					return true;
+				}
+				throw error;
+			}
+			return true;
+		}
+		if (request.method === "DELETE") {
+			if (!csrfOk(request, response, context)) return true;
+			const boundAgentIds = [...registry.agents.values()]
+				.filter((agent) => agent.accountRef === ref)
+				.map((agent) => agent.id)
+				.sort();
+			if (boundAgentIds.length > 0) {
+				sendJson(response, 409, {
+					error: "account_in_use",
+					message: "account is bound to agents",
+					agentIds: boundAgentIds,
+				});
+				return true;
+			}
+			try {
+				store.remove(ref);
+				reloadFromFiles();
+				sendJson(response, 200, { ok: true });
+			} catch (error) {
+				if (error instanceof AccountError) {
+					const mapped = accountErrorToHttp(error);
+					sendError(response, mapped.status, mapped.code, mapped.message);
+					return true;
+				}
+				throw error;
+			}
+			return true;
+		}
+		return false;
+	}
+
 	function activeAgentIds(): Set<string> {
 		return new Set(tracker.listStaleSlots(clock(), 0).map((slot) => slot.agentId));
 	}
@@ -280,6 +487,7 @@ export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
 		url: URL,
 		context: ApiRouteContext,
 	): Promise<boolean> {
+		if (await handleAccounts(request, response, url, context)) return true;
 		if (url.pathname === "/api/agents") {
 			if (request.method === "GET") {
 				sendJson(response, 200, { agents: views() });
@@ -289,13 +497,6 @@ export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
 			return false;
 		}
 		if (request.method !== "GET") return false;
-		if (url.pathname === "/api/accounts") {
-			const accounts: AccountView[] = [...registry.accounts.values()]
-				.map((account) => ({ ref: account.ref, provider: account.provider, models: [...account.models] }))
-				.sort((a, b) => a.ref.localeCompare(b.ref));
-			sendJson(response, 200, { accounts });
-			return true;
-		}
 		if (url.pathname === "/api/cats") {
 			const cats: HubCatView[] = views().map((agent) => ({ ...agent, catId: agent.id }));
 			sendJson(response, 200, { cats });

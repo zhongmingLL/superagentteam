@@ -17,12 +17,12 @@ related_features: [superagentteam/F033, superagentteam/F032]
 | F025 e2e | 3000 | 3011 | `/tmp/f025-e2e-1795345602/data` | 3100 | 早期 e2e |
 | devlogin | 3001 | 3012 | `/tmp/f025-e2e-devlogin/data` | 3101 | dev auto-login 验证 |
 | F028 demo | 3005 | 3014 | `/tmp/f028-demo-1795448211/data` | 3103 | 当前 operator 入口 |
-| F030 demo | 3006 | 3015 | `/tmp/f030-demo-1795493398/data` | 3104 | 展示栈 |
-| F030 e2e | 3007 | 3016 | `/tmp/f030-e2e-1795493745/data` | 3105 | e2e 栈 |
+| F030 demo | 3006 | 3015 | `/tmp/f030-demo-1795493398/data` | — | 展示栈；HUB_ORIGIN=3104，无 proxy |
+| F030 e2e | 3007 | 3016 | `/tmp/f030-e2e-1795493745/data` | — | e2e 栈；HUB_ORIGIN=3105，无 proxy |
 
 另：`3004` 是 Clowder AI API，不属于 SuperAgentTeam。
 
-Windows 侧 `3100/3101/3103` 是 PowerShell TCP proxy；每个 proxy 硬编码一个 WSL bridge 脚本，例如 `3103` → `wsl.exe python3 /tmp/f025-tcp-bridge-3005.py` → WSL `3005`。
+当前实际 Windows listener 只有 `3100/3101/3103` 三个 PowerShell TCP proxy；每个 proxy 硬编码一个 WSL bridge 脚本，例如 `3103` → `wsl.exe python3 /tmp/f025-tcp-bridge-3005.py` → WSL `3005`。`3104/3105` 只是 F030 daemon 的 HUB_ORIGIN 配置，不是 Windows proxy。
 
 ## 2. 根因
 

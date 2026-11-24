@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F033]
 related_features: [superagentteam/F018, superagentteam/F032]
 title: "F033: Local runtime startup & worktree isolation"
-status: spec
+status: implementing
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -83,16 +83,31 @@ Clowder AI 的启动面已经把这些分清了，F033 借鉴机制而不复制�
 | C | test/acceptance worktree + 数据/端口隔离 + 旧 stack 清理/回收 + CI drift guard | 运行/测试互不污染；无孤儿监听 |
 | D | runbook + 迁移说明 + 移除临时 cron/bridge 脚本 + 验收 | operator 按 runbook 可独立运行/收尾/恢复 |
 
+## 进展
+
+### 2026-11-25 — Phase B 运行面迁移
+
+- B1 统一入口已合入：PR #188 → `e1ceb0e43`；reviewers 砚砚（identity/端口/env/state）+ 墨墨（operator 文案/迁移），CI `build-check-test` / `supply-chain` / `mcp-conformance` 全绿。
+- runtime worktree：`/home/ming/agent/superagentteam-runtime`，detached at `e1ceb0e43`。
+- 真实入口：`3005/3014` + Windows `3103`；daemon `runningRevision=e1ceb0e43`，health ready，`/`、`/api/session`、`/api/agents`、`/api/threads` 与 `http://localhost:3103/` 均 200；数据目录沿用 `/tmp/f028-demo-1795448211/data`。
+- env：`~/.config/superagentteam/runtime.env`（0600），从旧 daemon 进程 env 迁移 `KIMI_API_KEY`，未打印、未入库。
+- 旧栈：4 套 data dir 快照到 `/home/ming/superagentteam-archive/20261124T173508Z/`；旧 WSL 栈已收尾，仅保留 `3005/3014`（另 `3003/3004` 属 Clowder AI）。
+- cron watchdog：改为调用统一入口，作为迁移期兜底；稳定观察后退役（Phase D）。
+- 已补隔离 `3008/3017` 的 start/status/end/restart 集成验证；restart 后进程与 bootId 均更新，end 后端口释放。
+- 残余 gap：Windows `3100/3101` proxy 仍未移除；Windows proxy 生成脚本、test worktree、CI drift/conflict guard、runbook 留 Phase C/D。
+
 ## 验收方向
 
-- [ ] AC-1：默认入口从专用 runtime worktree 运行；dev worktree 不承担 runtime。
-- [ ] AC-2：入口/状态/收尾/重启幂等，收尾只操作 identity-verified stack，不盲杀端口。
+- [x] AC-1：默认入口从专用 runtime worktree 运行；dev worktree 不承担 runtime。
+- [x] AC-2：入口/状态/收尾/重启幂等，收尾只操作 identity-verified stack，不盲杀端口。
 - [ ] AC-3：runtime 与 Windows 入口固定；test 使用独立端口段，CI 有 drift/conflict guard。
 - [ ] AC-4：进程在启动 session 结束后仍存活；无长期 cron watchdog 依赖。
 - [ ] AC-5：test/acceptance 使用独立 worktree、data dir、端口；不读写 runtime 用户数据。
 - [ ] AC-6：旧 stack 可列出/收尾/回收；启动后无孤儿端口。
 - [ ] AC-7：Windows proxy 由脚本生成/校验，入口只给一个 URL。
 - [ ] AC-8：runbook 覆盖运行、收尾、恢复、端口冲突、worktree 更新与回滚。
+
+> 2026-11-25：AC-1/AC-2 已由 PR #188 + 真实迁移验证；AC-3/4/6/7 仍有 Phase C/D 残余（test worktree/CI guard、cron 退役、Windows proxy 生成与旧 proxy 清理、runbook）。
 
 ## 非目标
 

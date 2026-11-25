@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F036]
 related_features: [superagentteam/F027, superagentteam/F028, superagentteam/F029]
 title: "F036: Chat surface polish — agent message bubble and operator avatar"
-status: implementing
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [墨墨 (Qwen 3.8 Flash)]
 created: 2026-11-25
@@ -42,8 +42,14 @@ F029 为了消除“气泡随内容忽短忽长”，把 agent 消息改成了�
 
 ## 验收
 
-- [ ] AC-1：agent 消息有可见气泡表面，宽度仍全宽稳定。
-- [ ] AC-2：user 消息与 pending 消息有 operator 头像，气泡保持右对齐。
-- [ ] AC-3：1440/390、light/dark 截图；web typecheck/tests/build 与 CI 绿。
+- [x] AC-1：agent 消息有可见气泡表面，宽度仍全宽稳定。
+- [x] AC-2：user 消息与 pending 消息有 operator 头像，气泡保持右对齐。
+- [x] AC-3：1440/390、light/dark 截图；web typecheck/tests/build 与 CI 绿。
+
+## 进展（2026-11-25）
+
+- PR #197 merged `469e858ce`；墨墨 vision/UX approve @ `d25ebfe64`（隔离栈四视口 1440/390 × light/dark 真机验证，全程未触 live），CI 5/5。
+- 决策：保留 F029 的全宽 nameplate 宽度规则，只恢复 `surface-1` 卡片表面；执行记录仍为 `surface-2` 嵌套面板。暗色下该嵌套面板改用 `--st-hairline-strong` 边框（墨墨 P3）。
+- 已部署 live `469e858ce`；operator close 待实机确认。
 
 [宪宪/deepseek-flash🐾]

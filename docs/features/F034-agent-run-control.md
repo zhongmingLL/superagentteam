@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F034]
 related_features: [superagentteam/F018, superagentteam/F033]
 title: "F034: Agent run control — bounded retries + cancel running agent + queue clarity"
-status: implementing
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 created: 2026-11-25
@@ -42,8 +42,12 @@ operator 在前端给 agent 发消息后观察到同一目标持续重试（本�
 - 重试预算：每个 manual retry epoch 最多 5 次自动 provider 重试；按 `invocationId + agentId` 记录 epoch start；耗尽后 parent/attempt/R 终态 failed，reason `provider_retry_exhausted`，并写一条系统提示；不再 restore target。
 - 手动重试：`requestRetry` 递增 `retry_count` 并为每个目标记录新的 epoch start，重新获得 5 次预算。
 - 停止运行：`InvocationTracker` signal 传入 `RunAgentTurn`/`promptAndWait`，abort 时 `finish("operator-canceled")` 释放 worker；processor 将 turn/attempt/R terminalize 为 canceled，不 restore target；新增 `POST /api/threads/:id/agents/:agentId/cancel`。
-- UI：运行中 agent 的 LivePill 增加“停止”；QueueStrip 显示“每个对话同类最多 5 条（v1 固定）”；a2a store 增加 cancelAgent。
+- UI：运行中 agent 的 LivePill 增加“停止”（24×20 hit area）；QueueStrip 显示“每个对话：消息最多 5 条、agent 唤醒最多 5 条（v1 固定）”；a2a store 增加 cancelAgent。
 - 测试：daemon 492 passed / 1 skipped；web 101 passed；新增 retry cap、manual retry、processor cancel、RunAgentTurn abort、cancel API CSRF/409、LivePill 停止与 queue 说明测试。
+- 2026-11-25：PR #195 merged `8ed21a710`（砚砚 runtime/cancel/竞态 approve，墨墨 UX/文案 approve，P3 全收）；CI 5/5。
+  隔离栈 E2E：provider 立即失败时 attempts 1–5、10s 退避、attempt 5 `provider_retry_exhausted`、队列清零、耗尽提示出现；
+  provider 请求在飞时 cancel → attempt/turn 均 `canceled/operator_canceled`、队列 0。
+  已部署 live `469e858ce`（3005/3014/3103 healthy）；live 3103 的真实点击待 operator 签收。
 
 ## 验收
 

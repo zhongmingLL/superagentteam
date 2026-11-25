@@ -1,7 +1,7 @@
 ---
 title: "F034 execution plan — bounded retries + cancel running agent"
 doc_kind: plan
-status: draft
+status: done
 created: 2026-11-25
 updated: 2026-11-25
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"

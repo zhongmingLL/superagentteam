@@ -1,7 +1,7 @@
 ---
 title: "F035 execution plan — settings hub"
 doc_kind: plan
-status: implementing
+status: done
 created: 2026-11-25
 updated: 2026-11-25
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"

@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F035]
 related_features: [superagentteam/F030, superagentteam/F033]
 title: "F035: Settings hub — sidebar entry + accounts/agents pages"
-status: implementing
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [墨墨 (Qwen 3.8 Flash), 砚砚 (GLM 5.3 Flash)]
 created: 2026-11-25
@@ -52,6 +52,7 @@ source_decision: "operator 2026-11-25: add Settings at the bottom of the sidebar
 - `AccountsModal`、`AgentEditorModal` 增加 `variant="page"`：表单与校验仍是同一份实现，弹窗入口原样保留。
 - `NavRail` 底部、`ThreadSidebar` profile 上方加设置入口；修正 Threads 导航项在非对话路由仍高亮的问题。
 - 测试：`settings-page.test.tsx` 覆盖列表/页面编辑器/区块切换；`thread-sidebar.test.tsx` 覆盖设置链接。web 全量 101 passed。
-- 待办：浏览器截图（1440/390）与 3103 实机创建验证，随后进入 review。
+- 2026-11-25：PR #196 merged `29f104852`（墨墨 vision/UX approve @ `723024d2e`，砚砚 aria/state approve @ `190662f21`，P3 全收）；CI 5/5；已部署 live `469e858ce`。
+  墨墨用隔离栈补了 1440/390 真机截图 + 真实创建流程（网络证据 `{"accounts":[]}`，全程未触 live）；live 3103 的实机创建待 operator 签收。
 
 [宪宪/deepseek-flash🐾]

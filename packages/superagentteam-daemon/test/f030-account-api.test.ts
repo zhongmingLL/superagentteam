@@ -142,6 +142,28 @@ describe("F030 account API", () => {
 		expect(await removed.json()).toMatchObject({ error: "account_in_use", agentIds: ["a1"] });
 	});
 
+	it("generates a ref when the create body omits one", async () => {
+		const base = await start();
+		const auth = await login(base);
+		const response = await send(base, auth, "POST", "/api/accounts", {
+			displayName: "Kimi Main",
+			provider: "kimi-coding",
+			models: ["kimi-for-coding"],
+			apiKey: "sk-test",
+		});
+		expect(response.status).toBe(201);
+		const body = (await response.json()) as { account: { ref: string } };
+		expect(body.account.ref).toMatch(/^kimi-main-[0-9a-f]{4}$/u);
+
+		const credentials = JSON.parse(readFileSync(join(dataDir, "credentials.json"), "utf8")) as Record<
+			string,
+			unknown
+		>;
+		expect(credentials[body.account.ref]).toEqual({ apiKey: "sk-test" });
+		const accounts = JSON.parse(readFileSync(join(dataDir, "accounts.json"), "utf8")) as Array<{ ref: string }>;
+		expect(accounts.map((account) => account.ref)).toContain(body.account.ref);
+	});
+
 	it("requires CSRF and validates provider/model input", async () => {
 		const base = await start();
 		const auth = await login(base);

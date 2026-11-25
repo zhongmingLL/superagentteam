@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { dirname, join } from "node:path";
 
@@ -144,7 +145,7 @@ function parseUpdateInput(body: Record<string, unknown>): ParsedUpdate | ParsedC
 
 interface ParsedCreate {
 	ok: true;
-	input: CreateAgentInput;
+	input: Omit<CreateAgentInput, "id"> & { id?: string };
 }
 
 interface ParsedCreateError {
@@ -201,10 +202,13 @@ function parseColor(value: unknown): { primary: string; secondary: string } | nu
 }
 
 function parseCreateInput(body: Record<string, unknown>): ParsedCreate | ParsedCreateError {
-	const id = readRequiredString(body, "id", 64);
-	if (!id) return { ok: false, message: "id is required (1-64 chars)" };
-	if (!/^[A-Za-z0-9][A-Za-z0-9._:-]*$/u.test(id)) {
-		return { ok: false, message: "id must start alphanumeric and contain only letters, digits, . _ : -" };
+	const id = readOptionalString(body, "id", 64);
+	if (id === null) return { ok: false, message: "id must be a string (<=64 chars)" };
+	if (id !== undefined) {
+		if (id.length === 0) return { ok: false, message: "id must not be empty" };
+		if (!/^[A-Za-z0-9][A-Za-z0-9._:-]*$/u.test(id)) {
+			return { ok: false, message: "id must start alphanumeric and contain only letters, digits, . _ : -" };
+		}
 	}
 	const displayName = readRequiredString(body, "displayName", 200);
 	if (!displayName) return { ok: false, message: "displayName is required (1-200 chars)" };
@@ -240,7 +244,7 @@ function parseCreateInput(body: Record<string, unknown>): ParsedCreate | ParsedC
 	return {
 		ok: true,
 		input: {
-			id,
+			...(id !== undefined ? { id } : {}),
 			displayName,
 			mentionPatterns,
 			accountRef,
@@ -253,6 +257,28 @@ function parseCreateInput(body: Record<string, unknown>): ParsedCreate | ParsedC
 			...(color !== undefined ? { color } : {}),
 		},
 	};
+}
+
+function generatedAgentId(displayName: string): string {
+	const slug = displayName
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9._:-]+/gu, "-")
+		.replace(/^[^a-z0-9]+/u, "")
+		.replace(/[^a-z0-9]+$/u, "")
+		.slice(0, 40);
+	return `${slug || "agent"}-${randomBytes(2).toString("hex")}`;
+}
+
+function generatedAccountRef(provider: string, displayName: string | undefined): string {
+	const slug = (displayName?.trim() || provider)
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9._-]+/gu, "-")
+		.replace(/^[^a-z0-9]+/u, "")
+		.replace(/[^a-z0-9]+$/u, "")
+		.slice(0, 48);
+	return `${slug || "account"}-${randomBytes(2).toString("hex")}`;
 }
 
 function catalogErrorToHttp(error: CatalogError): { status: number; code: string; message: string } {
@@ -398,15 +424,32 @@ export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
 					return true;
 				}
 				try {
-					const account = store.create({
-						ref: typeof body.ref === "string" ? body.ref : "",
-						...(typeof body.displayName === "string" ? { displayName: body.displayName } : {}),
-						provider: typeof body.provider === "string" ? body.provider : "",
+					const providedRef = typeof body.ref === "string" ? body.ref.trim() : "";
+					const displayName = typeof body.displayName === "string" ? body.displayName : undefined;
+					const provider = typeof body.provider === "string" ? body.provider : "";
+					const input = (ref: string) => ({
+						ref,
+						...(displayName !== undefined ? { displayName } : {}),
+						provider,
 						...(typeof body.apiUrl === "string" ? { apiUrl: body.apiUrl } : {}),
 						models,
 						...(typeof body.apiKey === "string" ? { apiKey: body.apiKey } : {}),
 						...(typeof body.envName === "string" ? { envName: body.envName } : {}),
 					});
+					let account: AccountConfig | undefined;
+					for (let attempt = 0; attempt < 6; attempt += 1) {
+						const ref = providedRef || generatedAccountRef(provider, displayName);
+						try {
+							account = store.create(input(ref));
+							break;
+						} catch (error) {
+							if (!providedRef && error instanceof AccountError && error.code === "account_exists") {
+								continue;
+							}
+							throw error;
+						}
+					}
+					if (!account) throw new AccountError("account_exists", "could not allocate a unique account ref");
 					reloadFromFiles();
 					sendJson(response, 201, { account: accountView(store, account, []) });
 				} catch (error) {
@@ -540,13 +583,29 @@ export function createAgentRoutes(options: AgentRoutesOptions): AgentRoutes {
 		}
 
 		try {
-			const { catalog, accounts } = readCatalogFile(catalogPaths);
-			const agent = toAgentConfig(parsed.input);
-			const candidate = appendAgent(catalog, agent);
-			validateCandidate(candidate, accounts);
-			writeCatalogAtomic(catalogPaths.catalogPath, candidate);
-			reloadRegistry(registry, candidate, accounts);
-			sendJson(response, 201, { agent: toView(agent, new Set()) });
+			const base = parsed.input;
+			let created: AgentConfig | undefined;
+			for (let attempt = 0; attempt < 6; attempt += 1) {
+				const id = base.id ?? generatedAgentId(base.displayName);
+				const input: CreateAgentInput = { ...base, id };
+				const { catalog, accounts } = readCatalogFile(catalogPaths);
+				const agent = toAgentConfig(input);
+				try {
+					const candidate = appendAgent(catalog, agent);
+					validateCandidate(candidate, accounts);
+					writeCatalogAtomic(catalogPaths.catalogPath, candidate);
+					reloadRegistry(registry, candidate, accounts);
+					created = agent;
+					break;
+				} catch (error) {
+					if (base.id === undefined && error instanceof CatalogError && error.code === "agent_id_duplicate") {
+						continue;
+					}
+					throw error;
+				}
+			}
+			if (!created) throw new CatalogError("agent_id_duplicate", "could not allocate a unique agent id");
+			sendJson(response, 201, { agent: toView(created, new Set()) });
 		} catch (error) {
 			if (error instanceof CatalogError) {
 				const mapped = catalogErrorToHttp(error);

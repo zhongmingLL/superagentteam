@@ -21,6 +21,7 @@
 	--st-radius-md: 8px;
 	--st-radius-lg: 12px;
 	--st-radius-xl: 16px;
+	--st-shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 18px rgba(15, 23, 42, 0.04);
 	--st-font-display: Inter, "PingFang SC", "Noto Sans CJK SC", sans-serif;
 	--st-font-body: Inter, -apple-system, "PingFang SC", "Noto Sans CJK SC", sans-serif;
 	--st-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -57,4 +58,5 @@
 	--st-agent-4: #fbbf24;
 	--st-agent-5: #4ade80;
 	--st-agent-6: #f472b6;
+	--st-shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.22);
 }

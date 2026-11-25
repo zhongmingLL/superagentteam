@@ -6,6 +6,7 @@ import type {
 	CreateAgentInput,
 	UpdateAgentInput,
 } from "@/domains/agent/api";
+import { initialForName } from "@/lib/identity";
 
 export interface AgentEditorModalProps {
 	open: boolean;
@@ -15,6 +16,7 @@ export interface AgentEditorModalProps {
 	accountsStatus: "idle" | "loading" | "ready" | "error";
 	accountsError?: string;
 	onLoadAccounts?: () => void;
+	onOpenAccounts?: () => void;
 	onClose: () => void;
 	onCreate?: (input: CreateAgentInput) => Promise<AgentView>;
 	onUpdate?: (id: string, input: UpdateAgentInput) => Promise<AgentView>;
@@ -44,6 +46,7 @@ export function AgentEditorModal({
 	accountsStatus,
 	accountsError,
 	onLoadAccounts,
+	onOpenAccounts,
 	onClose,
 	onCreate,
 	onUpdate,
@@ -53,12 +56,16 @@ export function AgentEditorModal({
 	const page = variant === "page";
 	const [id, setId] = useState("");
 	const [displayName, setDisplayName] = useState("");
-	const [mentionPatterns, setMentionPatterns] = useState("");
+	const [mentionPatterns, setMentionPatterns] = useState<string[]>([]);
+	const [mentionDraft, setMentionDraft] = useState("");
 	const [accountRef, setAccountRef] = useState("");
 	const [defaultModel, setDefaultModel] = useState("");
 	const [roleId, setRoleId] = useState("worker");
 	const [roleDescription, setRoleDescription] = useState("");
 	const [enabled, setEnabled] = useState(true);
+	const [avatar, setAvatar] = useState("");
+	const [color, setColor] = useState("#2563EB");
+	const [section, setSection] = useState<"identity" | "account">("identity");
 	const [error, setError] = useState<string | undefined>();
 	const [saving, setSaving] = useState(false);
 
@@ -74,21 +81,29 @@ export function AgentEditorModal({
 		if (mode === "edit" && agent) {
 			setId(agent.id);
 			setDisplayName(agent.displayName);
-			setMentionPatterns((agent.mentionPatterns ?? []).join(", "));
+			setMentionPatterns([...(agent.mentionPatterns ?? [])]);
+			setMentionDraft("");
 			setAccountRef(agent.accountRef ?? accounts[0]?.ref ?? "");
 			setDefaultModel(agent.defaultModel ?? "");
 			setRoleId(agent.roleId ?? "worker");
 			setRoleDescription(agent.roleDescription ?? "");
 			setEnabled(agent.enabled);
+			setAvatar(agent.avatar ?? "");
+			setColor(agent.color?.primary ?? "#2563EB");
+			setSection("identity");
 		} else {
 			setId("");
 			setDisplayName("");
-			setMentionPatterns("");
+			setMentionPatterns([]);
+			setMentionDraft("");
 			setAccountRef(accounts[0]?.ref ?? "");
 			setDefaultModel(accounts[0]?.models[0] ?? "");
 			setRoleId("worker");
 			setRoleDescription("");
 			setEnabled(true);
+			setAvatar("");
+			setColor("#2563EB");
+			setSection("identity");
 		}
 	}, [open, mode, agent, accounts]);
 
@@ -111,11 +126,19 @@ export function AgentEditorModal({
 
 	if (!open) return null;
 
+	function addMention(): void {
+		const raw = mentionDraft.trim();
+		if (raw === "") return;
+		const pattern = raw.startsWith("@") ? raw : `@${raw}`;
+		setMentionPatterns((current) => (current.includes(pattern) ? current : [...current, pattern]));
+		setMentionDraft("");
+	}
+
 	async function submit(): Promise<void> {
 		if (saving) return;
-		const patterns = splitPatterns(mentionPatterns);
-		if (id.trim() === "" || displayName.trim() === "" || patterns.length === 0 || accountRef === "" || defaultModel === "") {
-			setError("id、显示名、mention patterns、account 和 model 都是必填。");
+		const patterns = mentionPatterns;
+		if (displayName.trim() === "" || patterns.length === 0 || accountRef === "" || defaultModel === "") {
+			setError("显示名、呼叫别名、account 和 model 都是必填。");
 			return;
 		}
 		setSaving(true);
@@ -131,16 +154,20 @@ export function AgentEditorModal({
 					roleId: roleId.trim() || "worker",
 					roleDescription: roleDescription.trim(),
 					enabled,
+					...(avatar.trim() !== "" ? { avatar: avatar.trim() } : { avatar: null }),
+					color: { primary: color, secondary: color },
 				});
 			} else if (onCreate) {
 				saved = await onCreate({
-					id: id.trim(),
 					displayName: displayName.trim(),
 					mentionPatterns: patterns,
 					accountRef,
 					defaultModel,
 					roleId: roleId.trim() || "worker",
 					...(roleDescription.trim() !== "" ? { roleDescription: roleDescription.trim() } : {}),
+					enabled,
+					...(avatar.trim() !== "" ? { avatar: avatar.trim() } : {}),
+					color: { primary: color, secondary: color },
 				});
 			} else {
 				throw new Error("没有可用的保存入口");
@@ -180,6 +207,27 @@ export function AgentEditorModal({
 						void submit();
 					}}
 				>
+					<div className={page ? "st-agent-editor-body" : "st-agent-editor-sections"}>
+					{page ? (
+						<nav className="st-agent-section-nav" aria-label="Agent 分区">
+							<button
+								type="button"
+								className={section === "identity" ? "is-active" : ""}
+								onClick={() => setSection("identity")}
+							>
+								身份与职责
+							</button>
+							<button
+								type="button"
+								className={section === "account" ? "is-active" : ""}
+								onClick={() => setSection("account")}
+							>
+								Account 与模型
+							</button>
+						</nav>
+					) : null}
+					<div className="st-agent-editor-sections">
+					{!page || section === "account" ? (
 					<section className="st-agent-form-section">
 						<h3>模型与接入</h3>
 						<label className="st-field">
@@ -234,56 +282,102 @@ export function AgentEditorModal({
 							</select>
 						</label>
 						{accountsError ? <p className="st-error">{accountsError}</p> : null}
-					</section>
-					<section className="st-agent-form-section">
-						<h3>@ 名字</h3>
-						<div className="st-agent-form-grid">
-							<label className="st-field">
-								<span>id</span>
+							{accounts.length === 0 && accountsStatus === "ready" ? (
+								<div className="st-agent-empty-accounts">
+									<span>还没有账号。Agent 需要先绑定一个 provider 账号。</span>
+									<button
+										type="button"
+										className="st-link-button"
+										onClick={() => {
+											onOpenAccounts?.();
+											onClose();
+										}}
+									>
+										去「账户与登录」新建
+									</button>
+								</div>
+							) : null}
+							<label className="st-account-radio">
 								<input
-									value={id}
-									onChange={(event) => setId(event.target.value)}
-									disabled={saving || mode === "edit"}
-									placeholder="a2"
-									autoComplete="off"
-								/>
-							</label>
-							<label className="st-field">
-								<span>显示名</span>
-								<input
-									value={displayName}
-									onChange={(event) => setDisplayName(event.target.value)}
+									type="checkbox"
+									checked={enabled}
+									onChange={(event) => setEnabled(event.target.checked)}
 									disabled={saving}
-									placeholder="Agent A2"
-									autoComplete="off"
 								/>
+								启用
 							</label>
-						</div>
+					</section>
+					) : null}
+					{!page || section === "identity" ? (
+					<>
+					<section className="st-agent-form-section">
+						<h3>身份与职责</h3>
+						{mode === "edit" ? <p className="st-field-note">标识：{id}（由系统生成）</p> : null}
 						<label className="st-field">
-							<span>mention patterns</span>
+							<span>显示名</span>
 							<input
-								value={mentionPatterns}
-								onChange={(event) => setMentionPatterns(event.target.value)}
+								value={displayName}
+								onChange={(event) => setDisplayName(event.target.value)}
 								disabled={saving}
-								placeholder="@agentA, @a"
+								placeholder="Agent A2"
 								autoComplete="off"
 							/>
 						</label>
-					</section>
-					<section className="st-agent-form-section">
-						<h3>身份</h3>
-						<div className="st-agent-form-grid">
-							<label className="st-field">
-								<span>role id</span>
+						<label className="st-field">
+							<span>呼叫别名</span>
+							<div className="st-model-editor">
+								{mentionPatterns.map((pattern) => (
+									<span className="st-model-chip" key={pattern}>
+										{pattern}
+										<button
+											type="button"
+											aria-label={`移除 ${pattern}`}
+											onClick={() =>
+												setMentionPatterns((current) => current.filter((item) => item !== pattern))
+											}
+											disabled={saving}
+										>
+											×
+										</button>
+									</span>
+								))}
 								<input
-									value={roleId}
-									onChange={(event) => setRoleId(event.target.value)}
+									value={mentionDraft}
+									onChange={(event) => setMentionDraft(event.target.value)}
+									onKeyDown={(event) => {
+										if (event.key === "Enter") {
+											event.preventDefault();
+											addMention();
+										}
+									}}
 									disabled={saving}
-									placeholder="worker"
+									placeholder="@agentA"
+									aria-label="呼叫别名"
 									autoComplete="off"
 								/>
-							</label>
-						</div>
+								<button
+									type="button"
+									className="st-button st-button-secondary"
+									onClick={addMention}
+									disabled={saving || mentionDraft.trim() === ""}
+								>
+									添加
+								</button>
+							</div>
+						</label>
+					</section>
+					<section className="st-agent-form-section">
+						<h3>角色与外观</h3>
+						<label className="st-field">
+							<span>role id</span>
+							<input
+								value={roleId}
+								onChange={(event) => setRoleId(event.target.value)}
+								disabled={saving}
+								placeholder="worker"
+								autoComplete="off"
+							/>
+						</label>
 						<label className="st-field">
 							<span>角色描述</span>
 							<textarea
@@ -294,18 +388,43 @@ export function AgentEditorModal({
 								placeholder="这个 agent 负责什么"
 							/>
 						</label>
-						{mode === "edit" ? (
-							<label className="st-account-radio">
+						<div className="st-field">
+							<span>头像 URL（可选）</span>
+							<div className="st-agent-avatar-row">
+								<span
+									className="st-agent-avatar-preview"
+									style={avatar !== "" ? { backgroundImage: `url(${avatar})` } : undefined}
+									aria-hidden="true"
+								>
+									{avatar === "" ? initialForName(displayName) || "A" : ""}
+								</span>
 								<input
-									type="checkbox"
-									checked={enabled}
-									onChange={(event) => setEnabled(event.target.checked)}
+									value={avatar}
+									onChange={(event) => setAvatar(event.target.value)}
+									disabled={saving}
+									placeholder="https://…"
+									autoComplete="off"
+								/>
+							</div>
+						</div>
+						<div className="st-field">
+							<span>成员主色</span>
+							<div className="st-agent-color-row">
+								<input
+									type="color"
+									value={color}
+									onChange={(event) => setColor(event.target.value)}
 									disabled={saving}
 								/>
-								启用
-							</label>
-						) : null}
+								<span className="st-agent-color-hex">{color}</span>
+								<span className="st-field-note">以后用于该成员的聊天气泡/背景</span>
+							</div>
+						</div>
 					</section>
+					</>
+					) : null}
+					</div>
+					</div>
 					{error ? (
 						<p className="st-error" role="alert">
 							{error}

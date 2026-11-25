@@ -2316,6 +2316,29 @@ svg {
 	cursor: pointer;
 }
 
+.st-model-suggestions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.st-model-suggestion {
+	padding: 2px 8px;
+	border: 1px solid var(--st-hairline);
+	border-radius: 999px;
+	background: var(--st-surface-2);
+	color: var(--st-body);
+	font-family: var(--st-font-mono);
+	font-size: 9px;
+	cursor: pointer;
+}
+
+.st-model-suggestion:hover {
+	border-color: var(--st-primary);
+	color: var(--st-primary);
+}
+
 .st-field select {
 	height: 32px;
 }

@@ -6,6 +6,7 @@ export interface AccountProviderView {
 	label: string;
 	envName: string;
 	supportsBaseUrl: boolean;
+	suggestedModels: string[];
 }
 
 export type AccountCredentialKind = "stored" | "env" | "none";
@@ -54,8 +55,7 @@ export function createAccountApi(client: Pick<ApiClient, "get" | "post" | "reque
 				method: "PATCH",
 				body: JSON.stringify(input),
 			}),
-		remove: (ref) =>
-			client.request<{ ok: true }>(`/api/accounts/${encodeURIComponent(ref)}`, { method: "DELETE" }),
+		remove: (ref) => client.request<{ ok: true }>(`/api/accounts/${encodeURIComponent(ref)}`, { method: "DELETE" }),
 	};
 }
 

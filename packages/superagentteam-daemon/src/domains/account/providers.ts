@@ -6,19 +6,38 @@ export interface AccountProvider {
 	readonly label: string;
 	readonly envName: string;
 	readonly supportsBaseUrl: boolean;
+	readonly suggestedModels: readonly string[];
 }
 
 export const ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
-	{ id: "kimi-coding", label: "Kimi For Coding", envName: "KIMI_API_KEY", supportsBaseUrl: true },
-	{ id: "anthropic", label: "Anthropic", envName: "ANTHROPIC_API_KEY", supportsBaseUrl: true },
-	{ id: "openai", label: "OpenAI", envName: "OPENAI_API_KEY", supportsBaseUrl: true },
-	{ id: "google", label: "Google Gemini", envName: "GEMINI_API_KEY", supportsBaseUrl: true },
-	{ id: "zai", label: "Z.AI", envName: "ZAI_API_KEY", supportsBaseUrl: true },
-	{ id: "minimax", label: "MiniMax", envName: "MINIMAX_API_KEY", supportsBaseUrl: true },
-	{ id: "deepseek", label: "DeepSeek", envName: "DEEPSEEK_API_KEY", supportsBaseUrl: true },
-	{ id: "openrouter", label: "OpenRouter", envName: "OPENROUTER_API_KEY", supportsBaseUrl: true },
-	{ id: "xai", label: "xAI", envName: "XAI_API_KEY", supportsBaseUrl: true },
-	{ id: "groq", label: "Groq", envName: "GROQ_API_KEY", supportsBaseUrl: true },
+	{
+		id: "kimi-coding",
+		label: "Kimi For Coding",
+		envName: "KIMI_API_KEY",
+		supportsBaseUrl: true,
+		suggestedModels: ["kimi-for-coding"],
+	},
+	{ id: "anthropic", label: "Anthropic", envName: "ANTHROPIC_API_KEY", supportsBaseUrl: true, suggestedModels: [] },
+	{ id: "openai", label: "OpenAI", envName: "OPENAI_API_KEY", supportsBaseUrl: true, suggestedModels: [] },
+	{ id: "google", label: "Google Gemini", envName: "GEMINI_API_KEY", supportsBaseUrl: true, suggestedModels: [] },
+	{
+		id: "zai",
+		label: "Z.AI / 智谱 GLM",
+		envName: "ZAI_API_KEY",
+		supportsBaseUrl: true,
+		suggestedModels: ["glm-5.2", "glm-5-turbo", "glm-4.7"],
+	},
+	{ id: "minimax", label: "MiniMax", envName: "MINIMAX_API_KEY", supportsBaseUrl: true, suggestedModels: [] },
+	{
+		id: "deepseek",
+		label: "DeepSeek",
+		envName: "DEEPSEEK_API_KEY",
+		supportsBaseUrl: true,
+		suggestedModels: ["deepseek-chat", "deepseek-reasoner"],
+	},
+	{ id: "openrouter", label: "OpenRouter", envName: "OPENROUTER_API_KEY", supportsBaseUrl: true, suggestedModels: [] },
+	{ id: "xai", label: "xAI", envName: "XAI_API_KEY", supportsBaseUrl: true, suggestedModels: [] },
+	{ id: "groq", label: "Groq", envName: "GROQ_API_KEY", supportsBaseUrl: true, suggestedModels: [] },
 ];
 
 export function findAccountProvider(id: string): AccountProvider | undefined {

@@ -1,8 +1,9 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { SettingsPage } from "@/app/SettingsPage";
+import { accountApi } from "@/domains/account/api";
 import { useAgentStore } from "@/domains/agent/store";
 
 vi.mock("@/domains/account/api", () => ({
@@ -81,5 +82,30 @@ describe("settings page", () => {
 		expect(screen.getByRole("button", { name: /^Agents/ })).toHaveAttribute("aria-current", "page");
 		fireEvent.click(screen.getByRole("button", { name: /^账户与登录/ }));
 		expect(screen.getByRole("button", { name: /^账户与登录/ })).toHaveAttribute("aria-current", "page");
+	});
+
+	it("shows GLM model suggestions for the Z.AI provider", async () => {
+		vi.mocked(accountApi.providers).mockResolvedValueOnce({
+			providers: [
+				{
+					id: "zai",
+					label: "Z.AI / 智谱 GLM",
+					envName: "ZAI_API_KEY",
+					supportsBaseUrl: true,
+					suggestedModels: ["glm-5.2", "glm-4.7"],
+				},
+			],
+		});
+		render(
+			<MemoryRouter>
+				<SettingsPage initialTab="accounts" />
+			</MemoryRouter>,
+		);
+		const create = await screen.findByRole("button", { name: "新建账号" });
+		await waitFor(() => expect(create).toBeEnabled());
+		fireEvent.click(create);
+		const suggestion = await screen.findByRole("button", { name: "+ glm-5.2" });
+		fireEvent.click(suggestion);
+		expect(screen.getByText("glm-5.2")).toBeInTheDocument();
 	});
 });

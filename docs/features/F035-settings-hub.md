@@ -54,5 +54,23 @@ source_decision: "operator 2026-11-25: add Settings at the bottom of the sidebar
 - 测试：`settings-page.test.tsx` 覆盖列表/页面编辑器/区块切换；`thread-sidebar.test.tsx` 覆盖设置链接。web 全量 101 passed。
 - 2026-11-25：PR #196 merged `29f104852`（墨墨 vision/UX approve @ `723024d2e`，砚砚 aria/state approve @ `190662f21`，P3 全收）；CI 5/5；已部署 live `469e858ce`。
   墨墨用隔离栈补了 1440/390 真机截图 + 真实创建流程（网络证据 `{"accounts":[]}`，全程未触 live）；live 3103 的实机创建待 operator 签收。
+- 2026-11-25（operator design feedback）：设置改为与 threads **平级的独立页面**——`AppShell` 在 `/settings` 不再渲染 ThreadSidebar 和 threads topbar；移除 ThreadSidebar 里的设置快捷入口（设置只属于左侧图标栏）。
+  设置子导航按 Clowder 参考重做（图标 + 名称 + 说明 + 计数），Agents 行加头像；文案统一为「账户与登录 / Agents」。
+  这一轮未走 Pencil 设计流程，是按 Clowder 结构参考 + 现有 `st-*` tokens 直接落地；后续大改视觉前先补设计稿。
+
+## 设计稿（2026-11-25）
+
+- `docs/design/F035/settings-accounts.png` — 设置 · 账户与登录
+- `docs/design/F035/settings-agents.png` — 设置 · Agents
+- `docs/design/F035/account-create.png` — 新建账号
+- `docs/design/F035/agent-create.png` — 新建 Agent · 身份与职责（Role 在此段）
+- `docs/design/F035/agent-create-account.png` — 新建 Agent · Account 与模型（分区导航第二态）
+- 结构统一为：NavRail + 设置子导航（图标/说明/计数）+ 内容；设置与 threads 平级。
+- Pencil 源文件 `docs/design/F035/F035-settings.pen`（画布已建，待 operator 保存后入库）。
+- 2026-11-25（operator）：侧边栏移除 Agents 入口（NavRail 与 ThreadSidebar 均不再放 Agents），Agents 管理只在设置页；设计稿四屏同步去掉 rail 的 Agents。
+- 2026-11-25（operator design feedback v2）：
+  - 新建账号：移除 `ref` 字段（标识由系统生成）；Models 改为逐个添加的 chip + “添加 model”；删除表单分隔横线。
+  - 新建 Agent：参考 Clowder 的“身份与职责 → 模型与工具”信息层级（配色仍用本产品 token）；id 不再手填（后台生成）；身份段含名字/呼叫别名/职责/头像/成员主色；第二段为 Account/Model/Role/启用。
+  - 2026-11-25（operator v3）：Role 归入身份与职责；两段改为 Clowder 式左侧分区导航 + 单区内容（不再平铺），并补第二态设计图 `agent-create-account.png`。
 
 [宪宪/deepseek-flash🐾]

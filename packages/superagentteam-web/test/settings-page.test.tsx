@@ -79,7 +79,7 @@ describe("settings page", () => {
 		);
 
 		expect(screen.getByRole("button", { name: /^Agents/ })).toHaveAttribute("aria-current", "page");
-		fireEvent.click(screen.getByRole("button", { name: /^账号/ }));
-		expect(screen.getByRole("button", { name: /^账号/ })).toHaveAttribute("aria-current", "page");
+		fireEvent.click(screen.getByRole("button", { name: /^账户与登录/ }));
+		expect(screen.getByRole("button", { name: /^账户与登录/ })).toHaveAttribute("aria-current", "page");
 	});
 });

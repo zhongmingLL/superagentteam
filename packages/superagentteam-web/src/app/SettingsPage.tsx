@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 
 import { AccountsModal } from "@/components/agent/AccountsModal";
 import { AgentEditorModal } from "@/components/agent/AgentEditorModal";
+import { Icon } from "@/components/ui/Icon";
 import type { AgentView } from "@/domains/agent/api";
 import { agentStatusLabel } from "@/domains/agent/labels";
 import { useAgentStore } from "@/domains/agent/store";
+import { initialForName, toneFor } from "@/lib/identity";
 
 type SettingsTab = "accounts" | "agents";
 
@@ -69,6 +71,9 @@ function AgentsSettingsPanel() {
 			<div className="st-settings-agent-list">
 				{agents.map((agent) => (
 					<div className="st-settings-agent-row" key={agent.id}>
+						<span className={`st-settings-avatar tone-${toneFor(agent.id)}`} aria-hidden="true">
+							{initialForName(agent.displayName)}
+						</span>
 						<div className="st-settings-agent-main">
 							<strong>{agent.displayName}</strong>
 							<span>
@@ -111,9 +116,8 @@ export function SettingsPage({ initialTab = "accounts" }: SettingsPageProps) {
 		<div className="st-settings-page">
 			<aside className="st-settings-nav" aria-label="设置导航">
 				<div className="st-settings-brand">
-					<span className="st-settings-eyebrow">Workspace</span>
+					<span className="st-settings-eyebrow">SuperAgentTeam</span>
 					<h1>设置</h1>
-					<p>账号与 Agents。配置一次，对话里直接用。</p>
 				</div>
 				<button
 					type="button"
@@ -121,8 +125,14 @@ export function SettingsPage({ initialTab = "accounts" }: SettingsPageProps) {
 					onClick={() => setTab("accounts")}
 					aria-current={tab === "accounts" ? "page" : undefined}
 				>
-					<span>账号</span>
-					<small>{accounts.length}</small>
+					<span className="st-settings-tab-icon">
+						<Icon name="wrench" size={15} />
+					</span>
+					<span className="st-settings-tab-body">
+						<span className="st-settings-tab-label">账户与登录</span>
+						<small>provider、模型与凭据</small>
+					</span>
+					<span className="st-settings-count">{accounts.length}</span>
 				</button>
 				<button
 					type="button"
@@ -130,8 +140,14 @@ export function SettingsPage({ initialTab = "accounts" }: SettingsPageProps) {
 					onClick={() => setTab("agents")}
 					aria-current={tab === "agents" ? "page" : undefined}
 				>
-					<span>Agents</span>
-					<small>{agents.length}</small>
+					<span className="st-settings-tab-icon">
+						<Icon name="agents" size={15} />
+					</span>
+					<span className="st-settings-tab-body">
+						<span className="st-settings-tab-label">Agents</span>
+						<small>成员、模型与 @ 名字</small>
+					</span>
+					<span className="st-settings-count">{agents.length}</span>
 				</button>
 			</aside>
 			<section className="st-settings-content">

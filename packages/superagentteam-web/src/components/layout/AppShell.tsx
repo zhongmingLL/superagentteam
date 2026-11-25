@@ -42,10 +42,10 @@ export function AppShell() {
 	const dialogOpen = useNewThreadDialog((state) => state.open);
 	const hideDialog = useNewThreadDialog((state) => state.hide);
 	const [sidebarOpen, setSidebarOpen] = useState(() => !window.matchMedia("(max-width: 900px)").matches);
-	const [agentSignal, setAgentSignal] = useState(0);
 	const [theme, setTheme] = useState<Theme>(() => readTheme());
 	const activeThreadId = threadIdFromPath(location.pathname);
 	const activeThread = detail?.id === activeThreadId ? detail : threads.find((thread) => thread.id === activeThreadId);
+	const isSettings = location.pathname.startsWith("/settings");
 
 	usePolling(refresh, { intervalMs: 10_000 });
 	usePolling(refreshAgents, { intervalMs: 10_000 });
@@ -69,20 +69,11 @@ export function AppShell() {
 
 	return (
 		<div className="st-shell">
-			<NavRail
-				onAgents={() => setAgentSignal((value) => value + 1)}
-				theme={theme}
-				onToggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
-			/>
-			<ThreadSidebar
-				open={sidebarOpen}
-				onClose={() => setSidebarOpen(false)}
-				onAgents={() => {
-					setSidebarOpen(false);
-					setAgentSignal((value) => value + 1);
-				}}
-			/>
-			{sidebarOpen ? (
+			<NavRail theme={theme} onToggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")} />
+			{isSettings ? null : (
+				<ThreadSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+			)}
+			{!isSettings && sidebarOpen ? (
 				<button
 					type="button"
 					className="st-sidebar-backdrop"
@@ -90,8 +81,9 @@ export function AppShell() {
 					onClick={() => setSidebarOpen(false)}
 				/>
 			) : null}
-			<main className="st-main">
-				<header className="st-topbar">
+			<main className={`st-main${isSettings ? " is-settings" : ""}`}>
+				{isSettings ? null : (
+					<header className="st-topbar">
 					<button type="button" className="st-icon-button st-menu-button" onClick={() => setSidebarOpen(true)} aria-label="打开侧栏">
 						<Icon name="menu" size={18} />
 					</button>
@@ -126,10 +118,10 @@ export function AppShell() {
 							onLoadAccounts={() => void loadAccounts()}
 							onCreate={createAgent}
 							onUpdate={updateAgent}
-							openSignal={agentSignal}
 						/>
 					</div>
-				</header>
+					</header>
+				)}
 				<div className="st-content">
 					<Outlet />
 				</div>

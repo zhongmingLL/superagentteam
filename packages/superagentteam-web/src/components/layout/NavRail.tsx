@@ -4,7 +4,6 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 import type { Theme } from "@/lib/theme";
 
 export interface NavRailProps {
-	onAgents: () => void;
 	theme: Theme;
 	onToggleTheme: () => void;
 }
@@ -39,7 +38,7 @@ function RailButton({
 	);
 }
 
-export function NavRail({ onAgents, theme, onToggleTheme }: NavRailProps) {
+export function NavRail({ theme, onToggleTheme }: NavRailProps) {
 	const { pathname } = useLocation();
 	const settingsActive = pathname.startsWith("/settings");
 	const threadsActive = pathname === "/" || pathname.startsWith("/thread/");
@@ -57,7 +56,6 @@ export function NavRail({ onAgents, theme, onToggleTheme }: NavRailProps) {
 				<Icon name="threads" size={18} />
 				<span className="st-nav-item-label">Threads</span>
 			</Link>
-			<RailButton icon="agents" label="Agents" onClick={onAgents} />
 			<RailButton icon="tasks" label="Tasks" disabled title="Tasks 页面尚未实现" />
 			<RailButton icon="memory" label="Memory" disabled title="Memory 页面尚未实现" />
 			<span className="st-nav-spacer" />

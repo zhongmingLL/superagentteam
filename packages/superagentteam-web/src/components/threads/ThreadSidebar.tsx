@@ -9,10 +9,9 @@ import { ThreadRow } from "./ThreadRow";
 export interface ThreadSidebarProps {
 	open: boolean;
 	onClose: () => void;
-	onAgents?: () => void;
 }
 
-export function ThreadSidebar({ open, onClose, onAgents }: ThreadSidebarProps) {
+export function ThreadSidebar({ open, onClose }: ThreadSidebarProps) {
 	const allThreads = useThreadStore((state) => state.threads);
 	const status = useThreadStore((state) => state.status);
 	const error = useThreadStore((state) => state.error);
@@ -39,10 +38,6 @@ export function ThreadSidebar({ open, onClose, onAgents }: ThreadSidebarProps) {
 					<Icon name="threads" size={16} />
 					<span>Threads</span>
 				</Link>
-				<button type="button" onClick={() => onAgents?.()}>
-					<Icon name="agents" size={16} />
-					<span>Agents</span>
-				</button>
 				<button type="button" disabled title="Tasks 页面尚未实现">
 					<Icon name="tasks" size={16} />
 					<span>Tasks</span>
@@ -91,10 +86,6 @@ export function ThreadSidebar({ open, onClose, onAgents }: ThreadSidebarProps) {
 					<ThreadRow key={thread.id} thread={thread} />
 				))}
 			</div>
-			<Link to="/settings" className="st-sidebar-settings" onClick={onClose}>
-				<Icon name="settings" size={15} />
-				<span>设置</span>
-			</Link>
 			<div className="st-sidebar-profile">
 				<span className="st-operator-avatar" aria-hidden="true">
 					O

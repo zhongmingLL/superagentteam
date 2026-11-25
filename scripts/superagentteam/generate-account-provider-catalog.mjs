@@ -52,7 +52,11 @@ function readEnvMap() {
 	const block = source.match(/const envMap:\s*Record<string,\s*string>\s*=\s*\{([\s\S]*?)\n\t\};/);
 	if (!block) throw new Error("could not locate envMap in packages/ai/src/env-api-keys.ts");
 	const envMap = {};
-	for (const match of block[1].matchAll(/"([^"]+)":\s*"([^"]+)"/g)) envMap[match[1]] = match[2];
+	// envMap keys are a mix of bare identifiers (`openai:`) and quoted ids
+	// (`"google-vertex":`), so accept both forms line by line.
+	for (const match of block[1].matchAll(/^\s*"?([A-Za-z0-9_-]+)"?:\s*"([^"]+)",?\s*$/gm)) {
+		envMap[match[1]] = match[2];
+	}
 	return envMap;
 }
 

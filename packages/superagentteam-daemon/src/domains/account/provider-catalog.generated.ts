@@ -61,8 +61,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "azure",
 		"label": "Azure",
-		"envName": "",
-		"envNames": [],
+		"envName": "AZURE_OPENAI_API_KEY",
+		"envNames": [
+			"AZURE_OPENAI_API_KEY"
+		],
 		"supportsBaseUrl": false,
 		"suggestedModels": [
 			"gpt-4",
@@ -78,8 +80,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "baseten",
 		"label": "Baseten",
-		"envName": "",
-		"envNames": [],
+		"envName": "BASETEN_API_KEY",
+		"envNames": [
+			"BASETEN_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"deepseek-ai/DeepSeek-V4-Flash-0731",
@@ -95,8 +99,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "cerebras",
 		"label": "Cerebras",
-		"envName": "",
-		"envNames": [],
+		"envName": "CEREBRAS_API_KEY",
+		"envNames": [
+			"CEREBRAS_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"gpt-oss-120b",
@@ -147,8 +153,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "deepseek",
 		"label": "DeepSeek",
-		"envName": "",
-		"envNames": [],
+		"envName": "DEEPSEEK_API_KEY",
+		"envNames": [
+			"DEEPSEEK_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"deepseek-flash",
@@ -161,8 +169,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "fireworks",
 		"label": "Fireworks",
-		"envName": "",
-		"envNames": [],
+		"envName": "FIREWORKS_API_KEY",
+		"envNames": [
+			"FIREWORKS_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"accounts/fireworks/models/deepseek-v4p1-flash",
@@ -197,8 +207,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "google",
 		"label": "Google",
-		"envName": "",
-		"envNames": [],
+		"envName": "GEMINI_API_KEY",
+		"envNames": [
+			"GEMINI_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"deep-research-max-preview-04-2026",
@@ -233,8 +245,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "groq",
 		"label": "Groq",
-		"envName": "",
-		"envNames": [],
+		"envName": "GROQ_API_KEY",
+		"envNames": [
+			"GROQ_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"llama-3.1-8b-instant",
@@ -250,8 +264,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "huggingface",
 		"label": "Hugging Face",
-		"envName": "",
-		"envNames": [],
+		"envName": "HF_TOKEN",
+		"envNames": [
+			"HF_TOKEN"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"deepseek-ai/DeepSeek-R1",
@@ -286,8 +302,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "meta",
 		"label": "Meta",
-		"envName": "",
-		"envNames": [],
+		"envName": "META_API_KEY",
+		"envNames": [
+			"META_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"muse-spark-1.1",
@@ -303,8 +321,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "minimax",
 		"label": "MiniMax",
-		"envName": "",
-		"envNames": [],
+		"envName": "MINIMAX_API_KEY",
+		"envNames": [
+			"MINIMAX_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"MiniMax-M2.7",
@@ -337,8 +357,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "mistral",
 		"label": "Mistral",
-		"envName": "",
-		"envNames": [],
+		"envName": "MISTRAL_API_KEY",
+		"envNames": [
+			"MISTRAL_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"codestral-2508",
@@ -354,8 +376,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "moonshotai",
 		"label": "Moonshot AI",
-		"envName": "",
-		"envNames": [],
+		"envName": "MOONSHOT_API_KEY",
+		"envNames": [
+			"MOONSHOT_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"kimi-k2.6",
@@ -390,8 +414,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "nvidia",
 		"label": "NVIDIA",
-		"envName": "",
-		"envNames": [],
+		"envName": "NVIDIA_API_KEY",
+		"envNames": [
+			"NVIDIA_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"deepseek-ai/deepseek-v4.1-flash",
@@ -407,8 +433,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "openai",
 		"label": "OpenAI",
-		"envName": "",
-		"envNames": [],
+		"envName": "OPENAI_API_KEY",
+		"envNames": [
+			"OPENAI_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"gpt-4",
@@ -424,8 +452,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "opencode",
 		"label": "OpenCode Zen",
-		"envName": "",
-		"envNames": [],
+		"envName": "OPENCODE_API_KEY",
+		"envNames": [
+			"OPENCODE_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"claude-fable-5",
@@ -460,8 +490,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "openrouter",
 		"label": "OpenRouter",
-		"envName": "",
-		"envNames": [],
+		"envName": "OPENROUTER_API_KEY",
+		"envNames": [
+			"OPENROUTER_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"anthropic/claude-fable-5",
@@ -534,8 +566,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "radius",
 		"label": "Radius",
-		"envName": "",
-		"envNames": [],
+		"envName": "RADIUS_API_KEY",
+		"envNames": [
+			"RADIUS_API_KEY"
+		],
 		"supportsBaseUrl": false,
 		"suggestedModels": [
 			"balanced",
@@ -551,8 +585,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "together",
 		"label": "Together",
-		"envName": "",
-		"envNames": [],
+		"envName": "TOGETHER_API_KEY",
+		"envNames": [
+			"TOGETHER_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"deepseek-ai/DeepSeek-V4-Pro-0813",
@@ -568,8 +604,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "typesafe",
 		"label": "TypeSafe",
-		"envName": "",
-		"envNames": [],
+		"envName": "TYPESAFE_API_KEY",
+		"envNames": [
+			"TYPESAFE_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [],
 		"authKind": "simple-env",
@@ -597,8 +635,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "xai",
 		"label": "xAI",
-		"envName": "",
-		"envNames": [],
+		"envName": "XAI_API_KEY",
+		"envNames": [
+			"XAI_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"grok-4.3",
@@ -613,8 +653,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "xiaomi",
 		"label": "Xiaomi",
-		"envName": "",
-		"envNames": [],
+		"envName": "XIAOMI_API_KEY",
+		"envNames": [
+			"XIAOMI_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"mimo-v2.6-flash",
@@ -676,8 +718,10 @@ export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
 		"id": "zai",
 		"label": "Z.AI / 智谱 GLM",
-		"envName": "",
-		"envNames": [],
+		"envName": "ZAI_API_KEY",
+		"envNames": [
+			"ZAI_API_KEY"
+		],
 		"supportsBaseUrl": true,
 		"suggestedModels": [
 			"glm-4.7",

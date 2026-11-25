@@ -24,4 +24,11 @@ describe("generated account provider catalog", () => {
 			selectable: false,
 		});
 	});
+
+	it("gives every selectable provider a concrete env hint", () => {
+		const missing = ACCOUNT_PROVIDERS.filter((provider) => provider.selectable && provider.envName === "").map(
+			(provider) => provider.id,
+		);
+		expect(missing).toEqual([]);
+	});
 });

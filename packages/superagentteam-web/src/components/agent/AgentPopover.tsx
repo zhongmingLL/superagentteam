@@ -22,7 +22,6 @@ export interface AgentPopoverProps {
 	onLoadAccounts?: () => void;
 	onCreate?: (input: CreateAgentInput) => Promise<AgentView>;
 	onUpdate?: (id: string, input: UpdateAgentInput) => Promise<AgentView>;
-	openSignal?: number;
 }
 
 export function AgentPopover({
@@ -36,7 +35,6 @@ export function AgentPopover({
 	onLoadAccounts,
 	onCreate,
 	onUpdate,
-	openSignal = 0,
 }: AgentPopoverProps) {
 	const [open, setOpen] = useState(false);
 	const [accountsOpen, setAccountsOpen] = useState(false);
@@ -62,9 +60,6 @@ export function AgentPopover({
 		};
 	}, [open]);
 
-	useEffect(() => {
-		if (openSignal > 0) setOpen(true);
-	}, [openSignal]);
 
 	function openCreate(): void {
 		setNotice(undefined);

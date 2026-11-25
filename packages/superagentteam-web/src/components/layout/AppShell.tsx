@@ -42,7 +42,6 @@ export function AppShell() {
 	const dialogOpen = useNewThreadDialog((state) => state.open);
 	const hideDialog = useNewThreadDialog((state) => state.hide);
 	const [sidebarOpen, setSidebarOpen] = useState(() => !window.matchMedia("(max-width: 900px)").matches);
-	const [agentSignal, setAgentSignal] = useState(0);
 	const [theme, setTheme] = useState<Theme>(() => readTheme());
 	const activeThreadId = threadIdFromPath(location.pathname);
 	const activeThread = detail?.id === activeThreadId ? detail : threads.find((thread) => thread.id === activeThreadId);
@@ -70,20 +69,9 @@ export function AppShell() {
 
 	return (
 		<div className="st-shell">
-			<NavRail
-				onAgents={() => setAgentSignal((value) => value + 1)}
-				theme={theme}
-				onToggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
-			/>
+			<NavRail theme={theme} onToggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")} />
 			{isSettings ? null : (
-				<ThreadSidebar
-					open={sidebarOpen}
-					onClose={() => setSidebarOpen(false)}
-					onAgents={() => {
-						setSidebarOpen(false);
-						setAgentSignal((value) => value + 1);
-					}}
-				/>
+				<ThreadSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 			)}
 			{!isSettings && sidebarOpen ? (
 				<button
@@ -130,7 +118,6 @@ export function AppShell() {
 							onLoadAccounts={() => void loadAccounts()}
 							onCreate={createAgent}
 							onUpdate={updateAgent}
-							openSignal={agentSignal}
 						/>
 					</div>
 					</header>

@@ -66,5 +66,6 @@ source_decision: "operator 2026-11-25: add Settings at the bottom of the sidebar
 - `docs/design/F035/agent-create.png` — 新建 Agent
 - 结构统一为：NavRail + 设置子导航（图标/说明/计数）+ 内容；设置与 threads 平级。
 - Pencil 源文件 `docs/design/F035/F035-settings.pen`（画布已建，待 operator 保存后入库）。
+- 2026-11-25（operator）：侧边栏移除 Agents 入口（NavRail 与 ThreadSidebar 均不再放 Agents），Agents 管理只在设置页；设计稿四屏同步去掉 rail 的 Agents。
 
 [宪宪/deepseek-flash🐾]

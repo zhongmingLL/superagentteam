@@ -1524,6 +1524,10 @@ svg {
 	background: var(--st-surface-2);
 }
 
+[data-theme="dark"] .st-execution-panel {
+	border-color: var(--st-hairline-strong);
+}
+
 .st-execution-header {
 	width: 100%;
 	display: flex;

@@ -108,4 +108,43 @@ describe("settings page", () => {
 		fireEvent.click(suggestion);
 		expect(screen.getByText("glm-5.2")).toBeInTheDocument();
 	});
+
+	it("groups special-auth providers after the selectable ones", async () => {
+		vi.mocked(accountApi.providers).mockResolvedValueOnce({
+			providers: [
+				{
+					id: "amazon-bedrock",
+					label: "Amazon Bedrock",
+					envName: "",
+					supportsBaseUrl: false,
+					suggestedModels: [],
+					authKind: "composite",
+					selectable: false,
+				},
+				{
+					id: "zai",
+					label: "Z.AI / 智谱 GLM",
+					envName: "ZAI_API_KEY",
+					supportsBaseUrl: true,
+					suggestedModels: [],
+				},
+			],
+		});
+		render(
+			<MemoryRouter>
+				<SettingsPage initialTab="accounts" />
+			</MemoryRouter>,
+		);
+		const create = await screen.findByRole("button", { name: "新建账号" });
+		await waitFor(() => expect(create).toBeEnabled());
+		fireEvent.click(create);
+		const select = (await screen.findByRole("combobox")) as HTMLSelectElement;
+		const values = Array.from(select.options).map((option) => option.value);
+		expect(values.indexOf("zai")).toBeLessThan(values.indexOf("amazon-bedrock"));
+		const bedrock = Array.from(select.options).find((option) => option.value === "amazon-bedrock");
+		expect(bedrock?.disabled).toBe(true);
+		const special = select.querySelector('optgroup[label="需特殊认证（后续支持）"]');
+		expect(special).not.toBeNull();
+		expect(special).toContainElement(bedrock ?? null);
+	});
 });

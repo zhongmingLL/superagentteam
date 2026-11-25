@@ -82,6 +82,7 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 		[providers, form.provider],
 	);
 	const selectableProviders = providers.filter((item) => item.selectable !== false);
+	const unavailableProviders = providers.filter((item) => item.selectable === false);
 
 	async function refresh(): Promise<void> {
 		setLoading(true);
@@ -323,11 +324,20 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 									}}
 									disabled={saving}
 								>
-									{providers.map((item) => (
-										<option value={item.id} key={item.id} disabled={item.selectable === false}>
-											{item.label} ({item.id}){item.selectable === false ? " — 需特殊认证" : ""}
+									{selectableProviders.map((item) => (
+										<option value={item.id} key={item.id}>
+											{item.label} ({item.id})
 										</option>
 									))}
+									{unavailableProviders.length > 0 ? (
+										<optgroup label="需特殊认证（后续支持）">
+											{unavailableProviders.map((item) => (
+												<option value={item.id} key={item.id} disabled>
+													{item.label} ({item.id})
+												</option>
+											))}
+										</optgroup>
+									) : null}
 								</select>
 								{providers.some((item) => item.selectable === false) ? (
 									<span className="st-field-note">标“需特殊认证”的 provider 将在后续版本支持。</span>

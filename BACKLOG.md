@@ -50,6 +50,9 @@ created: 2026-10-25
 | F035 | Settings hub — sidebar Settings entry, accounts/agents pages | implemented — PR #196 merged `29f104852`; 墨墨 1440/390 visual + isolated create, 砚砚 aria/state approve; CI 5/5; deployed live `a33054f24` (3005); design fix: settings is now a peer page (thread sidebar/topbar hidden) + Clowder-style sub-nav; create pages with auto id/ref, avatar/color, model chips; live create pending operator | 宪宪 | [F035](docs/features/F035-settings-hub.md) |
 | F036 | Chat surface polish — agent message bubble + operator avatar | implemented — PR #197 merged `469e858ce`; 墨墨 4-viewport visual approve @ `d25ebfe64`; CI 5/5; deployed live `a33054f24` (3005); operator close pending | 宪宪 | [F036](docs/features/F036-chat-surface-polish.md) |
 
+> F030.5 account/provider catalog design: [plan 0045](docs/plans/0045-f030.5-account-provider-catalog.md)
+> （design only；固定 v1 vendor catalog 不再继续打补丁）。
+
 > Naming (F019): new and active docs use `superagentteam/Fxxx`; F001–F018 retain
 > `codeteam/Fxxx` for history. Package/env/data/CLI/tool names use `superagentteam*`
 > with `codeteam*` compatibility aliases; the repository is now

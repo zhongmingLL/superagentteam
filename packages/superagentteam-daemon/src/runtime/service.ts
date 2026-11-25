@@ -84,7 +84,6 @@ export class RuntimeService {
 			webPort: input.webPort,
 			daemonPort: input.daemonPort,
 			hubOrigin: input.hubOrigin,
-			windowsPort: input.windowsPort,
 			envFile: input.envFile,
 			state: "starting",
 			daemon: null,
@@ -165,7 +164,7 @@ export class RuntimeService {
 		const state = readRuntimeState(this.options.dataDir);
 		const stateFile = resolveRuntimeStatePath(this.options.dataDir);
 		if (!state) {
-			return { state: "not_started", dataDir: this.options.dataDir, stateFile, windowsProxy: "not_configured" };
+			return { state: "not_started", dataDir: this.options.dataDir, stateFile };
 		}
 
 		const daemon = this.checkProcess(state.daemon);
@@ -200,17 +199,10 @@ export class RuntimeService {
 			webPort: state.webPort,
 			daemonPort: state.daemonPort,
 			hubOrigin: state.hubOrigin,
-			windowsPort: state.windowsPort,
 			envFile: state.envFile,
 			daemon,
 			web,
 			health,
-			windowsProxy:
-				state.windowsPort === null
-					? "not_configured"
-					: state.webPort === 3005 && health?.web
-						? "configured"
-						: "unverified",
 			warnings: warnings.length > 0 ? warnings : undefined,
 			daemonBootId: state.daemonBootId,
 			lastError: state.lastError,

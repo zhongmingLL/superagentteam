@@ -15,13 +15,13 @@ import {
 	syncWorktree,
 } from "../runtime/real.ts";
 import { RuntimeService } from "../runtime/service.ts";
+import { checkWritePath, type WritePathCheckResult } from "../runtime/write-path.ts";
 import { flag, numberOption, option, type ParsedArgs } from "./args.ts";
 import type { CliCommandContext } from "./context.ts";
 import { writeJson, writeLine } from "./output.ts";
 
 const DEFAULT_WEB_PORT = 3005;
 const DEFAULT_DAEMON_PORT = 3014;
-const DEFAULT_WINDOWS_PORT = 3103;
 const DEFAULT_SYNC_REF = "origin/superagentteam-work";
 
 /**
@@ -79,8 +79,6 @@ async function start(args: ParsedArgs, context: CliCommandContext, restart: bool
 		);
 	}
 	const webPort = portOption(args, "web-port", DEFAULT_WEB_PORT);
-	const windowsPort =
-		numberOption(args, "windows-port") ?? (webPort === DEFAULT_WEB_PORT ? DEFAULT_WINDOWS_PORT : null);
 	const result = await runtime.start({
 		worktree,
 		head,
@@ -88,7 +86,6 @@ async function start(args: ParsedArgs, context: CliCommandContext, restart: bool
 		webPort,
 		daemonPort: portOption(args, "daemon-port", DEFAULT_DAEMON_PORT),
 		hubOrigin: option(args, "hub-origin") ?? defaultHubOrigin(webPort),
-		windowsPort,
 		envFile,
 		env: resolved.env,
 		requiredEnvNames: resolved.requiredEnvNames,
@@ -101,23 +98,34 @@ async function start(args: ParsedArgs, context: CliCommandContext, restart: bool
 		writeLine(`head: ${result.status.head ?? head}`);
 		writeLine(`web: http://127.0.0.1:${result.status.webPort}`);
 		writeLine(`daemon: http://127.0.0.1:${result.status.daemonPort}`);
-		writeLine(`windows: http://localhost:${result.status.windowsPort} (${result.status.windowsProxy})`);
+		writeLine(`public: ${result.status.hubOrigin}`);
+		writeLine(`origins: ${result.status.hubOrigin} (+ loopback aliases)`);
 		writeLine(`state file: ${result.status.stateFile}`);
 	}
 	return 0;
 }
 
-async function status(context: CliCommandContext): Promise<number> {
+async function status(args: ParsedArgs, context: CliCommandContext): Promise<number> {
 	const report = await service(context).status();
-	if (context.json) writeJson(report);
+	const checkWrite = flag(args, "check-write");
+	let writePath: WritePathCheckResult | undefined;
+	if (checkWrite) {
+		writePath =
+			report.state === "running" && report.daemonPort !== undefined && report.hubOrigin !== undefined
+				? await checkWritePath({ daemonPort: report.daemonPort, hubOrigin: report.hubOrigin })
+				: { ok: false, status: 0, detail: "runtime is not running" };
+	}
+	if (context.json) writeJson(writePath ? { ...report, writePath } : report);
 	else {
 		writeLine(`state: ${report.state}`);
 		if (report.worktree) writeLine(`worktree: ${report.worktree}`);
 		if (report.head) writeLine(`head: ${report.head}`);
 		if (report.webPort !== undefined) writeLine(`web: http://127.0.0.1:${report.webPort}`);
 		if (report.daemonPort !== undefined) writeLine(`daemon: http://127.0.0.1:${report.daemonPort}`);
-		if (report.windowsPort !== undefined)
-			writeLine(`windows: http://localhost:${report.windowsPort} (${report.windowsProxy})`);
+		if (report.hubOrigin) {
+			writeLine(`public: ${report.hubOrigin}`);
+			writeLine(`origins: ${report.hubOrigin} (+ loopback aliases)`);
+		}
 		if (report.daemon)
 			writeLine(
 				`daemon pid: ${report.daemon.pid || "-"} alive=${report.daemon.alive} verified=${report.daemon.identityVerified}`,
@@ -129,9 +137,14 @@ async function status(context: CliCommandContext): Promise<number> {
 		if (report.health) writeLine(`health: daemon=${report.health.daemon} web=${report.health.web}`);
 		for (const warning of report.warnings ?? []) writeLine(`warning: ${warning}`);
 		if (report.lastError) writeLine(`last error: ${report.lastError.code}: ${report.lastError.message}`);
+		if (writePath) {
+			writeLine(
+				`write path: ${writePath.ok ? "ok" : "FAILED"} (${writePath.status}${writePath.detail ? `: ${writePath.detail}` : ""})`,
+			);
+		}
 		writeLine(`state file: ${report.stateFile}`);
 	}
-	return 0;
+	return writePath !== undefined && !writePath.ok ? 1 : 0;
 }
 
 async function end(context: CliCommandContext): Promise<number> {
@@ -149,7 +162,7 @@ export async function runRuntimeCommand(args: ParsedArgs, context: CliCommandCon
 	const subcommand = args.positionals[0];
 	if (subcommand === "start") return start(args, context, false);
 	if (subcommand === "restart") return start(args, context, true);
-	if (subcommand === "status") return status(context);
+	if (subcommand === "status") return status(args, context);
 	if (subcommand === "end") return end(context);
 	throw new ControlError("invalid_input", "usage: superagentteam runtime <start|status|end|restart>");
 }

@@ -18,7 +18,6 @@ export interface RuntimeStateFile {
 	readonly webPort: number;
 	readonly daemonPort: number;
 	readonly hubOrigin: string;
-	readonly windowsPort: number | null;
 	readonly envFile: string | null;
 	readonly state: RuntimeLifecycleState;
 	readonly daemon: RuntimeProcessRecord | null;
@@ -36,7 +35,6 @@ export interface RuntimeStartOptions {
 	readonly webPort: number;
 	readonly daemonPort: number;
 	readonly hubOrigin: string;
-	readonly windowsPort: number | null;
 	readonly envFile: string | null;
 	readonly env: Readonly<Record<string, string>>;
 	readonly requiredEnvNames: readonly string[];
@@ -98,12 +96,10 @@ export interface RuntimeStatusReport {
 	readonly webPort?: number;
 	readonly daemonPort?: number;
 	readonly hubOrigin?: string;
-	readonly windowsPort?: number | null;
 	readonly envFile?: string | null;
 	readonly daemon?: RuntimeStatusProcess;
 	readonly web?: RuntimeStatusProcess;
 	readonly health?: { readonly daemon: boolean; readonly web: boolean };
-	readonly windowsProxy: "configured" | "unverified" | "not_configured";
 	readonly warnings?: readonly string[];
 	readonly daemonBootId?: string | null;
 	readonly lastError?: { readonly code: string; readonly message: string };

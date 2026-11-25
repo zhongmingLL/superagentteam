@@ -8,6 +8,11 @@ test("default runtime port registry is valid", () => {
 	assert.deepEqual(validateRuntimePorts(), { ok: true, errors: [] });
 });
 
+test("runtime registry has no legacy Windows proxy role", () => {
+	assert.equal("windows" in RUNTIME_PORT_REGISTRY.runtime, false);
+	assert.equal("windows" in RUNTIME_PORT_REGISTRY.test, false);
+});
+
 test("duplicate web/daemon ports are rejected", () => {
 	const result = validateRuntimePorts({
 		...RUNTIME_PORT_REGISTRY,
@@ -42,5 +47,4 @@ test("CLI defaults stay in sync with the registry", () => {
 	);
 	assert.match(source, new RegExp(`DEFAULT_WEB_PORT = ${RUNTIME_PORT_REGISTRY.runtime.web};`));
 	assert.match(source, new RegExp(`DEFAULT_DAEMON_PORT = ${RUNTIME_PORT_REGISTRY.runtime.daemon};`));
-	assert.match(source, new RegExp(`DEFAULT_WINDOWS_PORT = ${RUNTIME_PORT_REGISTRY.runtime.windows};`));
 });

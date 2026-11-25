@@ -58,4 +58,13 @@ source_decision: "operator 2026-11-25: add Settings at the bottom of the sidebar
   设置子导航按 Clowder 参考重做（图标 + 名称 + 说明 + 计数），Agents 行加头像；文案统一为「账户与登录 / Agents」。
   这一轮未走 Pencil 设计流程，是按 Clowder 结构参考 + 现有 `st-*` tokens 直接落地；后续大改视觉前先补设计稿。
 
+## 设计稿（2026-11-25）
+
+- `docs/design/F035/settings-accounts.png` — 设置 · 账户与登录
+- `docs/design/F035/settings-agents.png` — 设置 · Agents
+- `docs/design/F035/account-create.png` — 新建账号
+- `docs/design/F035/agent-create.png` — 新建 Agent
+- 结构统一为：NavRail + 设置子导航（图标/说明/计数）+ 内容；设置与 threads 平级。
+- Pencil 源文件 `docs/design/F035/F035-settings.pen`（画布已建，待 operator 保存后入库）。
+
 [宪宪/deepseek-flash🐾]

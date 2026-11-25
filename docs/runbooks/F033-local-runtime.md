@@ -40,6 +40,7 @@ node packages/superagentteam-daemon/dist/cli.js \
   --data-dir /home/ming/.superagentteam-runtime/data \
   runtime start \
   --worktree /home/ming/agent/superagentteam-runtime \
+  --hub-origin http://localhost:3005 \
   --env-file /home/ming/.config/superagentteam/runtime.env
 ```
 
@@ -90,14 +91,18 @@ node packages/superagentteam-daemon/dist/cli.js \
 
 test stack 不读写 runtime 的 data dir，也不占用 `3005/3014/3103`。
 
-## Windows 3103
+## Windows 访问（3005 主路径，3103 legacy）
+
+Windows 直接用 <http://localhost:3005>（WSL2 localhost forwarding；2026-11-25 实测 200）。
+**3103 PowerShell proxy 不再默认使用**：它只是 F033 早期的兼容路径，且必须从 Windows 端启动——
+从 WSL 里拉起的 PowerShell 再调 `wsl.exe` 会报 `Wsl/Service/E_UNEXPECTED`。仅当本机 localhost
+forwarding 不可用时才按 `node scripts/superagentteam/windows-proxy.mjs print` 的输出在 Windows 端启动。
+`runtime-state.json` 里的 `windowsPort: 3103` 只是元数据，不代表 proxy 在运行。
 
 ```bash
+# 仅 legacy 排查时使用
 node scripts/superagentteam/windows-proxy.mjs check
 ```
-
-输出 `ok` 表示 `127.0.0.1:3103` listener 存在，且 `http://localhost:3103/` 与 `/api/session` 都是 200。
-Windows proxy 模板在 `scripts/superagentteam/windows-proxy.ps1`；`windows-proxy.mjs print` 给出重新生成命令，`check` 只验证当前 listener 与 HTTP，不会自动替换正在工作的 proxy。
 
 ## 故障处理
 
@@ -107,8 +112,8 @@ Windows proxy 模板在 `scripts/superagentteam/windows-proxy.ps1`；`windows-pr
 | `runtime_port_in_use` | `ss -ltnp` 查占用；旧栈按 `docs/plans/0039-f033-phase-b-execution.md` B4 迁移；否则换 `--web-port` / `--daemon-port` |
 | `runtime_state_invalid` | 确认没有存活的本 stack 进程后，备份并移走损坏的 `runtime-state.json`，再 `runtime start` |
 | `degraded` / `stale` | 先 `runtime end`，再 `runtime start`；identity mismatch 时不要按端口盲杀 |
-| Windows 3103 空响应 | 先 `windows-proxy.mjs check`；再看 WSL `3005` 与 daemon `3014` health |
-| 进程全掉 | 没有常驻 supervisor / cron；按本 runbook 手动 `runtime start` |
+| Windows 打不开 localhost:3005 | 先看 WSL `3005` 与 daemon `3014` health；确认 WSL2 localhost forwarding；不要先怀疑 3103 proxy |
+| 进程全掉 | 已装 WSL cron supervisor（`@reboot` + 每 2 分钟仅对 stale/degraded/failed 重启）；若未自愈，手动 `runtime start` 并 `crontab -l` 检查 |
 
 ## 安全边界
 

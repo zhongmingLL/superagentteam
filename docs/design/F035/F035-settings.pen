@@ -1,0 +1,5549 @@
+{
+  "version": "2.25",
+  "children": [
+    {
+      "type": "frame",
+      "id": "Kwj6E",
+      "x": 0,
+      "y": 0,
+      "name": "F035 · Settings · 账户与登录",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg",
+      "children": [
+        {
+          "type": "frame",
+          "id": "Ql48m",
+          "name": "Rail",
+          "width": 72,
+          "height": "fill_container",
+          "fill": "$surface-2",
+          "stroke": "$hairline",
+          "strokeWidth": {
+            "right": 1
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            16,
+            8,
+            12,
+            8
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "fjaHt",
+              "name": "Logo",
+              "width": 34,
+              "height": 34,
+              "fill": "$primary",
+              "cornerRadius": 9,
+              "layout": "vertical",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "EyHSs",
+                  "name": "Logo Mark",
+                  "fill": "#FFFFFF",
+                  "content": "S",
+                  "fontFamily": "$font",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "tFNCX",
+              "name": "Rail Divider",
+              "fill": "$hairline",
+              "width": 32,
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "AtEVv",
+              "name": "Rail · Threads",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "G1aeph",
+                  "name": "Rail Icon Threads",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "message-square",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "IBHhY",
+                  "name": "Rail Label Threads",
+                  "fill": "$muted",
+                  "content": "Threads",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "tstoR",
+              "name": "Rail · Tasks",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "M8G39",
+                  "name": "Rail Icon Tasks",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "list-checks",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "DnSsN",
+                  "name": "Rail Label Tasks",
+                  "fill": "$muted",
+                  "content": "Tasks",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "DmVz0",
+              "name": "Rail · Memory",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "blrdO",
+                  "name": "Rail Icon Memory",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "book-open",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "lN9KI",
+                  "name": "Rail Label Memory",
+                  "fill": "$muted",
+                  "content": "Memory",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "d1Fzn",
+              "name": "Rail Spacer",
+              "width": 1,
+              "height": "fill_container",
+              "fill": "#00000000"
+            },
+            {
+              "type": "frame",
+              "id": "c3OTm",
+              "name": "Rail · Theme",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "Cmv1r",
+                  "name": "Rail Icon Theme",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "moon",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "OVx3U",
+                  "name": "Rail Label Theme",
+                  "fill": "$muted",
+                  "content": "Theme",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "G3XNH",
+              "name": "Rail · 设置",
+              "width": 56,
+              "height": 48,
+              "fill": "$primary-soft",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "rQl0o",
+                  "name": "Rail Icon 设置",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "settings",
+                  "library": "lucide",
+                  "fill": "$primary"
+                },
+                {
+                  "type": "text",
+                  "id": "qphg5",
+                  "name": "Rail Label 设置",
+                  "fill": "$primary",
+                  "content": "设置",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Zfim5",
+          "name": "SettingsNav",
+          "width": 240,
+          "height": "fill_container",
+          "fill": "$bg",
+          "stroke": "$hairline",
+          "strokeWidth": {
+            "right": 1
+          },
+          "layout": "vertical",
+          "gap": 6,
+          "padding": [
+            30,
+            20,
+            20,
+            20
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "Sb64V",
+              "name": "Snav Eyebrow",
+              "fill": "$muted",
+              "content": "SUPERAGENTTEAM",
+              "fontFamily": "$font",
+              "fontSize": 9,
+              "fontWeight": "normal",
+              "letterSpacing": 1
+            },
+            {
+              "type": "text",
+              "id": "TyubN",
+              "name": "Snav Title",
+              "fill": "$ink",
+              "content": "设置",
+              "fontFamily": "$font",
+              "fontSize": 24,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "IUdaF",
+              "name": "Snav · Accounts",
+              "width": "fill_container",
+              "fill": "$primary-soft",
+              "cornerRadius": 8,
+              "stroke": "$hairline",
+              "strokeWidth": 1,
+              "gap": 10,
+              "padding": [
+                10,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "Z3Q5GH",
+                  "name": "Snav Icon Accounts",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "key-round",
+                  "library": "lucide",
+                  "fill": "$primary-active"
+                },
+                {
+                  "type": "frame",
+                  "id": "sFvAl",
+                  "name": "Snav Body Accounts",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "HRcN6",
+                      "name": "Snav Label Accounts",
+                      "fill": "$primary-active",
+                      "content": "账户与登录",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "SKRrG",
+                      "name": "Snav Desc Accounts",
+                      "fill": "$muted",
+                      "content": "provider、模型与凭据",
+                      "fontFamily": "$font",
+                      "fontSize": 9.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "ewjzf",
+                  "name": "Snav Count Accounts",
+                  "fill": "$muted",
+                  "content": "2",
+                  "fontFamily": "$mono",
+                  "fontSize": 9.5,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "kQbed",
+              "name": "Snav · Agents",
+              "width": "fill_container",
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "stroke": "#00000000",
+              "strokeWidth": 1,
+              "gap": 10,
+              "padding": [
+                10,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "m0Isq",
+                  "name": "Snav Icon Agents",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "users",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "frame",
+                  "id": "n3Mcy0",
+                  "name": "Snav Body Agents",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "x8inW",
+                      "name": "Snav Label Agents",
+                      "fill": "$ink",
+                      "content": "Agents",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "qpjdM",
+                      "name": "Snav Desc Agents",
+                      "fill": "$muted",
+                      "content": "成员、模型与 @ 名字",
+                      "fontFamily": "$font",
+                      "fontSize": 9.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "zoSjz",
+                  "name": "Snav Count Agents",
+                  "fill": "$muted",
+                  "content": "3",
+                  "fontFamily": "$mono",
+                  "fontSize": 9.5,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "fge7c",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$bg",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            30,
+            38,
+            36,
+            38
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "scZBv",
+              "name": "Page Head",
+              "width": "fill_container",
+              "gap": 16,
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "xXoVQ",
+                  "name": "Head Text",
+                  "width": 640,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mwVKl",
+                      "name": "Page Title",
+                      "fill": "$ink",
+                      "content": "账户与登录",
+                      "fontFamily": "$font",
+                      "fontSize": 20,
+                      "fontWeight": "700",
+                      "letterSpacing": -0.2
+                    },
+                    {
+                      "type": "text",
+                      "id": "hUfcK",
+                      "name": "Page Desc",
+                      "fill": "$muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "provider、模型与凭据。API Key 只写入，不回显；凭据绑定到账户，agent 通过账户取模型。",
+                      "lineHeight": 1.55,
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "hlaq4",
+                  "name": "Primary · 新建账号",
+                  "fill": "$primary",
+                  "cornerRadius": 8,
+                  "gap": 7,
+                  "padding": [
+                    9,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "TULeN",
+                      "name": "Primary Icon",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "plus",
+                      "library": "lucide",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "mqJPv",
+                      "name": "Primary Label",
+                      "fill": "#FFFFFF",
+                      "content": "新建账号",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "YBVfc",
+              "name": "Account List",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "PXu5B",
+                  "name": "Account · Kimi Main",
+                  "width": "fill_container",
+                  "fill": "$surface-1",
+                  "cornerRadius": 12,
+                  "stroke": "$hairline",
+                  "strokeWidth": 1,
+                  "gap": 14,
+                  "padding": [
+                    16,
+                    18
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "YrwJn",
+                      "name": "Mark",
+                      "width": 40,
+                      "height": 40,
+                      "fill": "$surface-3",
+                      "cornerRadius": 10,
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "O8eYo",
+                          "name": "Mark Letter",
+                          "fill": "$body",
+                          "content": "K",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "rRPIx",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 5,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ABg4k",
+                          "name": "Title Row",
+                          "gap": 8,
+                          "alignItems": "end",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Gu0p5",
+                              "name": "Account Name",
+                              "fill": "$ink",
+                              "content": "Kimi Main",
+                              "fontFamily": "$font",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "NGz2e",
+                              "name": "Account Ref",
+                              "fill": "$muted",
+                              "content": "kimi",
+                              "fontFamily": "$mono",
+                              "fontSize": 9.5,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "YKBjM",
+                          "name": "Account Meta",
+                          "fill": "$muted",
+                          "content": "Kimi For Coding · ENV: KIMI_API_KEY",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "SRo3s",
+                          "name": "Chips",
+                          "gap": 5,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Z8OPjh",
+                              "name": "Chip · kimi-for-coding",
+                              "fill": "$surface-2",
+                              "cornerRadius": 999,
+                              "padding": [
+                                2,
+                                8
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "FBaeu",
+                                  "name": "Chip Label",
+                                  "fill": "$body",
+                                  "content": "kimi-for-coding",
+                                  "fontFamily": "$mono",
+                                  "fontSize": 9.5,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "J4ckM",
+                          "name": "Bound",
+                          "fill": "$muted",
+                          "content": "绑定：Agent A、Agent B、Agent C",
+                          "fontFamily": "$font",
+                          "fontSize": 10,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "j1Bxbo",
+                      "name": "Card Actions",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "lVbzv",
+                          "name": "Edit",
+                          "fill": "$muted",
+                          "content": "编辑",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "kHFGR",
+                          "name": "Delete",
+                          "fill": "$danger",
+                          "content": "删除",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "cXVuc",
+                  "name": "Account · DeepSeek",
+                  "width": "fill_container",
+                  "fill": "$surface-1",
+                  "cornerRadius": 12,
+                  "stroke": "$hairline",
+                  "strokeWidth": 1,
+                  "gap": 14,
+                  "padding": [
+                    16,
+                    18
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "zf1nh",
+                      "name": "Mark",
+                      "width": 40,
+                      "height": 40,
+                      "fill": "$surface-3",
+                      "cornerRadius": 10,
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "J6AQa",
+                          "name": "Mark Letter",
+                          "fill": "$body",
+                          "content": "D",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "P1xjh",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 5,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ngDLn",
+                          "name": "Title Row",
+                          "gap": 8,
+                          "alignItems": "end",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "hXwEy",
+                              "name": "Account Name",
+                              "fill": "$ink",
+                              "content": "DeepSeek",
+                              "fontFamily": "$font",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "d1S1K",
+                              "name": "Account Ref",
+                              "fill": "$muted",
+                              "content": "deepseek-main",
+                              "fontFamily": "$mono",
+                              "fontSize": 9.5,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "hFaou",
+                          "name": "Account Meta",
+                          "fill": "$muted",
+                          "content": "DeepSeek · 已存 API Key",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "g3rvv7",
+                          "name": "Chips",
+                          "gap": 5,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "URasx",
+                              "name": "Chip · deepseek-chat",
+                              "fill": "$surface-2",
+                              "cornerRadius": 999,
+                              "padding": [
+                                2,
+                                8
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "JALT3",
+                                  "name": "Chip Label",
+                                  "fill": "$body",
+                                  "content": "deepseek-chat",
+                                  "fontFamily": "$mono",
+                                  "fontSize": 9.5,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "DgKoO",
+                              "name": "Chip · deepseek-reasoner",
+                              "fill": "$surface-2",
+                              "cornerRadius": 999,
+                              "padding": [
+                                2,
+                                8
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "z1C4N",
+                                  "name": "Chip Label",
+                                  "fill": "$body",
+                                  "content": "deepseek-reasoner",
+                                  "fontFamily": "$mono",
+                                  "fontSize": 9.5,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "oQn2m",
+                          "name": "Bound",
+                          "fill": "$muted",
+                          "content": "未绑定 agent",
+                          "fontFamily": "$font",
+                          "fontSize": 10,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "I0B7P",
+                      "name": "Card Actions",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "K2B1YQ",
+                          "name": "Edit",
+                          "fill": "$muted",
+                          "content": "编辑",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "E9OATU",
+                          "name": "Delete",
+                          "fill": "$danger",
+                          "content": "删除",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "q5iRr6",
+              "name": "Foot",
+              "fill": "$muted",
+              "content": "2 个账户 · 3 个 agent 使用中",
+              "fontFamily": "$font",
+              "fontSize": 10,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "ZUeZa",
+      "x": 1520,
+      "y": 0,
+      "name": "F035 · Settings · Agents",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg",
+      "children": [
+        {
+          "type": "frame",
+          "id": "OCHax",
+          "name": "Rail",
+          "width": 72,
+          "height": "fill_container",
+          "fill": "$surface-2",
+          "stroke": "$hairline",
+          "strokeWidth": {
+            "right": 1
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            16,
+            8,
+            12,
+            8
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "cFf7D",
+              "name": "Logo",
+              "width": 34,
+              "height": 34,
+              "fill": "$primary",
+              "cornerRadius": 9,
+              "layout": "vertical",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ddljy",
+                  "name": "Logo Mark",
+                  "fill": "#FFFFFF",
+                  "content": "S",
+                  "fontFamily": "$font",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "RLy5U",
+              "name": "Rail Divider",
+              "fill": "$hairline",
+              "width": 32,
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "U6Uqt",
+              "name": "Rail · Threads",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "MmKyd",
+                  "name": "Rail Icon Threads",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "message-square",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "sDZbi",
+                  "name": "Rail Label Threads",
+                  "fill": "$muted",
+                  "content": "Threads",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "BNErP",
+              "name": "Rail · Tasks",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "T8JY0",
+                  "name": "Rail Icon Tasks",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "list-checks",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "WHVpF",
+                  "name": "Rail Label Tasks",
+                  "fill": "$muted",
+                  "content": "Tasks",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "amwez",
+              "name": "Rail · Memory",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "RELPX",
+                  "name": "Rail Icon Memory",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "book-open",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "ElTkl",
+                  "name": "Rail Label Memory",
+                  "fill": "$muted",
+                  "content": "Memory",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "db7SG",
+              "name": "Rail Spacer",
+              "width": 1,
+              "height": "fill_container",
+              "fill": "#00000000"
+            },
+            {
+              "type": "frame",
+              "id": "D7qhs0",
+              "name": "Rail · Theme",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "mEJAt",
+                  "name": "Rail Icon Theme",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "moon",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "W4eKOe",
+                  "name": "Rail Label Theme",
+                  "fill": "$muted",
+                  "content": "Theme",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "vHnkA",
+              "name": "Rail · 设置",
+              "width": 56,
+              "height": 48,
+              "fill": "$primary-soft",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "XsxOm",
+                  "name": "Rail Icon 设置",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "settings",
+                  "library": "lucide",
+                  "fill": "$primary"
+                },
+                {
+                  "type": "text",
+                  "id": "HQK1O",
+                  "name": "Rail Label 设置",
+                  "fill": "$primary",
+                  "content": "设置",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "xUHhb",
+          "name": "SettingsNav",
+          "width": 240,
+          "height": "fill_container",
+          "fill": "$bg",
+          "stroke": "$hairline",
+          "strokeWidth": {
+            "right": 1
+          },
+          "layout": "vertical",
+          "gap": 6,
+          "padding": [
+            30,
+            20,
+            20,
+            20
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "i7teqo",
+              "name": "Snav Eyebrow",
+              "fill": "$muted",
+              "content": "SUPERAGENTTEAM",
+              "fontFamily": "$font",
+              "fontSize": 9,
+              "fontWeight": "normal",
+              "letterSpacing": 1
+            },
+            {
+              "type": "text",
+              "id": "wGSdX",
+              "name": "Snav Title",
+              "fill": "$ink",
+              "content": "设置",
+              "fontFamily": "$font",
+              "fontSize": 24,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "GXvEK",
+              "name": "Snav · Accounts",
+              "width": "fill_container",
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "stroke": "#00000000",
+              "strokeWidth": 1,
+              "gap": 10,
+              "padding": [
+                10,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "esrrE",
+                  "name": "Snav Icon Accounts",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "key-round",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "frame",
+                  "id": "yD3yc",
+                  "name": "Snav Body Accounts",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "QoLrW",
+                      "name": "Snav Label Accounts",
+                      "fill": "$ink",
+                      "content": "账户与登录",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "i4EvA",
+                      "name": "Snav Desc Accounts",
+                      "fill": "$muted",
+                      "content": "provider、模型与凭据",
+                      "fontFamily": "$font",
+                      "fontSize": 9.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "CVrnT",
+                  "name": "Snav Count Accounts",
+                  "fill": "$muted",
+                  "content": "2",
+                  "fontFamily": "$mono",
+                  "fontSize": 9.5,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "y85380",
+              "name": "Snav · Agents",
+              "width": "fill_container",
+              "fill": "$primary-soft",
+              "cornerRadius": 8,
+              "stroke": "$hairline",
+              "strokeWidth": 1,
+              "gap": 10,
+              "padding": [
+                10,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "THPvP",
+                  "name": "Snav Icon Agents",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "users",
+                  "library": "lucide",
+                  "fill": "$primary-active"
+                },
+                {
+                  "type": "frame",
+                  "id": "t6DvuB",
+                  "name": "Snav Body Agents",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "T47ZO",
+                      "name": "Snav Label Agents",
+                      "fill": "$primary-active",
+                      "content": "Agents",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "P4nWWV",
+                      "name": "Snav Desc Agents",
+                      "fill": "$muted",
+                      "content": "成员、模型与 @ 名字",
+                      "fontFamily": "$font",
+                      "fontSize": 9.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "cCrK9",
+                  "name": "Snav Count Agents",
+                  "fill": "$muted",
+                  "content": "3",
+                  "fontFamily": "$mono",
+                  "fontSize": 9.5,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "igOSW",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$bg",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            30,
+            38,
+            36,
+            38
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "EGFuG",
+              "name": "Page Head",
+              "width": "fill_container",
+              "gap": 16,
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "CrgWM",
+                  "name": "Head Text",
+                  "width": 640,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ffGFf",
+                      "name": "Page Title",
+                      "fill": "$ink",
+                      "content": "Agents",
+                      "fontFamily": "$font",
+                      "fontSize": 20,
+                      "fontWeight": "700",
+                      "letterSpacing": -0.2
+                    },
+                    {
+                      "type": "text",
+                      "id": "kUWqT",
+                      "name": "Page Desc",
+                      "fill": "$muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "成员、模型与 @ 名字。选择 account 与 model，创建后回到对话里直接 @。",
+                      "lineHeight": 1.55,
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "r96WE",
+                  "name": "Primary · 新建 Agent",
+                  "fill": "$primary",
+                  "cornerRadius": 8,
+                  "gap": 7,
+                  "padding": [
+                    9,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "aydRY",
+                      "name": "Primary Icon",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "plus",
+                      "library": "lucide",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "JOKqB",
+                      "name": "Primary Label",
+                      "fill": "#FFFFFF",
+                      "content": "新建 Agent",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "jWZ96",
+              "name": "Agent List",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "K8T9O",
+                  "name": "Agent · Agent A",
+                  "width": "fill_container",
+                  "fill": "$surface-1",
+                  "cornerRadius": 8,
+                  "stroke": "$hairline",
+                  "strokeWidth": 1,
+                  "gap": 12,
+                  "padding": [
+                    13,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "wFdhS",
+                      "name": "Avatar",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$a1",
+                      "cornerRadius": 999,
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "suceT",
+                          "name": "Avatar Letter",
+                          "fill": "#FFFFFF",
+                          "content": "A",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "W2QSO",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "By0kQ",
+                          "name": "Agent Name",
+                          "fill": "$ink",
+                          "content": "Agent A",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "d5Ygl",
+                          "name": "Agent Meta",
+                          "fill": "$muted",
+                          "content": "kimi · kimi-for-coding · @agentA · @a",
+                          "fontFamily": "$font",
+                          "fontSize": 10.5,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "f7NzC",
+                      "name": "Status",
+                      "fill": "$success-soft",
+                      "cornerRadius": 999,
+                      "padding": [
+                        2,
+                        9
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AvtVw",
+                          "name": "Status Label",
+                          "fill": "$success",
+                          "content": "已启用",
+                          "fontFamily": "$font",
+                          "fontSize": 9.5,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "ZqyxL",
+                      "name": "Edit",
+                      "fill": "$muted",
+                      "content": "编辑",
+                      "fontFamily": "$font",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "RzVPO",
+                  "name": "Agent · Agent B",
+                  "width": "fill_container",
+                  "fill": "$surface-1",
+                  "cornerRadius": 8,
+                  "stroke": "$hairline",
+                  "strokeWidth": 1,
+                  "gap": 12,
+                  "padding": [
+                    13,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Xt1C4",
+                      "name": "Avatar",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$a2",
+                      "cornerRadius": 999,
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "F5KucO",
+                          "name": "Avatar Letter",
+                          "fill": "#FFFFFF",
+                          "content": "B",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qLN1c",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "m1Fxvp",
+                          "name": "Agent Name",
+                          "fill": "$ink",
+                          "content": "Agent B",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "uZ9hz",
+                          "name": "Agent Meta",
+                          "fill": "$muted",
+                          "content": "kimi · kimi-for-coding · @agentB · @b",
+                          "fontFamily": "$font",
+                          "fontSize": 10.5,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "J5TpJ",
+                      "name": "Status",
+                      "fill": "$success-soft",
+                      "cornerRadius": 999,
+                      "padding": [
+                        2,
+                        9
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BILdV",
+                          "name": "Status Label",
+                          "fill": "$success",
+                          "content": "已启用",
+                          "fontFamily": "$font",
+                          "fontSize": 9.5,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "LBC2F",
+                      "name": "Edit",
+                      "fill": "$muted",
+                      "content": "编辑",
+                      "fontFamily": "$font",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "RjSAF",
+                  "name": "Agent · Agent C",
+                  "width": "fill_container",
+                  "fill": "$surface-1",
+                  "cornerRadius": 8,
+                  "stroke": "$hairline",
+                  "strokeWidth": 1,
+                  "gap": 12,
+                  "padding": [
+                    13,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Tyg7w",
+                      "name": "Avatar",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$a3",
+                      "cornerRadius": 999,
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "N9D1bx",
+                          "name": "Avatar Letter",
+                          "fill": "#FFFFFF",
+                          "content": "C",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "t7Zzf",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "G2p4G",
+                          "name": "Agent Name",
+                          "fill": "$ink",
+                          "content": "Agent C",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Hp2Gu",
+                          "name": "Agent Meta",
+                          "fill": "$muted",
+                          "content": "deepseek-main · deepseek-chat · @agentC · @c",
+                          "fontFamily": "$font",
+                          "fontSize": 10.5,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ig6XZ",
+                      "name": "Status",
+                      "fill": "$success-soft",
+                      "cornerRadius": 999,
+                      "padding": [
+                        2,
+                        9
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "fKK4a",
+                          "name": "Status Label",
+                          "fill": "$success",
+                          "content": "已启用",
+                          "fontFamily": "$font",
+                          "fontSize": 9.5,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "h1bLeT",
+                      "name": "Edit",
+                      "fill": "$muted",
+                      "content": "编辑",
+                      "fontFamily": "$font",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "PcAr5",
+              "name": "Foot",
+              "fill": "$muted",
+              "content": "3 个成员 · 拖动排序与更多配置在后续版本",
+              "fontFamily": "$font",
+              "fontSize": 10,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "hFBOf",
+      "x": 6080,
+      "y": 0,
+      "name": "F035 · 新建账号",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg",
+      "children": [
+        {
+          "type": "frame",
+          "id": "OjBWh",
+          "name": "Rail",
+          "width": 72,
+          "height": "fill_container",
+          "fill": "$surface-2",
+          "stroke": "$hairline",
+          "strokeWidth": {
+            "right": 1
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            16,
+            8,
+            12,
+            8
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "MFJRL",
+              "name": "Logo",
+              "width": 34,
+              "height": 34,
+              "fill": "$primary",
+              "cornerRadius": 9,
+              "layout": "vertical",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "wI713",
+                  "name": "Logo Mark",
+                  "fill": "#FFFFFF",
+                  "content": "S",
+                  "fontFamily": "$font",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "fbhER",
+              "name": "Rail Divider",
+              "fill": "$hairline",
+              "width": 32,
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "R25vIe",
+              "name": "Rail · Threads",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "nbhfv",
+                  "name": "Rail Icon Threads",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "message-square",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "jDNLc",
+                  "name": "Rail Label Threads",
+                  "fill": "$muted",
+                  "content": "Threads",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "qyve8",
+              "name": "Rail · Tasks",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "w4p5gj",
+                  "name": "Rail Icon Tasks",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "list-checks",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "jLAfl",
+                  "name": "Rail Label Tasks",
+                  "fill": "$muted",
+                  "content": "Tasks",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "D8OUx",
+              "name": "Rail · Memory",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "ULWSg",
+                  "name": "Rail Icon Memory",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "book-open",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "SWldi",
+                  "name": "Rail Label Memory",
+                  "fill": "$muted",
+                  "content": "Memory",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "YXI24",
+              "name": "Rail Spacer",
+              "width": 1,
+              "height": "fill_container",
+              "fill": "#00000000"
+            },
+            {
+              "type": "frame",
+              "id": "B9TH8",
+              "name": "Rail · Theme",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "WS5Md",
+                  "name": "Rail Icon Theme",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "moon",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "jorQA",
+                  "name": "Rail Label Theme",
+                  "fill": "$muted",
+                  "content": "Theme",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "z5zgc",
+              "name": "Rail · 设置",
+              "width": 56,
+              "height": 48,
+              "fill": "$primary-soft",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "vNJ8W",
+                  "name": "Rail Icon 设置",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "settings",
+                  "library": "lucide",
+                  "fill": "$primary"
+                },
+                {
+                  "type": "text",
+                  "id": "Nu3Au",
+                  "name": "Rail Label 设置",
+                  "fill": "$primary",
+                  "content": "设置",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "kZin0",
+          "name": "SettingsNav",
+          "width": 240,
+          "height": "fill_container",
+          "fill": "$bg",
+          "stroke": "$hairline",
+          "strokeWidth": {
+            "right": 1
+          },
+          "layout": "vertical",
+          "gap": 6,
+          "padding": [
+            30,
+            20,
+            20,
+            20
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "HdJAW",
+              "name": "Snav Eyebrow",
+              "fill": "$muted",
+              "content": "SUPERAGENTTEAM",
+              "fontFamily": "$font",
+              "fontSize": 9,
+              "fontWeight": "normal",
+              "letterSpacing": 1
+            },
+            {
+              "type": "text",
+              "id": "hW78O",
+              "name": "Snav Title",
+              "fill": "$ink",
+              "content": "设置",
+              "fontFamily": "$font",
+              "fontSize": 24,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "DzOdN",
+              "name": "Snav · Accounts",
+              "width": "fill_container",
+              "fill": "$primary-soft",
+              "cornerRadius": 8,
+              "stroke": "$hairline",
+              "strokeWidth": 1,
+              "gap": 10,
+              "padding": [
+                10,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "UUz4U",
+                  "name": "Snav Icon Accounts",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "key-round",
+                  "library": "lucide",
+                  "fill": "$primary-active"
+                },
+                {
+                  "type": "frame",
+                  "id": "UNApF",
+                  "name": "Snav Body Accounts",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "y4o7GA",
+                      "name": "Snav Label Accounts",
+                      "fill": "$primary-active",
+                      "content": "账户与登录",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nEny5",
+                      "name": "Snav Desc Accounts",
+                      "fill": "$muted",
+                      "content": "provider、模型与凭据",
+                      "fontFamily": "$font",
+                      "fontSize": 9.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "vRzGu",
+                  "name": "Snav Count Accounts",
+                  "fill": "$muted",
+                  "content": "2",
+                  "fontFamily": "$mono",
+                  "fontSize": 9.5,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Lk9Zy",
+              "name": "Snav · Agents",
+              "width": "fill_container",
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "stroke": "#00000000",
+              "strokeWidth": 1,
+              "gap": 10,
+              "padding": [
+                10,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "Xwo7x",
+                  "name": "Snav Icon Agents",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "users",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "frame",
+                  "id": "nUYoz",
+                  "name": "Snav Body Agents",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "hfYH0",
+                      "name": "Snav Label Agents",
+                      "fill": "$ink",
+                      "content": "Agents",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "S1SwZl",
+                      "name": "Snav Desc Agents",
+                      "fill": "$muted",
+                      "content": "成员、模型与 @ 名字",
+                      "fontFamily": "$font",
+                      "fontSize": 9.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "BmwB7",
+                  "name": "Snav Count Agents",
+                  "fill": "$muted",
+                  "content": "3",
+                  "fontFamily": "$mono",
+                  "fontSize": 9.5,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "AgHxK",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$bg",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            30,
+            38,
+            36,
+            38
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "IWmeg",
+              "name": "Breadcrumb",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n6tqi",
+                  "name": "Crumb Root",
+                  "fill": "$muted",
+                  "content": "账户与登录",
+                  "fontFamily": "$font",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "LkOnV",
+                  "name": "Crumb Chevron",
+                  "width": 12,
+                  "height": 12,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "t2EeNw",
+                  "name": "Crumb Current",
+                  "fill": "$ink",
+                  "content": "新建账号",
+                  "fontFamily": "$font",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "E1BNV",
+              "name": "Page Head",
+              "width": 700,
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "b77Kfu",
+                  "name": "Page Title",
+                  "fill": "$ink",
+                  "content": "新建账号",
+                  "fontFamily": "$font",
+                  "fontSize": 20,
+                  "fontWeight": "700",
+                  "letterSpacing": -0.2
+                },
+                {
+                  "type": "text",
+                  "id": "K8dQCQ",
+                  "name": "Page Desc",
+                  "fill": "$muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "账号标识由系统生成；API Key 只写入，不回显。",
+                  "lineHeight": 1.55,
+                  "fontFamily": "$font",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ey0Cf",
+              "name": "Form Card",
+              "width": 820,
+              "fill": "$surface-1",
+              "cornerRadius": 12,
+              "stroke": "$hairline",
+              "strokeWidth": 1,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0F172A14",
+                "offset": {
+                  "x": 0,
+                  "y": 6
+                },
+                "blur": 18
+              },
+              "layout": "vertical",
+              "gap": 18,
+              "padding": [
+                22,
+                24
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "dHCpa",
+                  "name": "Row · 身份",
+                  "width": "fill_container",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "goZvz",
+                      "name": "Field · 显示名",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "L3sSHy",
+                          "name": "Label · 显示名",
+                          "fill": "$muted",
+                          "content": "显示名",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gkC8y",
+                          "name": "Input · 显示名",
+                          "width": "fill_container",
+                          "height": 36,
+                          "fill": "$surface-2",
+                          "cornerRadius": 8,
+                          "stroke": "#00000000",
+                          "strokeWidth": 1,
+                          "padding": [
+                            8,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "RVtME",
+                              "name": "Value · 显示名",
+                              "fill": "$muted",
+                              "content": "Kimi Main",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "c2hz5",
+                      "name": "Field · Provider",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "YrWuP",
+                          "name": "Label · Provider",
+                          "fill": "$muted",
+                          "content": "Provider",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "b2E945",
+                          "name": "Input · Provider",
+                          "width": "fill_container",
+                          "height": 36,
+                          "fill": "$surface-2",
+                          "cornerRadius": 8,
+                          "stroke": "#00000000",
+                          "strokeWidth": 1,
+                          "padding": [
+                            8,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Iv3MR",
+                              "name": "Value · Provider",
+                              "fill": "$muted",
+                              "content": "Kimi For Coding",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "B8bs1",
+                  "name": "Row · 凭据",
+                  "width": "fill_container",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "bT2N3",
+                      "name": "Field · API Key",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BgqJm",
+                          "name": "Label · API Key",
+                          "fill": "$muted",
+                          "content": "API Key",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "R99SbC",
+                          "name": "Input · API Key",
+                          "width": "fill_container",
+                          "height": 36,
+                          "fill": "$surface-2",
+                          "cornerRadius": 8,
+                          "stroke": "#00000000",
+                          "strokeWidth": 1,
+                          "padding": [
+                            8,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "kj0QN",
+                              "name": "Value · API Key",
+                              "fill": "$muted",
+                              "content": "只写入，不回显",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "rjROB",
+                      "name": "Field · API URL（可选）",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Y9Zq9e",
+                          "name": "Label · API URL（可选）",
+                          "fill": "$muted",
+                          "content": "API URL（可选）",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "p1Thjg",
+                          "name": "Input · API URL（可选）",
+                          "width": "fill_container",
+                          "height": 36,
+                          "fill": "$surface-2",
+                          "cornerRadius": 8,
+                          "stroke": "#00000000",
+                          "strokeWidth": 1,
+                          "padding": [
+                            8,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "hWrqB",
+                              "name": "Value · API URL（可选）",
+                              "fill": "$muted",
+                              "content": "https://…",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "gBRiV",
+                  "name": "Field · Models",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "JLNfL",
+                      "name": "Models Label",
+                      "fill": "$muted",
+                      "content": "Models",
+                      "fontFamily": "$font",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "MiCld",
+                      "name": "Model Chips",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "NN1tL",
+                          "name": "Model · kimi-for-coding",
+                          "fill": "$surface-2",
+                          "cornerRadius": 999,
+                          "gap": 5,
+                          "padding": [
+                            4,
+                            10
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "MHDoI",
+                              "name": "Model Name",
+                              "fill": "$body",
+                              "content": "kimi-for-coding",
+                              "fontFamily": "$mono",
+                              "fontSize": 10,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "j9fqx",
+                          "name": "Add Model",
+                          "fill": "#00000000",
+                          "cornerRadius": 999,
+                          "stroke": "$primary",
+                          "strokeWidth": 1,
+                          "strokeDash": [
+                            4,
+                            3
+                          ],
+                          "gap": 4,
+                          "padding": [
+                            4,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "rQsn9",
+                              "name": "Add Icon",
+                              "width": 12,
+                              "height": 12,
+                              "icon": "plus",
+                              "library": "lucide",
+                              "fill": "$primary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "w9xJ8",
+                              "name": "Add Label",
+                              "fill": "$primary",
+                              "content": "添加 model",
+                              "fontFamily": "$font",
+                              "fontSize": 10,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "oV94H",
+                      "name": "Models Hint",
+                      "fill": "$muted",
+                      "content": "逐个添加；同一账户可挂多个 model。",
+                      "fontFamily": "$font",
+                      "fontSize": 10,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "oIf6o",
+                  "name": "Form Actions",
+                  "width": "fill_container",
+                  "gap": 10,
+                  "justifyContent": "end",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Nn15J",
+                      "name": "Secondary · 取消",
+                      "fill": "$surface-1",
+                      "cornerRadius": 8,
+                      "stroke": "$hairline",
+                      "strokeWidth": 1,
+                      "padding": [
+                        9,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "EwrW6",
+                          "name": "Cancel Label",
+                          "fill": "$body",
+                          "content": "取消",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "PlSvP",
+                      "name": "Primary · 创建账号",
+                      "fill": "$primary",
+                      "cornerRadius": 8,
+                      "gap": 7,
+                      "padding": [
+                        9,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "iElLd",
+                          "name": "Create Icon",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "check",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        },
+                        {
+                          "type": "text",
+                          "id": "h8XJW",
+                          "name": "Create Label",
+                          "fill": "#FFFFFF",
+                          "content": "创建账号",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "T561U",
+      "x": 7600,
+      "y": 0,
+      "name": "F035 · 新建 Agent · 身份",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg",
+      "children": [
+        {
+          "type": "frame",
+          "id": "NbdYH",
+          "name": "Rail",
+          "width": 72,
+          "height": "fill_container",
+          "fill": "$surface-2",
+          "stroke": "$hairline",
+          "strokeWidth": {
+            "right": 1
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            16,
+            8,
+            12,
+            8
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "zk2zY",
+              "name": "Logo",
+              "width": 34,
+              "height": 34,
+              "fill": "$primary",
+              "cornerRadius": 9,
+              "layout": "vertical",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "w7GGW",
+                  "name": "Logo Mark",
+                  "fill": "#FFFFFF",
+                  "content": "S",
+                  "fontFamily": "$font",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "T5u9A",
+              "name": "Rail Divider",
+              "fill": "$hairline",
+              "width": 32,
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "B1osgx",
+              "name": "Rail · Threads",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "zGpz3",
+                  "name": "Rail Icon Threads",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "message-square",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "j80Ql",
+                  "name": "Rail Label Threads",
+                  "fill": "$muted",
+                  "content": "Threads",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "IS0Zn",
+              "name": "Rail · Tasks",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "A0b7t",
+                  "name": "Rail Icon Tasks",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "list-checks",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "LU7pt",
+                  "name": "Rail Label Tasks",
+                  "fill": "$muted",
+                  "content": "Tasks",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "dwyUT",
+              "name": "Rail · Memory",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "l6I8xJ",
+                  "name": "Rail Icon Memory",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "book-open",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "d7UcV",
+                  "name": "Rail Label Memory",
+                  "fill": "$muted",
+                  "content": "Memory",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "i1O4f",
+              "name": "Rail Spacer",
+              "width": 1,
+              "height": "fill_container",
+              "fill": "#00000000"
+            },
+            {
+              "type": "frame",
+              "id": "H2eDB",
+              "name": "Rail · Theme",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "Yhy6b",
+                  "name": "Rail Icon Theme",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "moon",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "iEU4i",
+                  "name": "Rail Label Theme",
+                  "fill": "$muted",
+                  "content": "Theme",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "bIyzT",
+              "name": "Rail · 设置",
+              "width": 56,
+              "height": 48,
+              "fill": "$primary-soft",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "nmoIl",
+                  "name": "Rail Icon 设置",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "settings",
+                  "library": "lucide",
+                  "fill": "$primary"
+                },
+                {
+                  "type": "text",
+                  "id": "RKRUV",
+                  "name": "Rail Label 设置",
+                  "fill": "$primary",
+                  "content": "设置",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "B0daV",
+          "name": "SettingsNav",
+          "width": 240,
+          "height": "fill_container",
+          "fill": "$bg",
+          "stroke": "$hairline",
+          "strokeWidth": {
+            "right": 1
+          },
+          "layout": "vertical",
+          "gap": 6,
+          "padding": [
+            30,
+            20,
+            20,
+            20
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "JGTpn",
+              "name": "Snav Eyebrow",
+              "fill": "$muted",
+              "content": "SUPERAGENTTEAM",
+              "fontFamily": "$font",
+              "fontSize": 9,
+              "fontWeight": "normal",
+              "letterSpacing": 1
+            },
+            {
+              "type": "text",
+              "id": "RROJf",
+              "name": "Snav Title",
+              "fill": "$ink",
+              "content": "设置",
+              "fontFamily": "$font",
+              "fontSize": 24,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "vu6gG",
+              "name": "Snav · Accounts",
+              "width": "fill_container",
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "stroke": "#00000000",
+              "strokeWidth": 1,
+              "gap": 10,
+              "padding": [
+                10,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "qMb2t",
+                  "name": "Snav Icon Accounts",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "key-round",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "frame",
+                  "id": "ikYIL",
+                  "name": "Snav Body Accounts",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mVrEd",
+                      "name": "Snav Label Accounts",
+                      "fill": "$ink",
+                      "content": "账户与登录",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "JwsaJ",
+                      "name": "Snav Desc Accounts",
+                      "fill": "$muted",
+                      "content": "provider、模型与凭据",
+                      "fontFamily": "$font",
+                      "fontSize": 9.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "nqEdj",
+                  "name": "Snav Count Accounts",
+                  "fill": "$muted",
+                  "content": "2",
+                  "fontFamily": "$mono",
+                  "fontSize": 9.5,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "q3xC8",
+              "name": "Snav · Agents",
+              "width": "fill_container",
+              "fill": "$primary-soft",
+              "cornerRadius": 8,
+              "stroke": "$hairline",
+              "strokeWidth": 1,
+              "gap": 10,
+              "padding": [
+                10,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "XjJiG",
+                  "name": "Snav Icon Agents",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "users",
+                  "library": "lucide",
+                  "fill": "$primary-active"
+                },
+                {
+                  "type": "frame",
+                  "id": "VuhXq",
+                  "name": "Snav Body Agents",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Drsto",
+                      "name": "Snav Label Agents",
+                      "fill": "$primary-active",
+                      "content": "Agents",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "LKTLI",
+                      "name": "Snav Desc Agents",
+                      "fill": "$muted",
+                      "content": "成员、模型与 @ 名字",
+                      "fontFamily": "$font",
+                      "fontSize": 9.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "O7rIf",
+                  "name": "Snav Count Agents",
+                  "fill": "$muted",
+                  "content": "3",
+                  "fontFamily": "$mono",
+                  "fontSize": 9.5,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "SGCcr",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$bg",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            30,
+            38,
+            36,
+            38
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "Q3vF5",
+              "name": "Breadcrumb",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "cSW1Y",
+                  "name": "Crumb Root",
+                  "fill": "$muted",
+                  "content": "Agents",
+                  "fontFamily": "$font",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "Aa9iO",
+                  "name": "Crumb Chevron",
+                  "width": 12,
+                  "height": 12,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "LqaLP",
+                  "name": "Crumb Current",
+                  "fill": "$ink",
+                  "content": "新建 Agent",
+                  "fontFamily": "$font",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "dtJvl",
+              "name": "Page Head",
+              "width": 640,
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "B6cLHb",
+                  "name": "Page Title",
+                  "fill": "$ink",
+                  "content": "新建 Agent",
+                  "fontFamily": "$font",
+                  "fontSize": 20,
+                  "fontWeight": "700",
+                  "letterSpacing": -0.2
+                },
+                {
+                  "type": "text",
+                  "id": "HEWzX",
+                  "name": "Page Desc",
+                  "fill": "$muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "id 由后台生成。先填身份与职责，再选 account 与模型。",
+                  "lineHeight": 1.55,
+                  "fontFamily": "$font",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "mhEUf",
+              "name": "Body",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ihZkC",
+                  "name": "Section Nav",
+                  "width": 180,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "QLJAA",
+                      "name": "Section Nav · 身份与职责",
+                      "width": "fill_container",
+                      "fill": "$primary-soft",
+                      "cornerRadius": 8,
+                      "gap": 8,
+                      "padding": [
+                        9,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "ZLn4f",
+                          "name": "Nav Icon 身份与职责",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "user",
+                          "library": "lucide",
+                          "fill": "$primary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "bpUUm",
+                          "name": "Nav Label 身份与职责",
+                          "fill": "$primary-active",
+                          "content": "身份与职责",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "RzRLb",
+                      "name": "Section Nav · Account 与模型",
+                      "width": "fill_container",
+                      "fill": "#00000000",
+                      "cornerRadius": 8,
+                      "gap": 8,
+                      "padding": [
+                        9,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "PUxSR",
+                          "name": "Nav Icon Account 与模型",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "cpu",
+                          "library": "lucide",
+                          "fill": "$muted"
+                        },
+                        {
+                          "type": "text",
+                          "id": "N2TH0M",
+                          "name": "Nav Label Account 与模型",
+                          "fill": "$body",
+                          "content": "Account 与模型",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "h83WH",
+                  "name": "Section Card",
+                  "width": "fill_container",
+                  "fill": "$surface-1",
+                  "cornerRadius": 12,
+                  "stroke": "$hairline",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0F172A14",
+                    "offset": {
+                      "x": 0,
+                      "y": 6
+                    },
+                    "blur": 18
+                  },
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": [
+                    20,
+                    22
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "j2vb83",
+                      "name": "Section Head",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "EXrol",
+                          "name": "Section Title",
+                          "fill": "$ink",
+                          "content": "身份与职责",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "L9Ftk5",
+                          "name": "Section Desc",
+                          "fill": "$muted",
+                          "content": "名字、呼叫别名、职责与外观；id 不需要填写。",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "lsiLO",
+                      "name": "Row · 名字",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "h8fja",
+                          "name": "Label Col · 名字",
+                          "width": 130,
+                          "layout": "vertical",
+                          "padding": [
+                            8,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BNDol",
+                              "name": "Label · 名字",
+                              "fill": "$body",
+                              "content": "名字",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "spQbD",
+                          "name": "Field · 名字",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "p2k3g",
+                              "name": "Input",
+                              "width": "fill_container",
+                              "height": 36,
+                              "fill": "$surface-2",
+                              "cornerRadius": 8,
+                              "stroke": "#00000000",
+                              "strokeWidth": 1,
+                              "padding": [
+                                8,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "KPr8F",
+                                  "name": "Value",
+                                  "fill": "$muted",
+                                  "content": "Agent A",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Eupwc",
+                      "name": "Row · 呼叫别名",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "k2Nx3i",
+                          "name": "Label Col · 呼叫别名",
+                          "width": 130,
+                          "layout": "vertical",
+                          "padding": [
+                            8,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "vw8Dt",
+                              "name": "Label · 呼叫别名",
+                              "fill": "$body",
+                              "content": "呼叫别名",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "HiWpG",
+                          "name": "Field · 呼叫别名",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Qqjgo",
+                              "name": "Alias Chips",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "ex9L9",
+                                  "name": "Alias · @agentA",
+                                  "fill": "$surface-2",
+                                  "cornerRadius": 999,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "F5nJQ",
+                                      "name": "Alias Text",
+                                      "fill": "$body",
+                                      "content": "@agentA",
+                                      "fontFamily": "$mono",
+                                      "fontSize": 10,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "S1iQe",
+                                  "name": "Alias · @a",
+                                  "fill": "$surface-2",
+                                  "cornerRadius": 999,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ck3tR",
+                                      "name": "Alias Text",
+                                      "fill": "$body",
+                                      "content": "@a",
+                                      "fontFamily": "$mono",
+                                      "fontSize": 10,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "iYpoH",
+                                  "name": "Add Alias",
+                                  "fill": "#00000000",
+                                  "cornerRadius": 999,
+                                  "stroke": "$primary",
+                                  "strokeWidth": 1,
+                                  "strokeDash": [
+                                    4,
+                                    3
+                                  ],
+                                  "gap": 4,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "gr7YX",
+                                      "name": "Add Icon",
+                                      "width": 12,
+                                      "height": 12,
+                                      "icon": "plus",
+                                      "library": "lucide",
+                                      "fill": "$primary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "m5Yje",
+                                      "name": "Add Label",
+                                      "fill": "$primary",
+                                      "content": "添加别名",
+                                      "fontFamily": "$font",
+                                      "fontSize": 10,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "UlSmC",
+                      "name": "Row · 职责",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "O0MVel",
+                          "name": "Label Col · 职责",
+                          "width": 130,
+                          "layout": "vertical",
+                          "padding": [
+                            8,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "w18Mw",
+                              "name": "Label · 职责",
+                              "fill": "$body",
+                              "content": "职责",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "mwYmd",
+                          "name": "Field · 职责",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "QWLGF",
+                              "name": "Input",
+                              "width": "fill_container",
+                              "height": 80,
+                              "fill": "$surface-2",
+                              "cornerRadius": 8,
+                              "stroke": "#00000000",
+                              "strokeWidth": 1,
+                              "padding": [
+                                8,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "SYiQp",
+                                  "name": "Value",
+                                  "fill": "$muted",
+                                  "content": "A2A coordinator（可选）",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "aZq5d",
+                      "name": "Row · 角色",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "xzTIf",
+                          "name": "Label Col · 角色",
+                          "width": 130,
+                          "layout": "vertical",
+                          "padding": [
+                            8,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "zHpUU",
+                              "name": "Label · 角色",
+                              "fill": "$body",
+                              "content": "角色",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "domoN",
+                          "name": "Field · 角色",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "bDbwY",
+                              "name": "Input",
+                              "width": "fill_container",
+                              "height": 36,
+                              "fill": "$surface-2",
+                              "cornerRadius": 8,
+                              "stroke": "#00000000",
+                              "strokeWidth": 1,
+                              "padding": [
+                                8,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "J7mmAi",
+                                  "name": "Value",
+                                  "fill": "$muted",
+                                  "content": "worker",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "jQmFR",
+                      "name": "Row · 头像",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "CUs3m",
+                          "name": "Label Col · 头像",
+                          "width": 130,
+                          "layout": "vertical",
+                          "padding": [
+                            8,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "x0jAA",
+                              "name": "Label · 头像",
+                              "fill": "$body",
+                              "content": "头像",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "z6JqFx",
+                          "name": "Field · 头像",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "RvYfV",
+                              "name": "Avatar Row",
+                              "gap": 12,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "hluOo",
+                                  "name": "Avatar",
+                                  "width": 44,
+                                  "height": 44,
+                                  "fill": "$primary",
+                                  "cornerRadius": 999,
+                                  "layout": "vertical",
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "rPkGi",
+                                      "name": "Avatar Letter",
+                                      "fill": "#FFFFFF",
+                                      "content": "A",
+                                      "fontFamily": "$font",
+                                      "fontSize": 14,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "tDDLz",
+                                  "name": "Upload",
+                                  "fill": "$surface-1",
+                                  "cornerRadius": 8,
+                                  "stroke": "$hairline",
+                                  "strokeWidth": 1,
+                                  "gap": 6,
+                                  "padding": [
+                                    8,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "aoqFp",
+                                      "name": "Upload Icon",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "upload",
+                                      "library": "lucide",
+                                      "fill": "$body"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "KDk9Z",
+                                      "name": "Upload Label",
+                                      "fill": "$body",
+                                      "content": "选择文件",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "WJZ0l",
+                                  "name": "Avatar Hint",
+                                  "fill": "$muted",
+                                  "content": "PNG/JPG，≤1MB",
+                                  "fontFamily": "$font",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "iopUg",
+                      "name": "Row · 成员主色",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ZaVUc",
+                          "name": "Label Col · 成员主色",
+                          "width": 130,
+                          "layout": "vertical",
+                          "padding": [
+                            8,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BRPI0",
+                              "name": "Label · 成员主色",
+                              "fill": "$body",
+                              "content": "成员主色",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "mWTcn",
+                          "name": "Field · 成员主色",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "oWXum",
+                              "name": "Color Row",
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 8,
+                                  "id": "CE173",
+                                  "name": "Color Swatch",
+                                  "fill": "$primary",
+                                  "width": 28,
+                                  "height": 28
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "kdyhI",
+                                  "name": "Color Hex",
+                                  "fill": "$body",
+                                  "content": "#2563EB",
+                                  "fontFamily": "$mono",
+                                  "fontSize": 11,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Fw5sG",
+                                  "name": "Color Hint",
+                                  "fill": "$muted",
+                                  "content": "以后用于该成员的聊天气泡/背景",
+                                  "fontFamily": "$font",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "AnOsb",
+              "name": "Form Actions",
+              "width": "fill_container",
+              "gap": 10,
+              "justifyContent": "end",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "QipWS",
+                  "name": "Secondary · 取消",
+                  "fill": "$surface-1",
+                  "cornerRadius": 8,
+                  "stroke": "$hairline",
+                  "strokeWidth": 1,
+                  "padding": [
+                    9,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n6v5aI",
+                      "name": "Cancel Label",
+                      "fill": "$body",
+                      "content": "取消",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "K5YbF",
+                  "name": "Primary · 创建 Agent",
+                  "fill": "$primary",
+                  "cornerRadius": 8,
+                  "gap": 7,
+                  "padding": [
+                    9,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "q6SyM",
+                      "name": "Create Icon",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "check",
+                      "library": "lucide",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "JvpWy",
+                      "name": "Create Label",
+                      "fill": "#FFFFFF",
+                      "content": "创建 Agent",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "sU1GT",
+      "x": 9120,
+      "y": 0,
+      "name": "F035 · 新建 Agent · Account",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg",
+      "children": [
+        {
+          "type": "frame",
+          "id": "BYE6j",
+          "name": "Rail",
+          "width": 72,
+          "height": "fill_container",
+          "fill": "$surface-2",
+          "stroke": "$hairline",
+          "strokeWidth": {
+            "right": 1
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            16,
+            8,
+            12,
+            8
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "o3qm3C",
+              "name": "Logo",
+              "width": 34,
+              "height": 34,
+              "fill": "$primary",
+              "cornerRadius": 9,
+              "layout": "vertical",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Iw5hz",
+                  "name": "Logo Mark",
+                  "fill": "#FFFFFF",
+                  "content": "S",
+                  "fontFamily": "$font",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "tPQ0L",
+              "name": "Rail Divider",
+              "fill": "$hairline",
+              "width": 32,
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "jBesX",
+              "name": "Rail · Threads",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "h5Iaq",
+                  "name": "Rail Icon Threads",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "message-square",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "H0vwO",
+                  "name": "Rail Label Threads",
+                  "fill": "$muted",
+                  "content": "Threads",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "KD2VI",
+              "name": "Rail · Tasks",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "EAccR",
+                  "name": "Rail Icon Tasks",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "list-checks",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "xnXE4",
+                  "name": "Rail Label Tasks",
+                  "fill": "$muted",
+                  "content": "Tasks",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "mK7vH",
+              "name": "Rail · Memory",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "DqWxQ",
+                  "name": "Rail Icon Memory",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "book-open",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "lRUZS",
+                  "name": "Rail Label Memory",
+                  "fill": "$muted",
+                  "content": "Memory",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "r3KPA",
+              "name": "Rail Spacer",
+              "width": 1,
+              "height": "fill_container",
+              "fill": "#00000000"
+            },
+            {
+              "type": "frame",
+              "id": "Ftrni",
+              "name": "Rail · Theme",
+              "width": 56,
+              "height": 48,
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "ro7jE",
+                  "name": "Rail Icon Theme",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "moon",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "UKmBu",
+                  "name": "Rail Label Theme",
+                  "fill": "$muted",
+                  "content": "Theme",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "NV4hE",
+              "name": "Rail · 设置",
+              "width": 56,
+              "height": 48,
+              "fill": "$primary-soft",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "EZF0c",
+                  "name": "Rail Icon 设置",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "settings",
+                  "library": "lucide",
+                  "fill": "$primary"
+                },
+                {
+                  "type": "text",
+                  "id": "XnIHn",
+                  "name": "Rail Label 设置",
+                  "fill": "$primary",
+                  "content": "设置",
+                  "fontFamily": "$font",
+                  "fontSize": 9,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "hTFKW",
+          "name": "SettingsNav",
+          "width": 240,
+          "height": "fill_container",
+          "fill": "$bg",
+          "stroke": "$hairline",
+          "strokeWidth": {
+            "right": 1
+          },
+          "layout": "vertical",
+          "gap": 6,
+          "padding": [
+            30,
+            20,
+            20,
+            20
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "kTlEd",
+              "name": "Snav Eyebrow",
+              "fill": "$muted",
+              "content": "SUPERAGENTTEAM",
+              "fontFamily": "$font",
+              "fontSize": 9,
+              "fontWeight": "normal",
+              "letterSpacing": 1
+            },
+            {
+              "type": "text",
+              "id": "tjTDk",
+              "name": "Snav Title",
+              "fill": "$ink",
+              "content": "设置",
+              "fontFamily": "$font",
+              "fontSize": 24,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "PRFHH",
+              "name": "Snav · Accounts",
+              "width": "fill_container",
+              "fill": "#00000000",
+              "cornerRadius": 8,
+              "stroke": "#00000000",
+              "strokeWidth": 1,
+              "gap": 10,
+              "padding": [
+                10,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "Hz135",
+                  "name": "Snav Icon Accounts",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "key-round",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "frame",
+                  "id": "BqQtd",
+                  "name": "Snav Body Accounts",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "eNcWY",
+                      "name": "Snav Label Accounts",
+                      "fill": "$ink",
+                      "content": "账户与登录",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XZ77g",
+                      "name": "Snav Desc Accounts",
+                      "fill": "$muted",
+                      "content": "provider、模型与凭据",
+                      "fontFamily": "$font",
+                      "fontSize": 9.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "kL2ZE",
+                  "name": "Snav Count Accounts",
+                  "fill": "$muted",
+                  "content": "2",
+                  "fontFamily": "$mono",
+                  "fontSize": 9.5,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "vjaWR",
+              "name": "Snav · Agents",
+              "width": "fill_container",
+              "fill": "$primary-soft",
+              "cornerRadius": 8,
+              "stroke": "$hairline",
+              "strokeWidth": 1,
+              "gap": 10,
+              "padding": [
+                10,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "p4vzYc",
+                  "name": "Snav Icon Agents",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "users",
+                  "library": "lucide",
+                  "fill": "$primary-active"
+                },
+                {
+                  "type": "frame",
+                  "id": "zBcYt",
+                  "name": "Snav Body Agents",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Se1Fx",
+                      "name": "Snav Label Agents",
+                      "fill": "$primary-active",
+                      "content": "Agents",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "lILfK",
+                      "name": "Snav Desc Agents",
+                      "fill": "$muted",
+                      "content": "成员、模型与 @ 名字",
+                      "fontFamily": "$font",
+                      "fontSize": 9.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "VaAHr",
+                  "name": "Snav Count Agents",
+                  "fill": "$muted",
+                  "content": "3",
+                  "fontFamily": "$mono",
+                  "fontSize": 9.5,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Iv65A",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$bg",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            30,
+            38,
+            36,
+            38
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "sJbVq",
+              "name": "Breadcrumb",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "k8xVsA",
+                  "name": "Crumb Root",
+                  "fill": "$muted",
+                  "content": "Agents",
+                  "fontFamily": "$font",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "qHLQU",
+                  "name": "Crumb Chevron",
+                  "width": 12,
+                  "height": 12,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "O0NfVm",
+                  "name": "Crumb Current",
+                  "fill": "$ink",
+                  "content": "新建 Agent",
+                  "fontFamily": "$font",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ivJv8",
+              "name": "Page Head",
+              "width": 640,
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "KFGUr",
+                  "name": "Page Title",
+                  "fill": "$ink",
+                  "content": "新建 Agent",
+                  "fontFamily": "$font",
+                  "fontSize": 20,
+                  "fontWeight": "700",
+                  "letterSpacing": -0.2
+                },
+                {
+                  "type": "text",
+                  "id": "nJUMh",
+                  "name": "Page Desc",
+                  "fill": "$muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "id 由后台生成。先填身份与职责，再选 account 与模型。",
+                  "lineHeight": 1.55,
+                  "fontFamily": "$font",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "wGPgt",
+              "name": "Body",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "L5eemw",
+                  "name": "Section Nav",
+                  "width": 180,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "yMQzn",
+                      "name": "Section Nav · 身份与职责",
+                      "width": "fill_container",
+                      "fill": "#00000000",
+                      "cornerRadius": 8,
+                      "gap": 8,
+                      "padding": [
+                        9,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "soAFh",
+                          "name": "Nav Icon 身份与职责",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "user",
+                          "library": "lucide",
+                          "fill": "$muted"
+                        },
+                        {
+                          "type": "text",
+                          "id": "pOcU8",
+                          "name": "Nav Label 身份与职责",
+                          "fill": "$body",
+                          "content": "身份与职责",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "xyzl2",
+                      "name": "Section Nav · Account 与模型",
+                      "width": "fill_container",
+                      "fill": "$primary-soft",
+                      "cornerRadius": 8,
+                      "gap": 8,
+                      "padding": [
+                        9,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "iQZcd",
+                          "name": "Nav Icon Account 与模型",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "cpu",
+                          "library": "lucide",
+                          "fill": "$primary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Ej6eG",
+                          "name": "Nav Label Account 与模型",
+                          "fill": "$primary-active",
+                          "content": "Account 与模型",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "EXI9P",
+                  "name": "Section Card",
+                  "width": "fill_container",
+                  "fill": "$surface-1",
+                  "cornerRadius": 12,
+                  "stroke": "$hairline",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0F172A14",
+                    "offset": {
+                      "x": 0,
+                      "y": 6
+                    },
+                    "blur": 18
+                  },
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": [
+                    20,
+                    22
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "afsL0",
+                      "name": "Section Head",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "JJXNR",
+                          "name": "Section Title",
+                          "fill": "$ink",
+                          "content": "Account 与模型",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "KeZW1",
+                          "name": "Section Desc",
+                          "fill": "$muted",
+                          "content": "agent 通过 account 取模型；模型列表来自该账户。",
+                          "fontFamily": "$font",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "z01Cw",
+                      "name": "Row · Account",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Nci1B",
+                          "name": "Label Col · Account",
+                          "width": 130,
+                          "layout": "vertical",
+                          "padding": [
+                            8,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "AjVG9",
+                              "name": "Label · Account",
+                              "fill": "$body",
+                              "content": "Account",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "HzjyP",
+                          "name": "Field · Account",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "irIX0",
+                              "name": "Input",
+                              "width": "fill_container",
+                              "height": 36,
+                              "fill": "$surface-2",
+                              "cornerRadius": 8,
+                              "stroke": "#00000000",
+                              "strokeWidth": 1,
+                              "padding": [
+                                8,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "tkUyX",
+                                  "name": "Value",
+                                  "fill": "$muted",
+                                  "content": "kimi",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vFYzx",
+                      "name": "Row · Model",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ICqhB",
+                          "name": "Label Col · Model",
+                          "width": 130,
+                          "layout": "vertical",
+                          "padding": [
+                            8,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "DRd5l",
+                              "name": "Label · Model",
+                              "fill": "$body",
+                              "content": "Model",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "VobYn",
+                          "name": "Field · Model",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "TnrH5",
+                              "name": "Input",
+                              "width": "fill_container",
+                              "height": 36,
+                              "fill": "$surface-2",
+                              "cornerRadius": 8,
+                              "stroke": "#00000000",
+                              "strokeWidth": 1,
+                              "padding": [
+                                8,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "s3x1o0",
+                                  "name": "Value",
+                                  "fill": "$muted",
+                                  "content": "kimi-for-coding",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "sqQwt",
+                      "name": "Row · 启用",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Ozk4e",
+                          "name": "Label Col · 启用",
+                          "width": 130,
+                          "layout": "vertical",
+                          "padding": [
+                            8,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "zjuhX",
+                              "name": "Label · 启用",
+                              "fill": "$body",
+                              "content": "启用",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "eHziu",
+                          "name": "Field · 启用",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "JLgdP",
+                              "name": "Enable Row",
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "io8SL",
+                                  "name": "Switch",
+                                  "width": 36,
+                                  "height": 20,
+                                  "fill": "$primary",
+                                  "cornerRadius": 999,
+                                  "padding": 2,
+                                  "justifyContent": "end",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "ellipse",
+                                      "id": "TAGZT",
+                                      "name": "Switch Knob",
+                                      "fill": "#FFFFFF",
+                                      "width": 16,
+                                      "height": 16
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "LsI09",
+                                  "name": "Enable Hint",
+                                  "fill": "$muted",
+                                  "content": "停用后不会出现在对话的 @ 列表里",
+                                  "fontFamily": "$font",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "JBxig",
+              "name": "Form Actions",
+              "width": "fill_container",
+              "gap": 10,
+              "justifyContent": "end",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "WWCFx",
+                  "name": "Secondary · 取消",
+                  "fill": "$surface-1",
+                  "cornerRadius": 8,
+                  "stroke": "$hairline",
+                  "strokeWidth": 1,
+                  "padding": [
+                    9,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "P7cEc",
+                      "name": "Cancel Label",
+                      "fill": "$body",
+                      "content": "取消",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DFqCX",
+                  "name": "Primary · 创建 Agent",
+                  "fill": "$primary",
+                  "cornerRadius": 8,
+                  "gap": 7,
+                  "padding": [
+                    9,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "x5mQ9H",
+                      "name": "Create Icon",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "check",
+                      "library": "lucide",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Io1mk",
+                      "name": "Create Label",
+                      "fill": "#FFFFFF",
+                      "content": "创建 Agent",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "themes": {
+    "Mode": [
+      "Light",
+      "Dark"
+    ]
+  },
+  "variables": {
+    "--sidebar": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#E7E8E5"
+        },
+        {
+          "value": "#18181b",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--sidebar-foreground": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#666666"
+        },
+        {
+          "value": "#fafafa",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--sidebar-primary": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#18181b"
+        },
+        {
+          "value": "#18181b",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--sidebar-primary-foreground": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#fafafa"
+        },
+        {
+          "value": "#fafafa",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--sidebar-border": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#CBCCC9"
+        },
+        {
+          "value": "#ffffff1a",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--sidebar-accent": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#CBCCC9"
+        },
+        {
+          "value": "#2a2a30",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--sidebar-accent-foreground": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#18181b"
+        },
+        {
+          "value": "#fafafa",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--sidebar-ring": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#71717a"
+        },
+        {
+          "value": "#71717a",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--background": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#F2F3F0"
+        },
+        {
+          "value": "#111111",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--foreground": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#111111"
+        },
+        {
+          "value": "#FFFFFF",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--card": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#FFFFFF"
+        },
+        {
+          "value": "#1A1A1A",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--card-foreground": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#111111"
+        },
+        {
+          "value": "#FFFFFF",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--popover": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#FFFFFF"
+        },
+        {
+          "value": "#1A1A1A",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--popover-foreground": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#111111"
+        },
+        {
+          "value": "#FFFFFF",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--primary": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#FF8400"
+        },
+        {
+          "value": "#FF8400",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--primary-foreground": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#111111"
+        },
+        {
+          "value": "#111111",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--secondary": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#E7E8E5"
+        },
+        {
+          "value": "#2E2E2E",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--secondary-foreground": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#111111"
+        },
+        {
+          "value": "#FFFFFF",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--muted": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#F2F3F0"
+        },
+        {
+          "value": "#2E2E2E",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--muted-foreground": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#666666"
+        },
+        {
+          "value": "#B8B9B6",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--accent": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#F2F3F0"
+        },
+        {
+          "value": "#111111",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--accent-foreground": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#111111"
+        },
+        {
+          "value": "#F2F3F0",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--destructive": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#D93C15"
+        },
+        {
+          "value": "#FF5C33",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--border": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#CBCCC9"
+        },
+        {
+          "value": "#2E2E2E",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--input": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#CBCCC9"
+        },
+        {
+          "value": "#2E2E2E",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--ring": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#666666"
+        },
+        {
+          "value": "#666666",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--white": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "--black": {
+      "type": "color",
+      "value": "#000000"
+    },
+    "--font-primary": {
+      "type": "string",
+      "value": "JetBrains Mono"
+    },
+    "--font-secondary": {
+      "type": "string",
+      "value": "Geist"
+    },
+    "--radius-none": {
+      "type": "number",
+      "value": 0
+    },
+    "--radius-pill": {
+      "type": "number",
+      "value": 999
+    },
+    "--color-success": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#DFE6E1"
+        },
+        {
+          "value": "#222924",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--color-success-foreground": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#004D1A"
+        },
+        {
+          "value": "#B6FFCE",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--color-warning": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#E9E3D8"
+        },
+        {
+          "value": "#291C0F",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--color-warning-foreground": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#804200"
+        },
+        {
+          "value": "#FF8400",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--color-error": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#E5DCDA"
+        },
+        {
+          "value": "#24100B",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--color-error-foreground": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#8C1C00"
+        },
+        {
+          "value": "#FF5C33",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--color-info": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#DFDFE6"
+        },
+        {
+          "value": "#222229",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--color-info-foreground": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#000066"
+        },
+        {
+          "value": "#B2B2FF",
+          "theme": {
+            "Mode": "Dark"
+          }
+        }
+      ]
+    },
+    "--radius-m": {
+      "type": "number",
+      "value": 16
+    },
+    "bg": {
+      "type": "color",
+      "value": "#F8FBFF"
+    },
+    "surface-1": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "surface-2": {
+      "type": "color",
+      "value": "#F1F5F9"
+    },
+    "surface-3": {
+      "type": "color",
+      "value": "#E8EEF7"
+    },
+    "hairline": {
+      "type": "color",
+      "value": "#E2E8F0"
+    },
+    "ink": {
+      "type": "color",
+      "value": "#0F172A"
+    },
+    "body": {
+      "type": "color",
+      "value": "#334155"
+    },
+    "muted": {
+      "type": "color",
+      "value": "#64748B"
+    },
+    "primary": {
+      "type": "color",
+      "value": "#2563EB"
+    },
+    "primary-active": {
+      "type": "color",
+      "value": "#1D4ED8"
+    },
+    "primary-soft": {
+      "type": "color",
+      "value": "#DBEAFE"
+    },
+    "success": {
+      "type": "color",
+      "value": "#16A34A"
+    },
+    "success-soft": {
+      "type": "color",
+      "value": "#DCFCE7"
+    },
+    "danger": {
+      "type": "color",
+      "value": "#DC2626"
+    },
+    "a1": {
+      "type": "color",
+      "value": "#2563EB"
+    },
+    "a2": {
+      "type": "color",
+      "value": "#0891B2"
+    },
+    "a3": {
+      "type": "color",
+      "value": "#7C3AED"
+    },
+    "font": {
+      "type": "string",
+      "value": "Inter"
+    },
+    "mono": {
+      "type": "string",
+      "value": "JetBrains Mono"
+    }
+  },
+  "fileToken": "73462634-af31-4694-95c5-e04d2e52afb0"
+}

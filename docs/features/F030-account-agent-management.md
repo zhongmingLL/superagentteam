@@ -39,6 +39,8 @@ F025 的真实 provider E2E 通过 `/home/ming/.env` 提供 key，是临时方�
 ### F030.1 Account 契约 + 存储 + API
 
 - Provider catalog（已知 provider id、默认 env、是否支持 baseUrl）。
+- F030.5 design：[plan 0045](../plans/0045-f030.5-account-provider-catalog.md)：
+  固定 v1 vendor 列表后续改为从 pi catalog 派生，protocol/client 与 vendor 分层。
 - `accounts.json` 元数据 + `credentials.json`（0600，按 accountRef 存 API key）。
 - `AccountConfig.apiKeyRef` v1：`secret:<ref>` 或 `ENV:<NAME>`；明文 key 不写 accounts.json。
 - `GET/POST/PATCH/DELETE /api/accounts`；`GET /api/providers`；响应不含明文 secret。

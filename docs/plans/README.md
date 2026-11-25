@@ -3,7 +3,7 @@ title: "SuperAgentTeam 执行计划索引"
 doc_kind: index
 status: reviewed
 created: 2026-10-21
-updated: 2026-11-24
+updated: 2026-11-26
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 ---
 
@@ -74,6 +74,7 @@ W0b upstream/CI 治理：与 W1–W4 并行，W5 前完成
 | [`0042-f034-agent-run-control.md`](0042-f034-agent-run-control.md) | F034：重试预算、cancel running agent、API/UI 停止、队列说明 | 砚砚（runtime/cancel/并发）+ 墨墨（停止/队列文案） |
 | [`0043-f035-settings-hub.md`](0043-f035-settings-hub.md) | F035：设置路由、账号/Agents 面板抽取、侧边栏入口、响应式 | 墨墨（信息层级/文案）+ 砚砚（状态/契约） |
 | [`0044-f036-chat-surface-polish.md`](0044-f036-chat-surface-polish.md) | F036：agent 消息气泡恢复、operator 消息头像、光暗/窄屏验证 | 墨墨（视觉/文案） |
+| [`0045-f030.5-account-provider-catalog.md`](0045-f030.5-account-provider-catalog.md) | F030.5：account/provider catalog 架构：protocol/client vs vendor、从 pi catalog 派生 provider/model、custom gateway、迁移 | 砚砚（契约/安全）+ 墨墨（account UI/可发现性） |
 
 ## W0–W8 一览
 

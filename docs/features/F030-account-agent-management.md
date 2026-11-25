@@ -7,7 +7,7 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-24
-updated: 2026-11-24
+updated: 2026-11-26
 source_decision: "operator 2026-11-24: .env 是临时方案；正式方案参考 Clowder 的 account 配置页与 agent 创建页，两个需求合并做"
 ---
 
@@ -123,6 +123,12 @@ F025 的真实 provider E2E 通过 `/home/ming/.env` 提供 key，是临时方�
   （41 个 API-key provider，`openai-codex` OAuth-only 排除）；composite-auth provider
   保留可见但 `selectable=false`；envName 从 pi `env-api-keys.ts` 解析；GLM 等
   label/models 不再手写。`check:account-provider-catalog` 加入 CI parity guard。
+- 2026-11-26：F030.5a merged `b9f6e954`（PR #209，CI 7/7）；runtime ff-only 到同
+  revision 并 restart。Live `/api/providers` 返回 41 项、selectable provider 的
+  `envName` 全非空、6 个 special-auth provider `selectable=false`；账号表单 35 个
+  可选 provider + disabled optgroup，选中 `zai` 显示 5 个 GLM chips。
+  合入前一并修复：envMap bare-key 解析回退（20 个 provider 含 `zai` 的 env hint）
+  与 provider 下拉分组（墨墨 P3）。
 
 ## 风险与回滚
 

@@ -23,14 +23,16 @@ superagentteam runtime <start|status|end|restart>
 
 ## 当前布局
 
-| 角色 | worktree | WSL 端口 | Windows | data dir | env |
-|---|---|---|---|---|---|
-| runtime | `/home/ming/agent/superagentteam-runtime` | `3005` / `3014` | `3005`（3103 legacy） | `/home/ming/.superagentteam-runtime/data` | `~/.config/superagentteam/runtime.env` |
-| test | `/home/ming/agent/superagentteam-alpha` | `3007` / `3016` | 无 | `~/.superagentteam-alpha/data` | `~/.config/superagentteam/alpha.env` |
+| 角色 | worktree | 端口（web / daemon） | data dir | env |
+|---|---|---|---|
+| runtime | `/home/ming/agent/superagentteam-runtime` | `3005` / `3014` | `/home/ming/.superagentteam-runtime/data` | `~/.config/superagentteam/runtime.env` |
+| test | `/home/ming/agent/superagentteam-alpha` | `3007` / `3016` | `~/.superagentteam-alpha/data` | `~/.config/superagentteam/alpha.env` |
 
 > 2026-11-25: runtime 数据已从旧 F028 demo 的 `/tmp/f028-demo-1795448211/data` 迁到持久路径 `~/.superagentteam-runtime/data`；旧目录保留为退役快照，不再作为运行数据。
 
 `3003/3004` 属 Clowder AI，不在本 runbook 管理范围。
+Windows 直接用 `http://localhost:3005`；没有 Windows 代理。`3103` 是 F033 早期的迁移路径，
+已从 runtime-state、port registry 和正式入口中移除。
 
 ## 启动 runtime
 
@@ -40,26 +42,27 @@ node packages/superagentteam-daemon/dist/cli.js \
   --data-dir /home/ming/.superagentteam-runtime/data \
   runtime start \
   --worktree /home/ming/agent/superagentteam-runtime \
-  --hub-origin http://localhost:3005 \
   --env-file /home/ming/.config/superagentteam/runtime.env
 ```
 
 入口会做端口 preflight、拉起 daemon + Vite、等 health，并写 `<data-dir>/runtime-state.json`。启动是幂等的：已 running 时返回 `already running`。
 
-> **`--hub-origin` 必须覆盖浏览器入口。** daemon 接受该 Origin，以及同一协议/端口下的
-> loopback 别名（`localhost` / `127.0.0.1` / `[::1]`）；非 loopback Origin 仍需完全一致。
-> 否则页面能打开，但发消息/创建会返回 403 `origin not allowed`。省略时默认跟随
-> `--web-port`（即 `http://localhost:<web-port>`）；不要再用已退役的 3103。
+> **hubOrigin 由 `--web-port` 推导。** 默认是 `http://localhost:<web-port>`；daemon 还接受同一
+> 协议/端口下的 loopback 别名（`localhost` / `127.0.0.1` / `[::1]`）。只有自定义入口
+> （例如 LAN origin）才显式传 `--hub-origin`；非 loopback Origin 必须与它完全一致。
 
 ## 状态 / 收尾 / 重启
 
 ```bash
 node packages/superagentteam-daemon/dist/cli.js --data-dir /home/ming/.superagentteam-runtime/data runtime status
+node packages/superagentteam-daemon/dist/cli.js --data-dir /home/ming/.superagentteam-runtime/data runtime status --check-write
 node packages/superagentteam-daemon/dist/cli.js --data-dir /home/ming/.superagentteam-runtime/data runtime end
 node packages/superagentteam-daemon/dist/cli.js --data-dir /home/ming/.superagentteam-runtime/data runtime restart --worktree /home/ming/agent/superagentteam-runtime --env-file /home/ming/.config/superagentteam/runtime.env
 ```
 
 `status` 六态：`not_started` / `running` / `degraded` / `stale` / `stopped` / `failed`。
+`status` 会打印 `public` 与 `origins`；`--check-write` 再做一次安全的写路径 smoke
+（本地 session + 带 Origin 的无效 agent POST，期望 400/422），403/401 会返回非零。
 `end` 只对 `pid + startedAt + command` 匹配的进程发 SIGTERM；身份不匹配会拒绝并报 `degraded`，不会按端口盲杀。
 
 ## 更新 runtime worktree
@@ -90,32 +93,22 @@ node packages/superagentteam-daemon/dist/cli.js \
   --data-dir /home/ming/.superagentteam-alpha/data \
   runtime start --worktree /home/ming/agent/superagentteam-alpha \
   --web-port 3007 --daemon-port 3016 \
-  --hub-origin http://localhost:3105 \
   --env-file /home/ming/.config/superagentteam/alpha.env
 ```
 
-test stack 不读写 runtime 的 data dir，也不占用 `3005/3014/3103`。
+test stack 不读写 runtime 的 data dir，也不占用 `3005/3014`；hubOrigin 自动跟随其 `--web-port`（3007）。
 
-## Windows 访问（3005 主路径，3103 legacy）
+## Windows 访问
 
-Windows 直接用 <http://localhost:3005>（WSL2 localhost forwarding；2026-11-25 实测 200）。
-**3103 PowerShell proxy 不再默认使用**：它只是 F033 早期的兼容路径，且必须从 Windows 端启动——
-从 WSL 里拉起的 PowerShell 再调 `wsl.exe` 会报 `Wsl/Service/E_UNEXPECTED`。仅当本机 localhost
-forwarding 不可用时才按 `node scripts/superagentteam/windows-proxy.mjs print` 的输出在 Windows 端启动。
-当前 live runtime 用 `--windows-port 3005`（与 WSL web 同端口，靠 WSL2 localhost forwarding）；
-port registry 里的 `runtime.windows=3103` 只保留给 legacy PowerShell proxy。`runtime-state.json.windowsPort`
-只是元数据，不代表 proxy 在运行。
-
-```bash
-# 仅 legacy 排查时使用
-node scripts/superagentteam/windows-proxy.mjs check
-```
+Windows 直接用 <http://localhost:3005>（WSL2 localhost forwarding，2026-11-25 实测 200）。
+**没有 Windows 代理，也不需要启动 3103。** 历史 PowerShell proxy 脚本仍在 `scripts/superagentteam/`
+下，但已不参与正式入口、runtime-state 或 port registry。
 
 ## cron supervisor
 
 WSL cron 负责崩溃恢复：`@reboot` + 每 2 分钟只在 `stale/degraded/failed` 时重启；
-`stopped` 不会自动拉起。cron 命令必须带与浏览器入口一致的参数，例如
-`--hub-origin http://localhost:3005 --windows-port 3005`；否则会再次把 3005 的写请求判成 403。
+`stopped` 不会自动拉起。cron 只传 `--web-port 3005 --daemon-port 3014 --env-file ...`；
+hubOrigin 由 web-port 推导，不再单独配置。
 
 ## 故障处理
 
@@ -125,8 +118,8 @@ WSL cron 负责崩溃恢复：`@reboot` + 每 2 分钟只在 `stale/degraded/fai
 | `runtime_port_in_use` | `ss -ltnp` 查占用；旧栈按 `docs/plans/0039-f033-phase-b-execution.md` B4 迁移；否则换 `--web-port` / `--daemon-port` |
 | `runtime_state_invalid` | 确认没有存活的本 stack 进程后，备份并移走损坏的 `runtime-state.json`，再 `runtime start` |
 | `degraded` / `stale` | 先 `runtime end`，再 `runtime start`；identity mismatch 时不要按端口盲杀 |
-| Windows 打不开 localhost:3005 | 先看 WSL `3005` 与 daemon `3014` health；确认 WSL2 localhost forwarding；不要先怀疑 3103 proxy |
-| 3005 能打开但发消息/创建 403 `origin not allowed` | `runtime-state.json.hubOrigin` 与浏览器入口不一致（非 loopback 或端口不同）；用 `--hub-origin http://localhost:3005` 重启，并检查 cron |
+| Windows 打不开 localhost:3005 | 先看 WSL `3005` 与 daemon `3014` health；确认 WSL2 localhost forwarding |
+| `runtime status --check-write` 报 403 `origin not allowed` | `hubOrigin` 与浏览器入口不一致（非 loopback 或端口不同）；用 `--hub-origin http://localhost:3005` 覆盖后重启 |
 | 进程全掉 | 已装 WSL cron supervisor（`@reboot` + 每 2 分钟仅对 stale/degraded/failed 重启）；若未自愈，手动 `runtime start` 并 `crontab -l` 检查 |
 
 ## 安全边界

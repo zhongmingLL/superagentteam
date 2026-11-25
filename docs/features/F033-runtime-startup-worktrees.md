@@ -95,6 +95,10 @@ Clowder AI 的启动面已经把这些分清了，F033 借鉴机制而不复制�
 > （`localhost` / `127.0.0.1` / `[::1]`），避免 operator 用 `127.0.0.1:3005` 打开页面后
 > 写请求被 403；非 loopback origin 仍要求精确匹配。
 
+> 2026-11-25（single-entry cleanup）：runtime-state 与 port registry 移除 `windowsPort`/3103；
+> hubOrigin 只由 `--web-port` 推导；`runtime status` 打印 `public`/`origins`，`--check-write`
+> 做带 Origin 的写路径 smoke。cron 不再传 `--hub-origin`/`--windows-port`。
+
 ### 2026-11-25 — Phase B 运行面迁移
 
 - B1 统一入口已合入：PR #188 → `e1ceb0e43`；reviewers 砚砚（identity/端口/env/state）+ 墨墨（operator 文案/迁移），CI `build-check-test` / `supply-chain` / `mcp-conformance` 全绿。
@@ -144,7 +148,7 @@ Clowder AI 的启动面已经把这些分清了，F033 借鉴机制而不复制�
 - 所有 AC-1–AC-8 有证据；旧栈/旧 proxy 已快照并收尾。
 - 2026-11-25 后续：WSL cron supervisor 重新启用（`@reboot` + 每 2 分钟仅对
   `stale/degraded/failed` 重启）；它是崩溃恢复兜底，不是进程存活依赖。live runtime
-  已升级到 `a33054f24`，入口与 hubOrigin 均为 3005。
+  跟随 `superagentteam-work`；入口与 hubOrigin 均为 3005，无 Windows 代理。
 
 ## 非目标
 

@@ -7,8 +7,8 @@ import { pathToFileURL } from "node:url";
  * runtime-ports.test.mjs so the two cannot drift silently.
  */
 export const RUNTIME_PORT_REGISTRY = {
-	runtime: { web: 3005, daemon: 3014, windows: 3103 },
-	test: { web: 3007, daemon: 3016, windows: null },
+	runtime: { web: 3005, daemon: 3014 },
+	test: { web: 3007, daemon: 3016 },
 	reserved: [
 		{ port: 3003, owner: "clowder-ai-web" },
 		{ port: 3004, owner: "clowder-ai-api" },
@@ -40,15 +40,6 @@ export function validateRuntimePorts(registry = RUNTIME_PORT_REGISTRY) {
 	for (const [role, port] of roles) {
 		if (reserved.has(port)) errors.push(`${role} uses reserved port ${port} (${reserved.get(port)})`);
 	}
-	for (const role of ["runtime", "test"]) {
-		const windows = registry[role]?.windows;
-		if (windows === null || windows === undefined) continue;
-		if (!validPort(windows)) {
-			errors.push(`${role}.windows must be null or an integer in 1024-65535`);
-			continue;
-		}
-		if (seen.has(windows)) errors.push(`${role}.windows duplicates ${seen.get(windows)} on port ${windows}`);
-	}
 	return { ok: errors.length === 0, errors };
 }
 
@@ -59,8 +50,6 @@ if (invokedAsScript) {
 		process.stderr.write(`runtime port registry is invalid:\n${result.errors.map((error) => `- ${error}`).join("\n")}\n`);
 		process.exitCode = 1;
 	} else {
-		process.stdout.write(
-			"runtime port registry OK: runtime 3005/3014 windows 3103; test 3007/3016; reserved 3003/3004\n",
-		);
+		process.stdout.write("runtime port registry OK: runtime 3005/3014; test 3007/3016; reserved 3003/3004\n");
 	}
 }

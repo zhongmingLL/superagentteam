@@ -119,6 +119,10 @@ F025 的真实 provider E2E 通过 `/home/ming/.env` 提供 key，是临时方�
   `suggestedModels`；`zai` 标签改为“Z.AI / 智谱 GLM”，账号表单可一键添加
   `glm-5.2` / `glm-5-turbo` / `glm-4.7`。Provider 列表仍是固定 v1 API-key
   catalog；model 仍允许自由输入。
+- 2026-11-26（F030.5a）：account provider view 改为 build-time 从 pi registry 派生
+  （41 个 API-key provider，`openai-codex` OAuth-only 排除）；composite-auth provider
+  保留可见但 `selectable=false`；envName 从 pi `env-api-keys.ts` 解析；GLM 等
+  label/models 不再手写。`check:account-provider-catalog` 加入 CI parity guard。
 
 ## 风险与回滚
 

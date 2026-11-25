@@ -11,6 +11,7 @@ export type AccountErrorCode =
 	| "credential_required"
 	| "invalid_ref"
 	| "invalid_provider"
+	| "unsupported_provider_auth"
 	| "invalid_models"
 	| "invalid_api_url"
 	| "invalid_env_name"
@@ -145,10 +146,17 @@ function normalizeDisplayName(value: unknown): string | undefined {
 }
 
 function normalizeProvider(value: unknown): string {
-	if (typeof value !== "string" || !findAccountProvider(value.trim())) {
+	const provider = typeof value === "string" ? findAccountProvider(value.trim()) : undefined;
+	if (!provider) {
 		throw new AccountError("invalid_provider", "unknown provider");
 	}
-	return value.trim();
+	if (!provider.selectable) {
+		throw new AccountError(
+			"unsupported_provider_auth",
+			`provider "${provider.id}" requires special authentication; not supported yet`,
+		);
+	}
+	return provider.id;
 }
 
 function normalizeEnvName(value: unknown): string {

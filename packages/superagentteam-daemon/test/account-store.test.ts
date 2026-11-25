@@ -67,6 +67,9 @@ describe("account store", () => {
 		expect(() =>
 			store.create({ ref: "d", provider: "openai", models: ["m"], apiKey: "k", apiUrl: "javascript:alert(1)" }),
 		).toThrow(AccountError);
+		expect(() => store.create({ ref: "e", provider: "amazon-bedrock", models: ["m"], apiKey: "k" })).toThrowError(
+			expect.objectContaining({ code: "unsupported_provider_auth" }),
+		);
 	});
 
 	it("rotates a stored key and can switch to an env reference", () => {

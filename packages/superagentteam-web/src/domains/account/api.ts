@@ -7,6 +7,10 @@ export interface AccountProviderView {
 	envName: string;
 	supportsBaseUrl: boolean;
 	suggestedModels: string[];
+	authKind?: "simple-env" | "composite" | "dynamic";
+	selectable?: boolean;
+	envNames?: string[];
+	api?: string;
 }
 
 export type AccountCredentialKind = "stored" | "env" | "none";

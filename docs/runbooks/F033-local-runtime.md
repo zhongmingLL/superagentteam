@@ -25,7 +25,7 @@ superagentteam runtime <start|status|end|restart>
 
 | 角色 | worktree | WSL 端口 | Windows | data dir | env |
 |---|---|---|---|---|---|
-| runtime | `/home/ming/agent/superagentteam-runtime` | `3005` / `3014` | `3103` | `/home/ming/.superagentteam-runtime/data` | `~/.config/superagentteam/runtime.env` |
+| runtime | `/home/ming/agent/superagentteam-runtime` | `3005` / `3014` | `3005`（3103 legacy） | `/home/ming/.superagentteam-runtime/data` | `~/.config/superagentteam/runtime.env` |
 | test | `/home/ming/agent/superagentteam-alpha` | `3007` / `3016` | 无 | `~/.superagentteam-alpha/data` | `~/.config/superagentteam/alpha.env` |
 
 > 2026-11-25: runtime 数据已从旧 F028 demo 的 `/tmp/f028-demo-1795448211/data` 迁到持久路径 `~/.superagentteam-runtime/data`；旧目录保留为退役快照，不再作为运行数据。

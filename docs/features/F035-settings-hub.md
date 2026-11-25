@@ -76,5 +76,6 @@ source_decision: "operator 2026-11-25: add Settings at the bottom of the sidebar
 - 2026-11-25（implementation）：agent/account create 不再要求手填 id/ref（服务端生成，碰撞重试）；agent 支持 avatar/color；账户 Models 改为逐项 chip 添加；Agent 表单改为身份（含 Role、头像、成员主色、呼叫别名）→ Account/模型两分区；表单采用 Clowder 式填充输入与轻阴影（保留冷色 token）。
 - 2026-11-25（design↔impl check）：账号列表补上 initial 头像与“N 个账户 · M 个 agent 使用中”汇总；设计稿把 “stored credential” 英文残留洗成“已存 API Key”。
 - 2026-11-25（live fix）：PR #202 后 runtime 升级到 `a33054f24`。发现 3005 的写请求被 daemon 以 `origin not allowed` 403（cron 的 `hubOrigin` 仍是 3103）；已把 cron/live 与 CLI 默认改为跟随 3005。live 浏览器复核 `/settings` 与账户/Agent 创建表单渲染正常；真实创建仍待 operator 签收。
+- 2026-11-25（live polish）：账号行去掉 `space-between`，内容改为紧跟 initial 头像左对齐（`st-account-main` flex:1），副标题补回“凭据绑定到账户，agent 通过账户取模型”，与 Pencil `settings-accounts.png` 对齐。daemon 同步接受同协议/端口的 loopback origin 别名（`localhost`/`127.0.0.1`/`[::1]`），operator 不再因使用 `127.0.0.1:3005` 打开页面而在创建时收到 403。
 
 [宪宪/deepseek-flash🐾]

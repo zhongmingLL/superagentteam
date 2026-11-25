@@ -46,7 +46,8 @@ node packages/superagentteam-daemon/dist/cli.js \
 
 入口会做端口 preflight、拉起 daemon + Vite、等 health，并写 `<data-dir>/runtime-state.json`。启动是幂等的：已 running 时返回 `already running`。
 
-> **`--hub-origin` 必须与浏览器入口完全一致。** daemon 只接受该 Origin 的浏览器写请求；
+> **`--hub-origin` 必须覆盖浏览器入口。** daemon 接受该 Origin，以及同一协议/端口下的
+> loopback 别名（`localhost` / `127.0.0.1` / `[::1]`）；非 loopback Origin 仍需完全一致。
 > 否则页面能打开，但发消息/创建会返回 403 `origin not allowed`。省略时默认跟随
 > `--web-port`（即 `http://localhost:<web-port>`）；不要再用已退役的 3103。
 
@@ -125,7 +126,7 @@ WSL cron 负责崩溃恢复：`@reboot` + 每 2 分钟只在 `stale/degraded/fai
 | `runtime_state_invalid` | 确认没有存活的本 stack 进程后，备份并移走损坏的 `runtime-state.json`，再 `runtime start` |
 | `degraded` / `stale` | 先 `runtime end`，再 `runtime start`；identity mismatch 时不要按端口盲杀 |
 | Windows 打不开 localhost:3005 | 先看 WSL `3005` 与 daemon `3014` health；确认 WSL2 localhost forwarding；不要先怀疑 3103 proxy |
-| 3005 能打开但发消息/创建 403 `origin not allowed` | `runtime-state.json.hubOrigin` 与浏览器入口不一致；用 `--hub-origin http://localhost:3005` 重启，并检查 cron |
+| 3005 能打开但发消息/创建 403 `origin not allowed` | `runtime-state.json.hubOrigin` 与浏览器入口不一致（非 loopback 或端口不同）；用 `--hub-origin http://localhost:3005` 重启，并检查 cron |
 | 进程全掉 | 已装 WSL cron supervisor（`@reboot` + 每 2 分钟仅对 stale/degraded/failed 重启）；若未自愈，手动 `runtime start` 并 `crontab -l` 检查 |
 
 ## 安全边界

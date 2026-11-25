@@ -160,6 +160,22 @@ describe("F025 agent create API", () => {
 		expect(listed.agents.map((agent) => agent.id)).toContain("a3");
 	});
 
+	it("generates an id when the create body omits one", async () => {
+		const base = await start();
+		const auth = await login(base);
+		const input = createInput({ displayName: "Agent A" });
+		delete (input as { id?: unknown }).id;
+
+		const response = await postAgent(base, auth, input);
+		expect(response.status).toBe(201);
+		const body = (await response.json()) as { agent: { id: string; displayName: string } };
+		expect(body.agent.displayName).toBe("Agent A");
+		expect(body.agent.id).toMatch(/^agent-a-[0-9a-f]{4}$/u);
+
+		const persisted = JSON.parse(readFileSync(join(dataDir, "agent-catalog.json"), "utf8")) as AgentCatalog;
+		expect(persisted.agents.some((agent) => agent.id === body.agent.id)).toBe(true);
+	});
+
 	it("updates an existing agent and revalidates account/model", async () => {
 		const base = await start();
 		const auth = await login(base);

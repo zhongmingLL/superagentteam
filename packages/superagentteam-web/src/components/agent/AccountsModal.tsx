@@ -21,7 +21,8 @@ interface FormState {
 	ref: string;
 	displayName: string;
 	provider: string;
-	modelsText: string;
+	models: string[];
+	modelDraft: string;
 	apiUrl: string;
 	credentialMode: CredentialMode;
 	apiKey: string;
@@ -33,7 +34,8 @@ function emptyForm(provider?: AccountProviderView): FormState {
 		ref: "",
 		displayName: "",
 		provider: provider?.id ?? "",
-		modelsText: "",
+		models: [],
+		modelDraft: "",
 		apiUrl: "",
 		credentialMode: "stored",
 		apiKey: "",
@@ -46,7 +48,8 @@ function formFromAccount(account: AccountView): FormState {
 		ref: account.ref,
 		displayName: account.displayName ?? "",
 		provider: account.provider,
-		modelsText: account.models.join(", "),
+		models: [...account.models],
+		modelDraft: "",
 		apiUrl: account.apiUrl ?? "",
 		credentialMode: account.credential.kind === "env" ? "env" : "stored",
 		apiKey: "",
@@ -126,14 +129,7 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 
 	async function save(): Promise<void> {
 		if (saving) return;
-		const models = form.modelsText
-			.split(/[\n,]+/u)
-			.map((model) => model.trim())
-			.filter((model) => model !== "");
-		if (mode === "create" && form.ref.trim() === "") {
-			setError("ref 必填");
-			return;
-		}
+		const models = form.models;
 		if (form.provider === "") {
 			setError("请选择 provider");
 			return;
@@ -174,6 +170,15 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 		} finally {
 			setSaving(false);
 		}
+	}
+
+	function addModel(): void {
+		const model = form.modelDraft.trim();
+		if (model === "") return;
+		patch({
+			models: form.models.includes(model) ? form.models : [...form.models, model],
+			modelDraft: "",
+		});
 	}
 
 	async function remove(account: AccountView): Promise<void> {
@@ -271,17 +276,8 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 							void save();
 						}}
 					>
+						{mode === "edit" ? <p className="st-field-note">标识：{form.ref}（由系统生成）</p> : null}
 						<div className="st-account-form-grid">
-							<label className="st-field">
-								<span>ref</span>
-								<input
-									value={form.ref}
-									onChange={(event) => patch({ ref: event.target.value })}
-									disabled={mode === "edit" || saving}
-									placeholder="kimi-main"
-									autoComplete="off"
-								/>
-							</label>
 							<label className="st-field">
 								<span>显示名（可选）</span>
 								<input
@@ -323,16 +319,47 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 								/>
 							</label>
 						</div>
-						<label className="st-field">
-							<span>Models（逗号或换行分隔）</span>
-							<textarea
-								value={form.modelsText}
-								onChange={(event) => patch({ modelsText: event.target.value })}
-								disabled={saving}
-								rows={2}
-								placeholder="kimi-for-coding"
-							/>
-						</label>
+						<div className="st-field">
+							<span>Models</span>
+							<div className="st-model-editor">
+								{form.models.map((model) => (
+									<span className="st-model-chip" key={model}>
+										{model}
+										<button
+											type="button"
+											aria-label={`移除 ${model}`}
+											onClick={() =>
+												patch({ models: form.models.filter((item) => item !== model) })
+											}
+											disabled={saving}
+										>
+											×
+										</button>
+									</span>
+								))}
+								<input
+									value={form.modelDraft}
+									onChange={(event) => patch({ modelDraft: event.target.value })}
+									onKeyDown={(event) => {
+										if (event.key === "Enter") {
+											event.preventDefault();
+											addModel();
+										}
+									}}
+									disabled={saving}
+									placeholder="添加 model"
+									autoComplete="off"
+								/>
+								<button
+									type="button"
+									className="st-button st-button-secondary"
+									onClick={addModel}
+									disabled={saving || form.modelDraft.trim() === ""}
+								>
+									添加
+								</button>
+							</div>
+						</div>
 						<div className="st-account-credential">
 							<span className="st-account-credential-label">凭据</span>
 							<label className="st-account-radio">

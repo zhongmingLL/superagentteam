@@ -30,7 +30,7 @@ function openForm(onCreate: React.ComponentProps<typeof AgentPopover>["onCreate"
 describe("agent popover create form", () => {
 	it("creates an agent with normalized mention patterns", async () => {
 		const onCreate = vi.fn(async (input: CreateAgentInput) => ({
-			id: input.id,
+			id: input.id ?? "agent-a2",
 			displayName: input.displayName,
 			enabled: true,
 		}));
@@ -38,20 +38,21 @@ describe("agent popover create form", () => {
 
 		await waitFor(() => expect(screen.getByLabelText("account")).toHaveValue("main"));
 		expect(screen.getByLabelText("model")).toHaveValue("kimi-for-coding");
-		fireEvent.change(screen.getByLabelText("id"), { target: { value: "a2" } });
 		fireEvent.change(screen.getByLabelText("显示名"), { target: { value: "Agent A2" } });
-		fireEvent.change(screen.getByLabelText("mention patterns"), { target: { value: "a2, @second" } });
+		fireEvent.change(screen.getByLabelText("呼叫别名"), { target: { value: "a2" } });
+		fireEvent.click(screen.getByRole("button", { name: "添加" }));
+		fireEvent.change(screen.getByLabelText("呼叫别名"), { target: { value: "@second" } });
+		fireEvent.click(screen.getByRole("button", { name: "添加" }));
 		fireEvent.click(screen.getByRole("button", { name: "创建" }));
 
 		await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1));
-		expect(onCreate).toHaveBeenCalledWith({
-			id: "a2",
+		expect(onCreate).toHaveBeenCalledWith(expect.objectContaining({
 			displayName: "Agent A2",
 			mentionPatterns: ["@a2", "@second"],
 			accountRef: "main",
 			defaultModel: "kimi-for-coding",
 			roleId: "worker",
-		});
+		}));
 		expect(await screen.findByText("已创建 Agent A2")).toBeInTheDocument();
 	});
 
@@ -62,9 +63,9 @@ describe("agent popover create form", () => {
 		openForm(onCreate);
 
 		await waitFor(() => expect(screen.getByLabelText("account")).toHaveValue("main"));
-		fireEvent.change(screen.getByLabelText("id"), { target: { value: "a2" } });
 		fireEvent.change(screen.getByLabelText("显示名"), { target: { value: "Agent A2" } });
-		fireEvent.change(screen.getByLabelText("mention patterns"), { target: { value: "@a1" } });
+		fireEvent.change(screen.getByLabelText("呼叫别名"), { target: { value: "@a1" } });
+		fireEvent.click(screen.getByRole("button", { name: "添加" }));
 		fireEvent.click(screen.getByRole("button", { name: "创建" }));
 
 		expect(await screen.findByRole("alert")).toHaveTextContent("mention_pattern_conflict");

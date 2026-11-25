@@ -21,7 +21,7 @@ export interface AgentView {
 export type { AccountView } from "@/domains/account/api";
 
 export interface CreateAgentInput {
-	id: string;
+	id?: string;
 	displayName: string;
 	mentionPatterns: string[];
 	accountRef: string;
@@ -29,6 +29,8 @@ export interface CreateAgentInput {
 	roleId: string;
 	roleDescription?: string;
 	enabled?: boolean;
+	avatar?: string;
+	color?: { primary: string; secondary: string };
 }
 
 export interface UpdateAgentInput {
@@ -39,6 +41,8 @@ export interface UpdateAgentInput {
 	roleId?: string;
 	roleDescription?: string;
 	enabled?: boolean;
+	avatar?: string | null;
+	color?: { primary: string; secondary: string } | null;
 }
 
 export interface AgentApi {

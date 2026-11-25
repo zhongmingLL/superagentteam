@@ -46,6 +46,10 @@ node packages/superagentteam-daemon/dist/cli.js \
 
 入口会做端口 preflight、拉起 daemon + Vite、等 health，并写 `<data-dir>/runtime-state.json`。启动是幂等的：已 running 时返回 `already running`。
 
+> **`--hub-origin` 必须与浏览器入口完全一致。** daemon 只接受该 Origin 的浏览器写请求；
+> 否则页面能打开，但发消息/创建会返回 403 `origin not allowed`。省略时默认跟随
+> `--web-port`（即 `http://localhost:<web-port>`）；不要再用已退役的 3103。
+
 ## 状态 / 收尾 / 重启
 
 ```bash
@@ -97,12 +101,20 @@ Windows 直接用 <http://localhost:3005>（WSL2 localhost forwarding；2026-11-
 **3103 PowerShell proxy 不再默认使用**：它只是 F033 早期的兼容路径，且必须从 Windows 端启动——
 从 WSL 里拉起的 PowerShell 再调 `wsl.exe` 会报 `Wsl/Service/E_UNEXPECTED`。仅当本机 localhost
 forwarding 不可用时才按 `node scripts/superagentteam/windows-proxy.mjs print` 的输出在 Windows 端启动。
-`runtime-state.json` 里的 `windowsPort: 3103` 只是元数据，不代表 proxy 在运行。
+当前 live runtime 用 `--windows-port 3005`（与 WSL web 同端口，靠 WSL2 localhost forwarding）；
+port registry 里的 `runtime.windows=3103` 只保留给 legacy PowerShell proxy。`runtime-state.json.windowsPort`
+只是元数据，不代表 proxy 在运行。
 
 ```bash
 # 仅 legacy 排查时使用
 node scripts/superagentteam/windows-proxy.mjs check
 ```
+
+## cron supervisor
+
+WSL cron 负责崩溃恢复：`@reboot` + 每 2 分钟只在 `stale/degraded/failed` 时重启；
+`stopped` 不会自动拉起。cron 命令必须带与浏览器入口一致的参数，例如
+`--hub-origin http://localhost:3005 --windows-port 3005`；否则会再次把 3005 的写请求判成 403。
 
 ## 故障处理
 
@@ -113,6 +125,7 @@ node scripts/superagentteam/windows-proxy.mjs check
 | `runtime_state_invalid` | 确认没有存活的本 stack 进程后，备份并移走损坏的 `runtime-state.json`，再 `runtime start` |
 | `degraded` / `stale` | 先 `runtime end`，再 `runtime start`；identity mismatch 时不要按端口盲杀 |
 | Windows 打不开 localhost:3005 | 先看 WSL `3005` 与 daemon `3014` health；确认 WSL2 localhost forwarding；不要先怀疑 3103 proxy |
+| 3005 能打开但发消息/创建 403 `origin not allowed` | `runtime-state.json.hubOrigin` 与浏览器入口不一致；用 `--hub-origin http://localhost:3005` 重启，并检查 cron |
 | 进程全掉 | 已装 WSL cron supervisor（`@reboot` + 每 2 分钟仅对 stale/degraded/failed 重启）；若未自愈，手动 `runtime start` 并 `crontab -l` 检查 |
 
 ## 安全边界

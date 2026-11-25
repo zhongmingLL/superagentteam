@@ -44,7 +44,7 @@ source_decision: "operator 2026-11-25: add Settings at the bottom of the sidebar
 - [x] AC-2：`/settings` 页面包含账号与 Agents 两个设置区块。
 - [x] AC-3：账号创建/编辑/删除与 agent 创建/编辑在设置页可用，错误可读。
 - [x] AC-4：现有顶栏 popover 入口不回归；无重复提交/状态不同步。
-- [ ] AC-5：web tests + browser screenshots；3103 实机可完成一次账号/agent 创建。
+- [ ] AC-5：web tests + browser screenshots；3005 实机可完成一次账号/agent 创建。
 - [x] AC-6：设计稿 `.pen` 源文件已入库；墨墨对表发现的两处差异（账号行头像、底部汇总）已补齐，设计稿英文残留已洗。
 
 ## 实现进展（2026-11-25）
@@ -54,7 +54,7 @@ source_decision: "operator 2026-11-25: add Settings at the bottom of the sidebar
 - `NavRail` 底部、`ThreadSidebar` profile 上方加设置入口；修正 Threads 导航项在非对话路由仍高亮的问题。
 - 测试：`settings-page.test.tsx` 覆盖列表/页面编辑器/区块切换；`thread-sidebar.test.tsx` 覆盖设置链接。web 全量 101 passed。
 - 2026-11-25：PR #196 merged `29f104852`（墨墨 vision/UX approve @ `723024d2e`，砚砚 aria/state approve @ `190662f21`，P3 全收）；CI 5/5；已部署 live `469e858ce`。
-  墨墨用隔离栈补了 1440/390 真机截图 + 真实创建流程（网络证据 `{"accounts":[]}`，全程未触 live）；live 3103 的实机创建待 operator 签收。
+  墨墨用隔离栈补了 1440/390 真机截图 + 真实创建流程（网络证据 `{"accounts":[]}`，全程未触 live）；live 3005 的实机创建待 operator 签收。
 - 2026-11-25（operator design feedback）：设置改为与 threads **平级的独立页面**——`AppShell` 在 `/settings` 不再渲染 ThreadSidebar 和 threads topbar；移除 ThreadSidebar 里的设置快捷入口（设置只属于左侧图标栏）。
   设置子导航按 Clowder 参考重做（图标 + 名称 + 说明 + 计数），Agents 行加头像；文案统一为「账户与登录 / Agents」。
   这一轮未走 Pencil 设计流程，是按 Clowder 结构参考 + 现有 `st-*` tokens 直接落地；后续大改视觉前先补设计稿。
@@ -75,5 +75,6 @@ source_decision: "operator 2026-11-25: add Settings at the bottom of the sidebar
   - 2026-11-25（operator v3）：Role 归入身份与职责；两段改为 Clowder 式左侧分区导航 + 单区内容（不再平铺），并补第二态设计图 `agent-create-account.png`。
 - 2026-11-25（implementation）：agent/account create 不再要求手填 id/ref（服务端生成，碰撞重试）；agent 支持 avatar/color；账户 Models 改为逐项 chip 添加；Agent 表单改为身份（含 Role、头像、成员主色、呼叫别名）→ Account/模型两分区；表单采用 Clowder 式填充输入与轻阴影（保留冷色 token）。
 - 2026-11-25（design↔impl check）：账号列表补上 initial 头像与“N 个账户 · M 个 agent 使用中”汇总；设计稿把 “stored credential” 英文残留洗成“已存 API Key”。
+- 2026-11-25（live fix）：PR #202 后 runtime 升级到 `a33054f24`。发现 3005 的写请求被 daemon 以 `origin not allowed` 403（cron 的 `hubOrigin` 仍是 3103）；已把 cron/live 与 CLI 默认改为跟随 3005。live 浏览器复核 `/settings` 与账户/Agent 创建表单渲染正常；真实创建仍待 operator 签收。
 
 [宪宪/deepseek-flash🐾]

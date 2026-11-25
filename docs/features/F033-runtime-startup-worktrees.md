@@ -87,6 +87,10 @@ Clowder AI 的启动面已经把这些分清了，F033 借鉴机制而不复制�
 
 > 2026-11-25（operator）：Windows 访问改为 `http://localhost:3005`（WSL2 localhost forwarding 实测可用）；3103 PowerShell proxy 降为 legacy/可选，必须从 Windows 端启动。runtime 仍保持 `windowsPort: 3103` 元数据，但不再依赖 proxy。
 
+> 2026-11-25（live fix）：cron 曾把 `--hub-origin` 固定为 3103，导致 3005 页面的写请求被判
+> `origin not allowed` 403；已把 cron/live 改为 3005，并让 CLI 默认 hub origin 跟随
+> `--web-port`。3103 仍只作为 legacy PowerShell proxy 的元数据。
+
 ### 2026-11-25 — Phase B 运行面迁移
 
 - B1 统一入口已合入：PR #188 → `e1ceb0e43`；reviewers 砚砚（identity/端口/env/state）+ 墨墨（operator 文案/迁移），CI `build-check-test` / `supply-chain` / `mcp-conformance` 全绿。
@@ -133,7 +137,10 @@ Clowder AI 的启动面已经把这些分清了，F033 借鉴机制而不复制�
 
 - 2026-11-25 operator close：F033 完成。
 - live runtime：`bac20a684`，daemon `scripts/superagentteam/runtime-daemon.mjs`，data `~/.superagentteam-runtime/data`，`http://localhost:3103/` 与 `/api/session` 200。
-- 所有 AC-1–AC-8 有证据；cron 已退役；旧栈/旧 proxy 已快照并收尾。
+- 所有 AC-1–AC-8 有证据；旧栈/旧 proxy 已快照并收尾。
+- 2026-11-25 后续：WSL cron supervisor 重新启用（`@reboot` + 每 2 分钟仅对
+  `stale/degraded/failed` 重启）；它是崩溃恢复兜底，不是进程存活依赖。live runtime
+  已升级到 `a33054f24`，入口与 hubOrigin 均为 3005。
 
 ## 非目标
 

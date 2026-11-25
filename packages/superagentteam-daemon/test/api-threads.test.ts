@@ -211,6 +211,17 @@ describe("F016c-M1 S2 thread API", () => {
 		expect(((await list.json()) as { threads: unknown[] }).threads).toEqual([]);
 	});
 
+	it("accepts loopback origin aliases with the same port", async () => {
+		const base = await start();
+		const auth = await login(base);
+		const response = await fetch(`${base}/api/threads`, {
+			method: "POST",
+			headers: { ...writeHeaders(auth), origin: "http://127.0.0.1:3000" },
+			body: JSON.stringify({ projectPath: projectA, idempotencyKey: "loopback-alias" }),
+		});
+		expect(response.status).toBe(201);
+	});
+
 	it("rejects relative, missing, and non-directory project paths", async () => {
 		const base = await start();
 		const auth = await login(base);

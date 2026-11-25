@@ -160,6 +160,15 @@ describe("SessionStore", () => {
 		expect(hasForbiddenIdentityHeaders({ authorization: "Bearer x" })).toBe(true);
 		expect(hasForbiddenIdentityHeaders({ cookie: "superagentteam_session=x" })).toBe(false);
 	});
+
+	it("treats loopback aliases with the same port as the same origin", () => {
+		expect(isAllowedOrigin("http://127.0.0.1:3000", "http://localhost:3000")).toBe(true);
+		expect(isAllowedOrigin("http://[::1]:3000", "http://localhost:3000")).toBe(true);
+		expect(isAllowedOrigin("http://localhost:3000", "http://127.0.0.1:3000")).toBe(true);
+		expect(isAllowedOrigin("http://127.0.0.1:3001", "http://localhost:3000")).toBe(false);
+		expect(isAllowedOrigin("https://127.0.0.1:3000", "http://localhost:3000")).toBe(false);
+		expect(isAllowedOrigin("http://192.168.0.104:3000", "http://localhost:3000")).toBe(false);
+	});
 });
 
 describe("consoleLinkUrl", () => {

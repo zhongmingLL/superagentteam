@@ -108,8 +108,36 @@ export function hasForbiddenIdentityHeaders(headers: IncomingHttpHeaders): boole
 	return FORBIDDEN_IDENTITY_HEADERS.some((name) => headers[name] !== undefined);
 }
 
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
+
+function parseHttpOrigin(value: string): URL | null {
+	try {
+		const url = new URL(value);
+		return url.protocol === "http:" || url.protocol === "https:" ? url : null;
+	} catch {
+		return null;
+	}
+}
+
+function isLoopbackHost(hostname: string): boolean {
+	return LOOPBACK_HOSTS.has(hostname);
+}
+
 export function isAllowedOrigin(origin: string | undefined, allowedOrigin: string): boolean {
-	return origin !== undefined && origin === allowedOrigin;
+	if (origin === undefined) return false;
+	if (origin === allowedOrigin) return true;
+	// Browsers may expose the same loopback server as localhost, 127.0.0.1, or
+	// [::1]. Treat those aliases as equivalent only on the same protocol/port;
+	// non-loopback origins still require an exact match.
+	const actual = parseHttpOrigin(origin);
+	const allowed = parseHttpOrigin(allowedOrigin);
+	if (actual === null || allowed === null) return false;
+	return (
+		actual.protocol === allowed.protocol &&
+		actual.port === allowed.port &&
+		isLoopbackHost(actual.hostname) &&
+		isLoopbackHost(allowed.hostname)
+	);
 }
 
 export function requireCsrf(session: BrowserSession, token: string | undefined): boolean {

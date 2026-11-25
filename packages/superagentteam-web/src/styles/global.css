@@ -3101,3 +3101,26 @@ svg {
 	}
 }
 
+@media (max-width: 600px) {
+	.st-settings-nav {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: 8px;
+		align-items: stretch;
+	}
+
+	.st-settings-brand {
+		grid-column: 1 / -1;
+		padding: 0 0 2px;
+	}
+
+	.st-settings-tab {
+		width: 100%;
+		min-width: 0;
+	}
+
+	.st-settings-tab-body {
+		min-width: 0;
+	}
+}
+

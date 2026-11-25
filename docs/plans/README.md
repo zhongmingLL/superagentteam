@@ -73,6 +73,7 @@ W0b upstream/CI 治理：与 W1–W4 并行，W5 前完成
 | [`0041-f033-phase-d-execution.md`](0041-f033-phase-d-execution.md) | F033 Phase D：脚本分层、正式 launcher、runbook、Windows proxy 校验、cron 退役 | 砚砚（身份/端口/脚本边界）+ 墨墨（runbook 可读性） |
 | [`0042-f034-agent-run-control.md`](0042-f034-agent-run-control.md) | F034：重试预算、cancel running agent、API/UI 停止、队列说明 | 砚砚（runtime/cancel/并发）+ 墨墨（停止/队列文案） |
 | [`0043-f035-settings-hub.md`](0043-f035-settings-hub.md) | F035：设置路由、账号/Agents 面板抽取、侧边栏入口、响应式 | 墨墨（信息层级/文案）+ 砚砚（状态/契约） |
+| [`0044-f036-chat-surface-polish.md`](0044-f036-chat-surface-polish.md) | F036：agent 消息气泡恢复、operator 消息头像、光暗/窄屏验证 | 墨墨（视觉/文案） |
 
 ## W0–W8 一览
 

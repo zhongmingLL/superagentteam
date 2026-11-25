@@ -129,6 +129,31 @@ describe("message list", () => {
 		expect(screen.getByText("发送中…")).toBeInTheDocument();
 	});
 
+	it("renders an operator avatar on user and pending messages", () => {
+		const { container } = renderList({
+			messages: [message()],
+			pendingUserMessages: [{ messageId: "msg:sent", content: "new message" }],
+		});
+
+		expect(container.querySelectorAll<HTMLElement>(".st-message-avatar.is-operator")).toHaveLength(2);
+	});
+
+	it("keeps agent content inside the nameplate surface", () => {
+		const { container } = renderList({
+			messages: [
+				message({
+					type: "assistant",
+					from: { kind: "agent", agentId: "agent:1" },
+					content: "final answer",
+				}),
+			],
+		});
+
+		const article = container.querySelector<HTMLElement>(".st-message.is-agent");
+		expect(article).toHaveClass("is-nameplate");
+		expect(article).toHaveTextContent("final answer");
+	});
+
 	it("shows a live placeholder when an agent accepted a turn but has not produced a response message", () => {
 		renderList({
 			messages: [],

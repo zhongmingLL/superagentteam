@@ -44,7 +44,7 @@ source_decision: "operator 2026-11-25: retry storm + stop running agent"
 
 - Unit: retry cap, manual retry budget reset, cancel terminalization, tracker signal propagation, API CSRF/409.
 - Integration: fake dispatchTarget waits on signal; cancel from tracker; assert canceled truth and no queue target.
-- Real: send a message from 3103, stop while running; assert UI shows canceled and worker released.
+- Real: send a message from 3005, stop while running; assert UI shows canceled and worker released.
 - Full: daemon/web tests + `npm run check` via CI.
 
 ## Risks

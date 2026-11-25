@@ -47,7 +47,10 @@ operator 在前端给 agent 发消息后观察到同一目标持续重试（本�
 - 2026-11-25：PR #195 merged `8ed21a710`（砚砚 runtime/cancel/竞态 approve，墨墨 UX/文案 approve，P3 全收）；CI 5/5。
   隔离栈 E2E：provider 立即失败时 attempts 1–5、10s 退避、attempt 5 `provider_retry_exhausted`、队列清零、耗尽提示出现；
   provider 请求在飞时 cancel → attempt/turn 均 `canceled/operator_canceled`、队列 0。
-  已部署 live `469e858ce`（3005/3014/3103 healthy）；live 3103 的真实点击待 operator 签收。
+  已部署 live `469e858ce`（3005/3014 healthy）；live 3103 的真实点击待 operator 签收。
+- 2026-11-25 后续：live 升级到 `a33054f24`，入口 3005。此前 3005 的写请求因
+  `hubOrigin=3103` 被判 403 `origin not allowed`，已修复（cron + CLI 默认跟随
+  `--web-port`）；live 3005 的真实停止点击仍待 operator 签收。
 
 ## 验收
 
@@ -55,6 +58,6 @@ operator 在前端给 agent 发消息后观察到同一目标持续重试（本�
 - [x] AC-2：手动 retry 后重新获得 5 次预算，且不会复用已终态 attempt。
 - [x] AC-3：停止 API 在 agent 运行时返回 202；turn/attempt/R 变为 canceled，worker 释放，queue target 不 restore。
 - [x] AC-4：前端运行时显示“停止”，点击后状态更新；队列 `1 / 5` 有一行说明。
-- [ ] AC-5：daemon/web tests + browser smoke 通过；真实 3103 前端可发消息并停止（待部署后做 live E2E）。
+- [ ] AC-5：daemon/web tests + browser smoke 通过；真实 3005 前端可发消息并停止（live 点击待 operator 签收）。
 
 [宪宪/deepseek-flash🐾]

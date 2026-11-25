@@ -21,9 +21,17 @@ import { writeJson, writeLine } from "./output.ts";
 
 const DEFAULT_WEB_PORT = 3005;
 const DEFAULT_DAEMON_PORT = 3014;
-const DEFAULT_HUB_ORIGIN = "http://localhost:3103";
 const DEFAULT_WINDOWS_PORT = 3103;
 const DEFAULT_SYNC_REF = "origin/superagentteam-work";
+
+/**
+ * The daemon only accepts browser requests whose Origin exactly matches its
+ * hub origin. Default it to the web entry so `runtime start` never launches a
+ * page that its own API rejects; 3103 is a retired Windows proxy, not the UI.
+ */
+export function defaultHubOrigin(webPort: number): string {
+	return `http://localhost:${webPort}`;
+}
 
 function service(context: CliCommandContext): RuntimeService {
 	return new RuntimeService({
@@ -79,7 +87,7 @@ async function start(args: ParsedArgs, context: CliCommandContext, restart: bool
 		dataDir: context.dataDir,
 		webPort,
 		daemonPort: portOption(args, "daemon-port", DEFAULT_DAEMON_PORT),
-		hubOrigin: option(args, "hub-origin") ?? DEFAULT_HUB_ORIGIN,
+		hubOrigin: option(args, "hub-origin") ?? defaultHubOrigin(webPort),
 		windowsPort,
 		envFile,
 		env: resolved.env,

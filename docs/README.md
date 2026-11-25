@@ -35,7 +35,7 @@ updated: 2026-11-24
 | 文档 | 内容 |
 |---|---|
 | [`SOP.md`](SOP.md) | 通用开发 SOP（Clowder AI 精简基线；项目特定事实见 `AGENTS.md` / `docs/plans/`） |
-| [`runbooks/F033-local-runtime.md`](runbooks/F033-local-runtime.md) | F033 本地运行 runbook：正式入口、runtime/test 布局、env、端口、Windows 3103、故障恢复 |
+| [`runbooks/F033-local-runtime.md`](runbooks/F033-local-runtime.md) | F033 本地运行 runbook：正式入口、runtime/test 布局、env、端口、Windows 3005（3103 legacy）、故障恢复 |
 | [`architecture/0000-architecture-map.md`](architecture/0000-architecture-map.md) | **架构入口**：文档分层、阅读顺序、canonical/source-of-truth 规则、全局不变量与 2026-11-14 检视结论 |
 | [`architecture/0001-codeteam-architecture-v1.md`](architecture/0001-codeteam-architecture-v1.md) | `[reference]` 旧总架构：非 runtime 领域参考；runtime/A2A 章节已由 0005/0007 取代 |
 | [`architecture/0002-pi-runtime-integration.md`](architecture/0002-pi-runtime-integration.md) | `[reference]` pi 运行时事实参考：SDK/RPC/extension/MCP/durable、L0、context、tool 策略 |

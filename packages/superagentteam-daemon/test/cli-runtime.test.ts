@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
+import { defaultHubOrigin } from "../src/cli/runtime.ts";
 
 const CLI = fileURLToPath(new URL("../dist/cli.js", import.meta.url));
 const dirs: string[] = [];
@@ -42,5 +43,10 @@ describe("CLI runtime surface", () => {
 		expect(result.status).toBe(0);
 		const body = JSON.parse(result.stdout.trim()) as { changed: boolean; state: string };
 		expect(body).toMatchObject({ changed: false, state: "not_started" });
+	});
+
+	it("defaults the hub origin to the web entry, not the retired 3103 proxy", () => {
+		expect(defaultHubOrigin(3005)).toBe("http://localhost:3005");
+		expect(defaultHubOrigin(3007)).toBe("http://localhost:3007");
 	});
 });

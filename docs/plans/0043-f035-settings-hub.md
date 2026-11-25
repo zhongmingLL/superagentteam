@@ -48,7 +48,7 @@ source_decision: "operator 2026-11-25: settings entry + accounts/agents pages li
 - Browser verification targets the isolated alpha stack (`3016`), not live `3014`, to keep
   user data out of the loop.
 - Done: route, nav entries, page layout, unit tests (web 101 passed), typecheck.
-- Next: browser screenshots at 1440/390 and one real account/agent create against 3103,
+- Next: browser screenshots at 1440/390 and one real account/agent create against 3005,
   then review by 墨墨 (UX/copy) and 砚砚 (contract/state consistency).
 
 ## Risks

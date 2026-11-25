@@ -164,7 +164,8 @@ function writeUsage(): void {
 	writeLine("thread post: <threadId> <body> [--to <agentId> ...] [--id <messageId>]");
 	writeLine("thread post replay: same --id + omitted --to reuses stored targets; different --to conflicts");
 	writeLine("thread tail: <threadId> [--after-seq N] [--follow] [--interval-ms N]");
-	writeLine("runtime start: --worktree <path> --web-port 3005 --daemon-port 3014 --hub-origin <url> [--sync]");
+	writeLine("runtime start: --worktree <path> --web-port 3005 --daemon-port 3014 [--hub-origin <url>] [--sync]");
+	writeLine("runtime hub-origin: defaults to http://localhost:<web-port>; must match the browser entry");
 	writeLine("runtime env: default ~/.config/superagentteam/runtime.env (mode 0600) or --env-file <path>");
 	writeLine("legacy task-first commands were retired in F032; use thread or the Hub API");
 }

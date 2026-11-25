@@ -85,6 +85,8 @@ Clowder AI 的启动面已经把这些分清了，F033 借鉴机制而不复制�
 
 ## 进展
 
+> 2026-11-25（operator）：Windows 访问改为 `http://localhost:3005`（WSL2 localhost forwarding 实测可用）；3103 PowerShell proxy 降为 legacy/可选，必须从 Windows 端启动。runtime 仍保持 `windowsPort: 3103` 元数据，但不再依赖 proxy。
+
 ### 2026-11-25 — Phase B 运行面迁移
 
 - B1 统一入口已合入：PR #188 → `e1ceb0e43`；reviewers 砚砚（identity/端口/env/state）+ 墨墨（operator 文案/迁移），CI `build-check-test` / `supply-chain` / `mcp-conformance` 全绿。

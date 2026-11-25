@@ -45,7 +45,7 @@ source_decision: "operator 2026-11-25: add Settings at the bottom of the sidebar
 - [x] AC-3：账号创建/编辑/删除与 agent 创建/编辑在设置页可用，错误可读。
 - [x] AC-4：现有顶栏 popover 入口不回归；无重复提交/状态不同步。
 - [ ] AC-5：web tests + browser screenshots；3103 实机可完成一次账号/agent 创建。
-- [ ] AC-6：设计稿 `.pen` 源文件入库后，逐项核对实现与设计稿一致（operator/墨墨验收）。
+- [x] AC-6：设计稿 `.pen` 源文件已入库；墨墨对表发现的两处差异（账号行头像、底部汇总）已补齐，设计稿英文残留已洗。
 
 ## 实现进展（2026-11-25）
 
@@ -67,7 +67,7 @@ source_decision: "operator 2026-11-25: add Settings at the bottom of the sidebar
 - `docs/design/F035/agent-create.png` — 新建 Agent · 身份与职责（Role 在此段）
 - `docs/design/F035/agent-create-account.png` — 新建 Agent · Account 与模型（分区导航第二态）
 - 结构统一为：NavRail + 设置子导航（图标/说明/计数）+ 内容；设置与 threads 平级。
-- Pencil 源文件 `docs/design/F035/F035-settings.pen`（画布已建，待 operator 保存后入库）。
+- Pencil 源文件 `docs/design/F035/F035-settings.pen`（operator 已保存并入库）。
 - 2026-11-25（operator）：侧边栏移除 Agents 入口（NavRail 与 ThreadSidebar 均不再放 Agents），Agents 管理只在设置页；设计稿四屏同步去掉 rail 的 Agents。
 - 2026-11-25（operator design feedback v2）：
   - 新建账号：移除 `ref` 字段（标识由系统生成）；Models 改为逐个添加的 chip + “添加 model”；删除表单分隔横线。

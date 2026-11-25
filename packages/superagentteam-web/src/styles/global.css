@@ -2384,6 +2384,26 @@ svg {
 	background: var(--st-surface-1);
 }
 
+.st-account-avatar {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: none;
+	width: 40px;
+	height: 40px;
+	border-radius: 10px;
+	background: var(--st-surface-3);
+	color: var(--st-body);
+	font-size: 13px;
+	font-weight: 700;
+}
+
+.st-account-summary {
+	margin: 4px 2px 0;
+	color: var(--st-muted);
+	font-size: 10px;
+}
+
 .st-account-main {
 	display: flex;
 	flex-direction: column;

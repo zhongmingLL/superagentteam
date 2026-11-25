@@ -74,5 +74,6 @@ source_decision: "operator 2026-11-25: add Settings at the bottom of the sidebar
   - 新建 Agent：参考 Clowder 的“身份与职责 → 模型与工具”信息层级（配色仍用本产品 token）；id 不再手填（后台生成）；身份段含名字/呼叫别名/职责/头像/成员主色；第二段为 Account/Model/Role/启用。
   - 2026-11-25（operator v3）：Role 归入身份与职责；两段改为 Clowder 式左侧分区导航 + 单区内容（不再平铺），并补第二态设计图 `agent-create-account.png`。
 - 2026-11-25（implementation）：agent/account create 不再要求手填 id/ref（服务端生成，碰撞重试）；agent 支持 avatar/color；账户 Models 改为逐项 chip 添加；Agent 表单改为身份（含 Role、头像、成员主色、呼叫别名）→ Account/模型两分区；表单采用 Clowder 式填充输入与轻阴影（保留冷色 token）。
+- 2026-11-25（design↔impl check）：账号列表补上 initial 头像与“N 个账户 · M 个 agent 使用中”汇总；设计稿把 “stored credential” 英文残留洗成“已存 API Key”。
 
 [宪宪/deepseek-flash🐾]

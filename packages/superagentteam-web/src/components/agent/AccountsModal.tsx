@@ -6,6 +6,7 @@ import {
 	accountApi,
 } from "@/domains/account/api";
 import { ApiError } from "@/lib/api/client";
+import { initialForName } from "@/lib/identity";
 
 export interface AccountsModalProps {
 	open: boolean;
@@ -237,6 +238,9 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 						) : null}
 						{accounts.map((account) => (
 							<div className="st-account-row" key={account.ref}>
+								<span className="st-account-avatar" aria-hidden="true">
+									{initialForName(account.displayName ?? account.ref)}
+								</span>
 								<div className="st-account-main">
 									<div className="st-account-title">
 										<strong>{account.displayName ?? account.ref}</strong>
@@ -267,6 +271,12 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 								</div>
 							</div>
 						))}
+						{accounts.length > 0 ? (
+							<p className="st-account-summary">
+								{accounts.length} 个账户 ·{" "}
+								{new Set(accounts.flatMap((account) => account.boundAgentIds)).size} 个 agent 使用中
+							</p>
+						) : null}
 					</div>
 				) : (
 					<form

@@ -442,6 +442,11 @@ svg {
 	margin-top: 2px;
 }
 
+.st-message-avatar.is-operator {
+	background: var(--st-surface-3);
+	color: var(--st-body);
+}
+
 .tone-1 {
 	background: var(--st-agent-1);
 }
@@ -1114,10 +1119,10 @@ svg {
 	flex: 1 1 auto;
 	width: 100%;
 	max-width: 100%;
-	padding: 0;
-	border: 0;
-	border-radius: 0;
-	background: transparent;
+	padding: 10px 14px;
+	border: 1px solid var(--st-hairline);
+	border-radius: var(--st-radius-lg);
+	background: var(--st-surface-1);
 }
 
 .st-message.is-nameplate .st-message-meta {
@@ -1517,6 +1522,10 @@ svg {
 	border: 1px solid var(--st-hairline);
 	border-radius: 10px;
 	background: var(--st-surface-2);
+}
+
+[data-theme="dark"] .st-execution-panel {
+	border-color: var(--st-hairline-strong);
 }
 
 .st-execution-header {

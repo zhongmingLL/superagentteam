@@ -217,6 +217,11 @@ function MessageRow({
 					</div>
 				) : null}
 			</div>
+			{sender === "user" ? (
+				<span className="st-message-avatar is-operator" aria-hidden="true">
+					你
+				</span>
+			) : null}
 		</article>
 	);
 }
@@ -393,6 +398,9 @@ export function MessageList({
 						</div>
 						<MessageContent content={pending.content} />
 					</div>
+					<span className="st-message-avatar is-operator" aria-hidden="true">
+						你
+					</span>
 				</article>
 			))}
 			{liveInvocations

@@ -48,6 +48,7 @@ created: 2026-10-25
 | F033 | Local runtime startup & worktree isolation — single entry, runtime/test worktrees, deterministic ports, managed lifecycle, Windows proxy | done — Phase B `e1ceb0e43`; Phase C `75a54a8e4`; Phase D `bac20a684` live runtime (new launcher, persistent data `~/.superagentteam-runtime/data`, cron retired); operator close 2026-11-25 | 宪宪 | [F033](docs/features/F033-runtime-startup-worktrees.md) |
 | F034 | Agent run control — bounded automatic retries, cancel running agent, queue clarity | implementing (merged; live E2E pending) | 宪宪 | [F034](docs/features/F034-agent-run-control.md) |
 | F035 | Settings hub — sidebar Settings entry, accounts/agents pages | implementing (page + nav + unit tests; browser/live check pending) | 宪宪 | [F035](docs/features/F035-settings-hub.md) |
+| F036 | Chat surface polish — agent message bubble + operator avatar | implementing (bubble + avatar; visual check pending) | 宪宪 | [F036](docs/features/F036-chat-surface-polish.md) |
 
 > Naming (F019): new and active docs use `superagentteam/Fxxx`; F001–F018 retain
 > `codeteam/Fxxx` for history. Package/env/data/CLI/tool names use `superagentteam*`

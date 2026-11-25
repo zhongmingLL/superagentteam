@@ -81,6 +81,7 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 		() => providers.find((item) => item.id === form.provider),
 		[providers, form.provider],
 	);
+	const selectableProviders = providers.filter((item) => item.selectable !== false);
 
 	async function refresh(): Promise<void> {
 		setLoading(true);
@@ -118,7 +119,11 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 
 	function startCreate(): void {
 		setMode("create");
-		setForm(emptyForm(providers[0]));
+		const defaultProvider =
+			providers.find((item) => item.id === "kimi-coding" && item.selectable !== false) ??
+			selectableProviders[0] ??
+			providers[0];
+		setForm(emptyForm(defaultProvider));
 		setError(undefined);
 	}
 
@@ -220,7 +225,12 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 					</div>
 					<div className="st-accounts-head-actions">
 						{mode === null ? (
-							<button type="button" className="st-button" onClick={startCreate} disabled={providers.length === 0}>
+							<button
+								type="button"
+								className="st-button"
+								onClick={startCreate}
+								disabled={selectableProviders.length === 0}
+							>
 								新建账号
 							</button>
 						) : null}
@@ -314,11 +324,14 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 									disabled={saving}
 								>
 									{providers.map((item) => (
-										<option value={item.id} key={item.id}>
-											{item.label} ({item.id})
+										<option value={item.id} key={item.id} disabled={item.selectable === false}>
+											{item.label} ({item.id}){item.selectable === false ? " — 需特殊认证" : ""}
 										</option>
 									))}
 								</select>
+								{providers.some((item) => item.selectable === false) ? (
+									<span className="st-field-note">标“需特殊认证”的 provider 将在后续版本支持。</span>
+								) : null}
 							</label>
 							<label className="st-field">
 								<span>Base URL（可选）</span>
@@ -446,7 +459,7 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 							>
 								取消
 							</button>
-							<button type="submit" className="st-button" disabled={saving || providers.length === 0}>
+							<button type="submit" className="st-button" disabled={saving || selectableProviders.length === 0}>
 								{saving ? "保存中…" : mode === "create" ? "创建账号" : "保存"}
 							</button>
 						</div>

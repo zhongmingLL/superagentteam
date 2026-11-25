@@ -371,6 +371,24 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 									添加
 								</button>
 							</div>
+							{provider && (provider.suggestedModels?.length ?? 0) > 0 ? (
+								<div className="st-model-suggestions">
+									<span className="st-field-note">常用模型</span>
+									{(provider.suggestedModels ?? [])
+										.filter((model) => !form.models.includes(model))
+										.map((model) => (
+											<button
+												type="button"
+												className="st-model-suggestion"
+												key={model}
+												onClick={() => patch({ models: [...form.models, model] })}
+												disabled={saving}
+											>
+												+ {model}
+											</button>
+										))}
+								</div>
+							) : null}
 						</div>
 						<div className="st-account-credential">
 							<span className="st-account-credential-label">凭据</span>

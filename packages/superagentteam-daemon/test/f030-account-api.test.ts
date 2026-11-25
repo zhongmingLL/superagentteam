@@ -84,6 +84,13 @@ describe("F030 account API", () => {
 		expect(providerBody.providers).toContainEqual(
 			expect.objectContaining({ id: "kimi-coding", envName: "KIMI_API_KEY" }),
 		);
+		expect(providerBody.providers).toContainEqual(
+			expect.objectContaining({
+				id: "zai",
+				label: "Z.AI / 智谱 GLM",
+				suggestedModels: expect.arrayContaining(["glm-5.2", "glm-4.7"]),
+			}),
+		);
 
 		const created = await send(base, auth, "POST", "/api/accounts", {
 			ref: "kimi",

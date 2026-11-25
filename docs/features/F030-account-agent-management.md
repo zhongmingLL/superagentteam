@@ -38,7 +38,7 @@ F025 的真实 provider E2E 通过 `/home/ming/.env` 提供 key，是临时方�
 
 ### F030.1 Account 契约 + 存储 + API
 
-- Provider catalog（已知 provider id、默认 env、是否支持 baseUrl）。
+- Provider catalog（已知 provider id、默认 env、是否支持 baseUrl、常用 models）。
 - F030.5 design：[plan 0045](../plans/0045-f030.5-account-provider-catalog.md)：
   固定 v1 vendor 列表后续改为从 pi catalog 派生，protocol/client 与 vendor 分层。
 - `accounts.json` 元数据 + `credentials.json`（0600，按 accountRef 存 API key）。
@@ -114,6 +114,11 @@ F025 的真实 provider E2E 通过 `/home/ming/.env` 提供 key，是临时方�
   墨墨确认 P3 delta，approve 延伸至 `0b14e9bac`。PR #174 merged as
   `a42cfcab5`，CI 5/5。状态更新为 implemented。2026-11-24 operator batch
   close（消息 `0001795523064349-000942-d9449e06`）→ done。
+
+- 2026-11-26（provider discoverability）：`ACCOUNT_PROVIDERS` 增加
+  `suggestedModels`；`zai` 标签改为“Z.AI / 智谱 GLM”，账号表单可一键添加
+  `glm-5.2` / `glm-5-turbo` / `glm-4.7`。Provider 列表仍是固定 v1 API-key
+  catalog；model 仍允许自由输入。
 
 ## 风险与回滚
 

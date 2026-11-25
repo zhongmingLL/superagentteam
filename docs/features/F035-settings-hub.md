@@ -54,5 +54,8 @@ source_decision: "operator 2026-11-25: add Settings at the bottom of the sidebar
 - 测试：`settings-page.test.tsx` 覆盖列表/页面编辑器/区块切换；`thread-sidebar.test.tsx` 覆盖设置链接。web 全量 101 passed。
 - 2026-11-25：PR #196 merged `29f104852`（墨墨 vision/UX approve @ `723024d2e`，砚砚 aria/state approve @ `190662f21`，P3 全收）；CI 5/5；已部署 live `469e858ce`。
   墨墨用隔离栈补了 1440/390 真机截图 + 真实创建流程（网络证据 `{"accounts":[]}`，全程未触 live）；live 3103 的实机创建待 operator 签收。
+- 2026-11-25（operator design feedback）：设置改为与 threads **平级的独立页面**——`AppShell` 在 `/settings` 不再渲染 ThreadSidebar 和 threads topbar；移除 ThreadSidebar 里的设置快捷入口（设置只属于左侧图标栏）。
+  设置子导航按 Clowder 参考重做（图标 + 名称 + 说明 + 计数），Agents 行加头像；文案统一为「账户与登录 / Agents」。
+  这一轮未走 Pencil 设计流程，是按 Clowder 结构参考 + 现有 `st-*` tokens 直接落地；后续大改视觉前先补设计稿。
 
 [宪宪/deepseek-flash🐾]

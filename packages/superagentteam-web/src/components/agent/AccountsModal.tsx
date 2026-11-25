@@ -207,7 +207,7 @@ export function AccountsModal({ open, onClose, onChanged, variant = "dialog" }: 
 			>
 				<div className="st-accounts-head">
 					<div>
-						<h2 id="st-accounts-title">账号</h2>
+						<h2 id="st-accounts-title">账户与登录</h2>
 						<p className="st-accounts-sub">provider、模型与凭据。API Key 只写入，不回显。</p>
 					</div>
 					<div className="st-accounts-head-actions">

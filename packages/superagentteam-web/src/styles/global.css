@@ -2580,6 +2580,21 @@ svg {
 	font-size: 11px;
 }
 
+.st-agent-empty-accounts {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 10px 12px;
+	border-radius: var(--st-radius-md);
+	background: var(--st-surface-2);
+	color: var(--st-muted);
+	font-size: 11px;
+}
+
+.st-agent-empty-accounts .st-link-button {
+	align-self: flex-start;
+}
+
 .st-agent-editor .st-dialog-actions {
 	position: sticky;
 	bottom: 0;

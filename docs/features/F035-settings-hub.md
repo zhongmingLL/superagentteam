@@ -45,6 +45,7 @@ source_decision: "operator 2026-11-25: add Settings at the bottom of the sidebar
 - [x] AC-3：账号创建/编辑/删除与 agent 创建/编辑在设置页可用，错误可读。
 - [x] AC-4：现有顶栏 popover 入口不回归；无重复提交/状态不同步。
 - [ ] AC-5：web tests + browser screenshots；3103 实机可完成一次账号/agent 创建。
+- [ ] AC-6：设计稿 `.pen` 源文件入库后，逐项核对实现与设计稿一致（operator/墨墨验收）。
 
 ## 实现进展（2026-11-25）
 

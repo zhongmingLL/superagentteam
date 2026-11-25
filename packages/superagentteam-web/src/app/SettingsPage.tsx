@@ -14,7 +14,7 @@ export interface SettingsPageProps {
 	initialTab?: SettingsTab;
 }
 
-function AgentsSettingsPanel() {
+function AgentsSettingsPanel({ onOpenAccounts }: { onOpenAccounts: () => void }) {
 	const agents = useAgentStore((state) => state.agents);
 	const status = useAgentStore((state) => state.status);
 	const error = useAgentStore((state) => state.error);
@@ -38,6 +38,7 @@ function AgentsSettingsPanel() {
 				accountsStatus={accountsStatus}
 				accountsError={accountsError}
 				onLoadAccounts={() => void loadAccounts()}
+				onOpenAccounts={onOpenAccounts}
 				onClose={() => {
 					setMode(null);
 					setEditing(undefined);
@@ -159,7 +160,7 @@ export function SettingsPage({ initialTab = "accounts" }: SettingsPageProps) {
 						onChanged={() => void loadAccounts()}
 					/>
 				) : (
-					<AgentsSettingsPanel />
+					<AgentsSettingsPanel onOpenAccounts={() => setTab("accounts")} />
 				)}
 			</section>
 		</div>

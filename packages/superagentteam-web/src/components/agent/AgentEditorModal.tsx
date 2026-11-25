@@ -16,6 +16,7 @@ export interface AgentEditorModalProps {
 	accountsStatus: "idle" | "loading" | "ready" | "error";
 	accountsError?: string;
 	onLoadAccounts?: () => void;
+	onOpenAccounts?: () => void;
 	onClose: () => void;
 	onCreate?: (input: CreateAgentInput) => Promise<AgentView>;
 	onUpdate?: (id: string, input: UpdateAgentInput) => Promise<AgentView>;
@@ -45,6 +46,7 @@ export function AgentEditorModal({
 	accountsStatus,
 	accountsError,
 	onLoadAccounts,
+	onOpenAccounts,
 	onClose,
 	onCreate,
 	onUpdate,
@@ -280,6 +282,21 @@ export function AgentEditorModal({
 							</select>
 						</label>
 						{accountsError ? <p className="st-error">{accountsError}</p> : null}
+							{accounts.length === 0 && accountsStatus === "ready" ? (
+								<div className="st-agent-empty-accounts">
+									<span>还没有账号。Agent 需要先绑定一个 provider 账号。</span>
+									<button
+										type="button"
+										className="st-link-button"
+										onClick={() => {
+											onOpenAccounts?.();
+											onClose();
+										}}
+									>
+										去「账户与登录」新建
+									</button>
+								</div>
+							) : null}
 							<label className="st-account-radio">
 								<input
 									type="checkbox"
@@ -351,18 +368,16 @@ export function AgentEditorModal({
 					</section>
 					<section className="st-agent-form-section">
 						<h3>角色与外观</h3>
-						<div className="st-agent-form-grid">
-							<label className="st-field">
-								<span>role id</span>
-								<input
-									value={roleId}
-									onChange={(event) => setRoleId(event.target.value)}
-									disabled={saving}
-									placeholder="worker"
-									autoComplete="off"
-								/>
-							</label>
-						</div>
+						<label className="st-field">
+							<span>role id</span>
+							<input
+								value={roleId}
+								onChange={(event) => setRoleId(event.target.value)}
+								disabled={saving}
+								placeholder="worker"
+								autoComplete="off"
+							/>
+						</label>
 						<label className="st-field">
 							<span>角色描述</span>
 							<textarea

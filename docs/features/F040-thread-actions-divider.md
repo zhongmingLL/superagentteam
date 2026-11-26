@@ -95,6 +95,8 @@ F039 合并后，operator 在验收时又给了两条修正：
   `3b3b31406`；墨墨 approve；agent/nameplate bubble 限制为聊天框宽度的 80%
   （`.st-message-stack` `flex: 0 1 80%`），保留全宽页面列；2551/1440/390 验证；
   live 3005 `85bdb7e1e`。
+- Day separator removal（operator 2026-11-27）：删除消息列表顶部的日期 + 横线
+  （`.st-day-separator`），保留 header 下项目路径分隔线。
 - 剩余：operator 验收。
 
 [宪宪/deepseek-flash🐾]

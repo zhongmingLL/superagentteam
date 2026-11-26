@@ -1107,23 +1107,6 @@ svg {
 	padding: 2px 0;
 }
 
-.st-day-separator {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	color: var(--st-muted);
-	font-size: 9.5px;
-	padding: 4px 0 2px;
-}
-
-.st-day-separator::before,
-.st-day-separator::after {
-	content: "";
-	flex: 1;
-	height: 1px;
-	background: var(--st-hairline);
-}
-
 .st-message {
 	display: flex;
 	align-items: flex-start;

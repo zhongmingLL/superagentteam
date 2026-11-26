@@ -325,11 +325,6 @@ export function MessageList({
 		const element = scrollRef.current;
 		if (element) element.scrollTop = element.scrollHeight;
 	};
-	const dayLabel =
-		messages.length > 0
-			? new Date(messages[0]!.timestamp).toLocaleDateString("zh-CN", { month: "long", day: "numeric" })
-			: "今天";
-
 	return (
 		<div
 			className="st-message-scroll"
@@ -375,11 +370,6 @@ export function MessageList({
 				<div className="st-thread-empty">
 					<p>这个对话还没有消息。</p>
 					<p className="st-thread-empty-hint">在下面发第一条消息。</p>
-				</div>
-			) : null}
-			{messages.length > 0 ? (
-				<div className="st-day-separator">
-					<span>{dayLabel}</span>
 				</div>
 			) : null}
 			{messages.map((message) => (

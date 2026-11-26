@@ -25,7 +25,7 @@ Pencil 设计源与 4 张导出图已同步。
 
 **收口**：PR #219 merged `5ebfdc56a`；reviewed HEAD `0ad53a592`；墨墨非作者
 approve；CI 5/5；web 116 passed；post-merge fix PR #222 merged `abda22e5f`；
-live 3005 deployed runtime head `abda22e5f`。
+bubble fix PR #224 merged `85bdb7e1e`；live 3005 deployed runtime head `85bdb7e1e`。
 
 ## 1. Thread 行更多操作
 
@@ -84,6 +84,9 @@ Operator 反馈 agent 气泡在全宽页面下过长；将 `.st-message.is-namep
 ![bubble 80%: 1440](../design/F040/fix-bubble80-1440.png)
 
 ![bubble 80%: 390](../design/F040/fix-bubble80-390.png)
+
+**Bubble fix closeout**：PR #224 merged `85bdb7e1e`；reviewed HEAD `3b3b31406`；
+墨墨 approve；CI 5/5；live 3005 deployed `85bdb7e1e`。
 
 ## 验证
 

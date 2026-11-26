@@ -21,6 +21,10 @@ execution record、rich block、账号/Agent 热更新、未读/重命名/重试
 本轮发现并修复 1 个 P2 前端缺口（移动端 Settings 入口/返回）；1 个 P3 prompt
 可读性问题明确挂账。未发现 A2A 状态机、队列、取消、恢复或数据边界的 P1/P2 缺陷。
 
+**收口**：PR #211 landed `2db3f3b79135ea13bfd9692c06b31ab5af1c3c5a`（2026-11-26）；
+reviewed HEAD `e7b27af5b`；墨墨非作者 approve；GitHub CI 5/5 绿。F037 进入
+`superagentteam-work`，operator 验收与正式栈签收项仍独立。
+
 ## 隔离与基线
 
 | 项 | 值 |

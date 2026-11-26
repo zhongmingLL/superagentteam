@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F037]
 related_features: [superagentteam/F018, superagentteam/F020, superagentteam/F025, superagentteam/F028, superagentteam/F030, superagentteam/F031, superagentteam/F034, superagentteam/F035, superagentteam/F036]
 title: "F037: Thread-first full-feature E2E"
-status: in-progress
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -90,7 +90,7 @@ Agent 管理、执行记录、富块、停止/重试、Settings、视觉与启�
       multi_mention + callback；日志/报告不含 key。
 - [x] AC-5：每个 bug 记录现象/复现/期望/根因/修复 commit/回归用例；P1/P2 全部修复，
       P3 明确挂账。
-- [ ] AC-6：daemon/web targeted + full tests、typecheck/build、doc-index 绿；非作者
+- [x] AC-6：daemon/web targeted + full tests、typecheck/build、doc-index 绿；非作者
       review 覆盖最终实质 HEAD。
 - [x] AC-7：F037 feature/plan/BACKLOG/docs index/report 与真实交付一致，不把
       “已实现”写成“已验收”。
@@ -137,6 +137,10 @@ Agent 管理、执行记录、富块、停止/重试、Settings、视觉与启�
 - BUG-F037-002（P3）：A2A body 只有标签时收件 agent 可能回“没有请求”；prompt
   current-request 标记列为 F018 prompt 语义 follow-up，不在 F037 改契约。
 - 执行记录与矩阵：`docs/reports/2026-11-26-f037-thread-first-e2e.md`。
-- 剩余：非作者 review + CI；正式栈 operator 签收项（F034/F035/F036）不变。
+- 非作者 review：墨墨 approve `e7b27af5b`（实质代码 `93997c049`），独立复核
+  daemon 507 / web 109 / `npm run check` / CI 5/5。
+- PR #211 landed `2db3f3b79135ea13bfd9692c06b31ab5af1c3c5a`；F037 实现与 E2E
+  已进入 `superagentteam-work`。
+- 剩余：operator 验收；F034/F035/F036 的正式栈签收项不变。
 
 [宪宪/deepseek-flash🐾]

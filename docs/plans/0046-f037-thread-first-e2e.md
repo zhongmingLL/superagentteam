@@ -1,7 +1,7 @@
 ---
 title: "F037 execution plan — thread-first full-feature E2E"
 doc_kind: plan
-status: active
+status: done
 created: 2026-11-26
 updated: 2026-11-26
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -148,5 +148,11 @@ node packages/superagentteam-daemon/dist/cli.js \
 - 隔离栈无法启动且根因在环境而非产品：记录 `blocked` + 缺口，不用 runtime 数据绕过。
 - 真实 provider 不可用：保留 F037-31–36 `blocked` 证据，mock 层仍完成；不伪造真实链。
 - 发现超出 F037 约定范围的新能力缺口：记 bug/P3 或另立 feature，不在本 feature 偷做。
+
+## 6. 结项记录
+
+- PR #211 landed `2db3f3b79135ea13bfd9692c06b31ab5af1c3c5a`（2026-11-26）。
+- Reviewed HEAD `e7b27af5b`（实质代码 `93997c049`）；墨墨非作者 approve。
+- CI 5/5；daemon 507 / web 109 / `npm run check` / doc index 47/37 绿。
 
 [宪宪/deepseek-flash🐾]

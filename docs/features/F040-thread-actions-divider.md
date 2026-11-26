@@ -97,6 +97,8 @@ F039 合并后，operator 在验收时又给了两条修正：
   live 3005 `85bdb7e1e`。
 - Day separator removal（operator 2026-11-27）：删除消息列表顶部的日期 + 横线
   （`.st-day-separator`），保留 header 下项目路径分隔线。
+- Composer width fix（operator 2026-11-27）：`.st-composer-wrap` 从 agent 气泡起点到
+  operator 气泡终点；`calc(100% - 95px)` / margin-left 40px（含滚动条槽）。
 - 剩余：operator 验收。
 
 [宪宪/deepseek-flash🐾]

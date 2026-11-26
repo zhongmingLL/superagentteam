@@ -96,6 +96,19 @@ Operator 反馈消息列表顶部的日期 + 横线太丑；移除 `MessageList`
 
 ![no day separator: 2551](../design/F040/fix-no-day-2551.png)
 
+### Composer width follow-up
+
+Operator 反馈发送框应对齐“agent 气泡起点到 operator 气泡终点”；给 Composer 加
+`.st-composer-wrap`：桌面 `width: calc(100% - 95px)`、`margin-left: 40px`
+（左侧 2 padding + 28 avatar + 10 gap；右侧再含 15 scrollbar gutter + 38），
+左侧与 agent 气泡起点对齐，右侧到 operator 气泡右边缘；滚动条槽按 15px 统一计算。
+
+![composer align: 2551](../design/F040/fix-composer-align-2551.png)
+
+![composer align: 1440](../design/F040/fix-composer-align-1440.png)
+
+![composer align: 390](../design/F040/fix-composer-align-390.png)
+
 ## 验证
 
 | 命令 | 结果 |

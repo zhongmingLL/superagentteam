@@ -275,18 +275,20 @@ export function ThreadPage() {
 					{stopError}
 				</p>
 			) : null}
-			<Composer
-				key={threadId}
-				threadId={threadId}
-				agents={agents}
-				onSend={async (content, idempotencyKey, targetAgentIds) => {
-					if (targetAgentIds) await send(content, idempotencyKey, targetAgentIds);
-					else await send(content, idempotencyKey);
-					await refreshA2A();
-				}}
-				disabled={deleted}
-				disabledReason="这个对话已删除，不能再发送消息。"
-			/>
+			<div className="st-composer-wrap">
+				<Composer
+					key={threadId}
+					threadId={threadId}
+					agents={agents}
+					onSend={async (content, idempotencyKey, targetAgentIds) => {
+						if (targetAgentIds) await send(content, idempotencyKey, targetAgentIds);
+						else await send(content, idempotencyKey);
+						await refreshA2A();
+					}}
+					disabled={deleted}
+					disabledReason="这个对话已删除，不能再发送消息。"
+				/>
+			</div>
 			</section>
 		</>
 	);

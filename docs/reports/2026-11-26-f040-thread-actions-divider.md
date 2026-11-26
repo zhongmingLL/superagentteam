@@ -88,6 +88,14 @@ Operator 反馈 agent 气泡在全宽页面下过长；将 `.st-message.is-namep
 **Bubble fix closeout**：PR #224 merged `85bdb7e1e`；reviewed HEAD `3b3b31406`；
 墨墨 approve；CI 5/5；live 3005 deployed `85bdb7e1e`。
 
+### Day separator removal
+
+Operator 反馈消息列表顶部的日期 + 横线太丑；移除 `MessageList` 的 `.st-day-separator`
+（日期与 `::before/::after` 横线），消息列表直接从第一条消息开始，保留 header 下项目
+路径分隔线。
+
+![no day separator: 2551](../design/F040/fix-no-day-2551.png)
+
 ## 验证
 
 | 命令 | 结果 |

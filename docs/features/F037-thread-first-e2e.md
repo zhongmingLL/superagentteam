@@ -137,6 +137,7 @@ Agent 管理、执行记录、富块、停止/重试、Settings、视觉与启�
 - BUG-F037-002（P3）：A2A body 只有标签时收件 agent 可能回“没有请求”；prompt
   current-request 标记列为 F018 prompt 语义 follow-up，不在 F037 改契约。
 - 执行记录与矩阵：`docs/reports/2026-11-26-f037-thread-first-e2e.md`。
+- 详细测试报告（29 个用例 + 15 张截图）：`docs/reports/2026-11-26-f037-thread-first-e2e-detailed.md`。
 - 非作者 review：墨墨 approve `e7b27af5b`（实质代码 `93997c049`），独立复核
   daemon 507 / web 109 / `npm run check` / CI 5/5。
 - PR #211 landed `2db3f3b79135ea13bfd9692c06b31ab5af1c3c5a`；F037 实现与 E2E

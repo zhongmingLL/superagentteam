@@ -88,15 +88,13 @@ export function AppShell() {
 						<Icon name="menu" size={18} />
 					</button>
 					<div className="st-topbar-crumb">
-						<Link className="st-topbar-root" to="/">
-							Threads
-						</Link>
 						{activeThread ? (
-							<>
-								<Icon name="chevron" size={12} />
-								<span className="st-topbar-title">{activeThread.title ?? "未命名对话"}</span>
-							</>
-						) : null}
+							<span className="st-topbar-title">{activeThread.title ?? "未命名对话"}</span>
+						) : (
+							<Link className="st-topbar-root" to="/">
+								Threads
+							</Link>
+						)}
 					</div>
 					<div className="st-topbar-actions">
 						<button

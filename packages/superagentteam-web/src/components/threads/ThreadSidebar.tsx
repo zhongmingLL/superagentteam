@@ -48,12 +48,12 @@ export function ThreadSidebar({ open, onClose }: ThreadSidebarProps) {
 				</button>
 				<Link to="/settings" onClick={onClose}>
 					<Icon name="settings" size={16} />
-					<span>设置</span>
+					<span>Settings</span>
 				</Link>
 			</nav>
 			<button type="button" className="st-new-thread" onClick={() => showDialog()}>
 				<Icon name="plus" size={14} />
-				<span>+ 新对话</span>
+				<span>新对话</span>
 			</button>
 			<div className="st-search-wrap">
 				<Icon name="search" size={14} />
@@ -81,7 +81,7 @@ export function ThreadSidebar({ open, onClose }: ThreadSidebarProps) {
 					</div>
 				) : null}
 				{status === "ready" && threads.length === 0 && query.trim() === "" ? (
-					<p className="st-sidebar-note">还没有对话。点「+ 新对话」开始。</p>
+					<p className="st-sidebar-note">还没有对话。点「新对话」开始。</p>
 				) : null}
 				{status === "ready" && threads.length === 0 && query.trim() !== "" ? (
 					<p className="st-sidebar-note">没有匹配的对话。</p>

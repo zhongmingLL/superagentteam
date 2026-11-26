@@ -116,13 +116,13 @@ export function SettingsPage({ initialTab = "accounts" }: SettingsPageProps) {
 
 	return (
 		<div className="st-settings-page">
-			<aside className="st-settings-nav" aria-label="设置导航">
+			<aside className="st-settings-nav" aria-label="Settings navigation">
 				<div className="st-settings-brand">
 					<Link className="st-settings-back" to="/">
-						← 返回对话
+						← Back to threads
 					</Link>
 					<span className="st-settings-eyebrow">SuperAgentTeam</span>
-					<h1>设置</h1>
+					<h1>Settings</h1>
 				</div>
 				<button
 					type="button"
@@ -134,7 +134,7 @@ export function SettingsPage({ initialTab = "accounts" }: SettingsPageProps) {
 						<Icon name="wrench" size={15} />
 					</span>
 					<span className="st-settings-tab-body">
-						<span className="st-settings-tab-label">账户与登录</span>
+						<span className="st-settings-tab-label">Accounts</span>
 						<small>provider、模型与凭据</small>
 					</span>
 					<span className="st-settings-count">{accounts.length}</span>

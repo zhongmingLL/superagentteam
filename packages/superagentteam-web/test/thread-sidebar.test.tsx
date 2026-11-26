@@ -76,7 +76,7 @@ describe("thread sidebar", () => {
 			</MemoryRouter>,
 		);
 
-		const settings = screen.getByRole("link", { name: "设置" });
+		const settings = screen.getByRole("link", { name: "Settings" });
 		expect(settings).toHaveAttribute("href", "/settings");
 	});
 
@@ -88,8 +88,10 @@ describe("thread sidebar", () => {
 			</MemoryRouter>,
 		);
 
-		expect(screen.getByText("还没有对话。点「+ 新对话」开始。")).toBeInTheDocument();
-		fireEvent.click(screen.getByRole("button", { name: "+ 新对话" }));
+		expect(screen.getByText("还没有对话。点「新对话」开始。")).toBeInTheDocument();
+		const newThread = screen.getByRole("button", { name: "新对话" });
+		expect(newThread.textContent).toBe("新对话");
+		fireEvent.click(newThread);
 		expect(useNewThreadDialog.getState().open).toBe(true);
 		useNewThreadDialog.setState({ open: false });
 	});

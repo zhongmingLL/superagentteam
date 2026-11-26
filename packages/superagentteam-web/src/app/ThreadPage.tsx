@@ -5,7 +5,6 @@ import { Composer } from "@/components/chat/Composer";
 import { MessageList } from "@/components/chat/MessageList";
 import { LivePill } from "@/components/a2a/LivePill";
 import { QueueStrip } from "@/components/a2a/QueueStrip";
-import { Icon } from "@/components/ui/Icon";
 import { useA2AStore } from "@/domains/a2a/store";
 import { useAgentStore } from "@/domains/agent/store";
 import { useChatStore } from "@/domains/chat/store";
@@ -261,8 +260,10 @@ export function ThreadPage() {
 						) : null}
 					</form>
 				) : (
-					<div className="st-thread-title-row">
-						<h1>{thread.title ?? "未命名对话"}</h1>
+					<div className="st-thread-meta-row">
+						<div className="st-thread-header-meta">
+							<code title={thread.projectPath}>{thread.projectPath}</code>
+						</div>
 						{!deleted ? (
 							<button
 								type="button"
@@ -289,54 +290,13 @@ export function ThreadPage() {
 						) : null}
 					</div>
 				)}
-				<div className="st-thread-header-meta">
-					<code title={thread.projectPath}>{thread.projectPath}</code>
-				</div>
 			</header>
 			{deleted ? <p className="st-thread-deleted">这个对话已删除，历史只读。</p> : null}
-			{a2aMatches && (a2aLive.length > 0 || a2aQueue.length > 0) ? (
-				<div className="st-thread-status-row">
-					<LivePill
-						live={a2aLive}
-						agents={agents}
-						onStop={(agentId) => {
-							setStopError(undefined);
-							void cancelAgent(agentId).catch((error: unknown) => {
-								setStopError(error instanceof Error ? error.message : "停止失败");
-							});
-						}}
-					/>
-					{a2aQueue.length > 0 ? (
-						<span className="st-status-pill">
-							队列 {a2aQueue.length}
-							{a2aCap === undefined ? "" : ` / ${a2aCap}`}
-						</span>
-					) : null}
-				</div>
-			) : null}
-			{stopError ? (
-				<p className="st-a2a-degraded" role="alert">
-					{stopError}
-				</p>
-			) : null}
 			{realtimeStatus === "fallback" ? (
 				<p className="st-realtime-note" role="status">
 					实时更新不可用，正在使用轮询。
 				</p>
 			) : null}
-			<div className="st-thread-context">
-				<Icon name="sparkles" size={13} />
-				<span>线程上下文</span>
-				<span className="st-thread-context-dim">·</span>
-				{thread.participants.length === 0 ? (
-					<>
-						<span>还没有成员</span>
-						<span className="st-thread-context-dim">·</span>
-					</>
-				) : null}
-				<span>本页 {chatMatches ? messages.length : 0} 条消息</span>
-				<span className="st-thread-context-tag">pinned context</span>
-			</div>
 			<MessageList
 				thread={thread}
 				messages={chatMatches ? messages : []}
@@ -367,6 +327,25 @@ export function ThreadPage() {
 				</p>
 			) : null}
 			<QueueStrip queue={a2aMatches ? a2aQueue : []} agents={agents} cap={a2aCap} />
+			{a2aMatches && a2aLive.length > 0 ? (
+				<div className="st-thread-status-row">
+					<LivePill
+						live={a2aLive}
+						agents={agents}
+						onStop={(agentId) => {
+							setStopError(undefined);
+							void cancelAgent(agentId).catch((error: unknown) => {
+								setStopError(error instanceof Error ? error.message : "停止失败");
+							});
+						}}
+					/>
+				</div>
+			) : null}
+			{stopError ? (
+				<p className="st-a2a-degraded" role="alert">
+					{stopError}
+				</p>
+			) : null}
 			<Composer
 				key={threadId}
 				threadId={threadId}

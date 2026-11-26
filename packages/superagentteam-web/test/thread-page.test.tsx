@@ -79,11 +79,80 @@ describe("thread page", () => {
 		);
 
 		expect(await screen.findByText("hello")).toBeInTheDocument();
-		expect(screen.getByRole("heading", { name: "Alpha" })).toBeInTheDocument();
+		expect(screen.queryByRole("heading", { name: "Alpha" })).not.toBeInTheDocument();
+		expect(screen.getByText("/tmp/project")).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "重命名对话" })).toBeInTheDocument();
+		expect(screen.queryByText("线程上下文")).not.toBeInTheDocument();
 		expect(loadDetail).toHaveBeenCalledWith("thread:1");
 		expect(loadLatest).toHaveBeenCalledWith("thread:1");
 		expect(markRead).toHaveBeenCalledWith("thread:1", "msg:1");
 		expect(screen.getByLabelText("消息内容")).toBeInTheDocument();
+	});
+
+	it("places the running-stop control above the composer", async () => {
+		const cancelAgent = vi.fn(async () => {});
+		useThreadStore.setState({
+			threads: [thread],
+			status: "ready",
+			detailStatus: "ready",
+			detail: thread,
+			markRead: vi.fn(async () => true),
+		});
+		useAgentStore.setState({
+			agents: [
+				{
+					id: "a1",
+					displayName: "Agent A",
+					enabled: true,
+					status: "working",
+					accountRef: "main",
+					defaultModel: "m1",
+				},
+			],
+			status: "ready",
+		});
+		useA2AStore.setState({
+			threadId: thread.id,
+			status: "ready",
+			queue: [],
+			live: [
+				{
+					agentId: "a1",
+					turnExecutionId: "te1",
+					parentInvocationId: "inv1",
+					startedAt: Date.now(),
+					childStatus: "running",
+					responseStatus: "processing",
+					evidenceRank: "tracker-only",
+				},
+			],
+			cap: 5,
+			load: vi.fn(async () => true),
+			refresh: vi.fn(async () => true),
+			reset: vi.fn(),
+			cancelAgent,
+		});
+		useChatStore.setState({
+			threadId: thread.id,
+			messages: [],
+			status: "ready",
+			loadLatest: vi.fn(async () => true),
+			refresh: vi.fn(async () => true),
+		});
+
+		render(
+			<MemoryRouter initialEntries={[`/thread/${encodeURIComponent(thread.id)}`]}>
+				<Routes>
+					<Route path="/thread/:threadId" element={<ThreadPage />} />
+				</Routes>
+			</MemoryRouter>,
+		);
+
+		const stop = await screen.findByRole("button", { name: "停止 Agent A" });
+		const composer = screen.getByLabelText("消息内容");
+		expect(stop.compareDocumentPosition(composer) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+		fireEvent.click(stop);
+		await waitFor(() => expect(cancelAgent).toHaveBeenCalledWith("a1"));
 	});
 
 	it("sends from the composer through the chat store", async () => {
@@ -404,6 +473,7 @@ describe("thread page", () => {
 		fireEvent.click(screen.getByRole("button", { name: "保存" }));
 
 		await waitFor(() => expect(rename).toHaveBeenCalledWith(thread.id, "Beta"));
-		expect(await screen.findByRole("heading", { name: "Beta" })).toBeInTheDocument();
+		expect(screen.queryByLabelText("对话名")).not.toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "重命名对话" })).toBeInTheDocument();
 	});
 });

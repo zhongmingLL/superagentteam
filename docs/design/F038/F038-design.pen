@@ -1773,16 +1773,6 @@
                   "fontFamily": "$font",
                   "fontSize": 17,
                   "fontWeight": "600"
-                },
-                {
-                  "type": "text",
-                  "id": "UoopM",
-                  "name": "Sidebar Sub",
-                  "fill": "$muted",
-                  "content": "3 conversations · local dev",
-                  "fontFamily": "$font",
-                  "fontSize": 10,
-                  "fontWeight": "normal"
                 }
               ]
             },
@@ -1974,6 +1964,16 @@
                       "fontFamily": "$font",
                       "fontSize": 9,
                       "fontWeight": "normal"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "R4aTl",
+                      "name": "Thread Row 1 More",
+                      "width": 12,
+                      "height": 12,
+                      "icon": "ellipsis-vertical",
+                      "library": "lucide",
+                      "fill": "$muted"
                     }
                   ]
                 },
@@ -2305,17 +2305,6 @@
                       ]
                     }
                   ]
-                },
-                {
-                  "type": "rectangle",
-                  "id": "i2Qle",
-                  "layoutPosition": "absolute",
-                  "x": 0,
-                  "y": 51,
-                  "name": "Topbar Divider",
-                  "fill": "$hairline-strong",
-                  "width": 1332,
-                  "height": 1
                 }
               ]
             },
@@ -2462,6 +2451,14 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "rectangle",
+              "id": "rVTOT",
+              "name": "Thread Header Divider",
+              "fill": "$hairline-strong",
+              "width": 1332,
+              "height": 1
             },
             {
               "type": "frame",
@@ -3300,17 +3297,6 @@
                   ]
                 }
               ]
-            },
-            {
-              "type": "rectangle",
-              "id": "sVrbp",
-              "layoutPosition": "absolute",
-              "x": 0,
-              "y": 47,
-              "name": "Topbar Divider",
-              "fill": "$hairline-strong",
-              "width": 362,
-              "height": 1
             }
           ]
         },
@@ -3447,6 +3433,14 @@
               ]
             }
           ]
+        },
+        {
+          "type": "rectangle",
+          "id": "bXItb",
+          "name": "Thread Header Divider",
+          "fill": "$hairline-strong",
+          "width": 362,
+          "height": 1
         },
         {
           "type": "frame",
@@ -4747,5 +4741,5 @@
       "value": "#CBD5E1"
     }
   },
-  "fileToken": "a4cc871d-0794-46e1-aba5-dd0f9d908382"
+  "fileToken": "beb6f693-7852-4f24-bfd1-cd54bb127673"
 }

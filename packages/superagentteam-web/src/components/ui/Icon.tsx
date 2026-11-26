@@ -15,6 +15,8 @@ export type IconName =
 	| "at"
 	| "cross"
 	| "more"
+	| "more-vertical"
+	| "edit"
 	| "chevron"
 	| "check"
 	| "alert"
@@ -114,6 +116,19 @@ const paths: Record<IconName, ReactNode> = {
 			<circle cx="12" cy="12" r="1" />
 			<circle cx="19" cy="12" r="1" />
 			<circle cx="5" cy="12" r="1" />
+		</>
+	),
+	"more-vertical": (
+		<>
+			<circle cx="12" cy="5" r="1" />
+			<circle cx="12" cy="12" r="1" />
+			<circle cx="12" cy="19" r="1" />
+		</>
+	),
+	edit: (
+		<>
+			<path d="M12 20h9" />
+			<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
 		</>
 	),
 	chevron: <path d="m9 18 6-6-6-6" />,

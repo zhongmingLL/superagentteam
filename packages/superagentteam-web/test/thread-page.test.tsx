@@ -81,7 +81,11 @@ describe("thread page", () => {
 		expect(await screen.findByText("hello")).toBeInTheDocument();
 		expect(screen.queryByRole("heading", { name: "Alpha" })).not.toBeInTheDocument();
 		expect(screen.getByText("/tmp/project")).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "重命名对话" })).toBeInTheDocument();
+			expect(screen.queryByRole("button", { name: "重命名对话" })).not.toBeInTheDocument();
+			const divider = screen.getByTestId("thread-header-divider");
+			expect(
+				screen.getByText("/tmp/project").compareDocumentPosition(divider) & Node.DOCUMENT_POSITION_FOLLOWING,
+			).not.toBe(0);
 		expect(screen.queryByText("线程上下文")).not.toBeInTheDocument();
 		expect(loadDetail).toHaveBeenCalledWith("thread:1");
 		expect(loadLatest).toHaveBeenCalledWith("thread:1");
@@ -429,51 +433,4 @@ describe("thread page", () => {
 		visibility.mockRestore();
 	});
 
-	it("renames the thread from the header", async () => {
-		const rename = vi.fn(async (threadId: string, title: string) => {
-			const updated = { ...thread, title, titleSource: "user" as const };
-			useThreadStore.setState({ threads: [updated], detail: updated, detailStatus: "ready" });
-			return updated;
-		});
-		useThreadStore.setState({
-			threads: [thread],
-			status: "ready",
-			detailStatus: "ready",
-			detail: thread,
-			markRead: vi.fn(async () => true),
-			rename,
-		});
-		useA2AStore.setState({
-			load: vi.fn(async () => true),
-			refresh: vi.fn(async () => true),
-			reset: vi.fn(),
-		});
-		useChatStore.setState({
-			threadId: thread.id,
-			messages: [message()],
-			status: "ready",
-			followingLatest: true,
-			loadLatest: vi.fn(async () => true),
-			refresh: vi.fn(async () => true),
-		});
-
-		render(
-			<MemoryRouter initialEntries={[`/thread/${encodeURIComponent(thread.id)}`]}>
-				<Routes>
-					<Route path="/thread/:threadId" element={<ThreadPage />} />
-				</Routes>
-			</MemoryRouter>,
-		);
-
-		fireEvent.click(screen.getByRole("button", { name: "重命名对话" }));
-		const input = screen.getByLabelText("对话名");
-		fireEvent.change(input, { target: { value: "   " } });
-		expect(screen.getByRole("button", { name: "保存" })).toBeDisabled();
-		fireEvent.change(input, { target: { value: "Beta" } });
-		fireEvent.click(screen.getByRole("button", { name: "保存" }));
-
-		await waitFor(() => expect(rename).toHaveBeenCalledWith(thread.id, "Beta"));
-		expect(screen.queryByLabelText("对话名")).not.toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "重命名对话" })).toBeInTheDocument();
-	});
 });

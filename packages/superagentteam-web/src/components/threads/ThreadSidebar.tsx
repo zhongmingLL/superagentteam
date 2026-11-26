@@ -27,7 +27,6 @@ export function ThreadSidebar({ open, onClose }: ThreadSidebarProps) {
 				<div className="st-sidebar-heading">
 					<span className="st-sidebar-eyebrow">SuperAgentTeam</span>
 					<h2>Threads</h2>
-					<p>{allThreads.length} conversations · local dev</p>
 				</div>
 				<button type="button" className="st-icon-button st-sidebar-close" onClick={onClose} aria-label="收起侧栏">
 					<Icon name="close" size={16} />

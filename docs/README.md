@@ -96,6 +96,7 @@ updated: 2026-11-24
 | [`features/F037-thread-first-e2e.md`](features/F037-thread-first-e2e.md) | F037：Thread-first full-feature E2E（后端 A2A 契约、Hub 操作面、真实 provider 链路；用例 → 执行 → bug → 修复） |
 | [`features/F038-hub-ui-polish.md`](features/F038-hub-ui-polish.md) | F038：Hub UI acceptance polish（新建对话 plus 去重、thread 头部、停止按钮位置、Settings 导航统一） |
 | [`features/F039-conversation-layout-polish.md`](features/F039-conversation-layout-polish.md) | F039：Conversation layout polish（thread 顶部分隔线、agent/operator 名字时间移到气泡上方） |
+| [`features/F040-thread-actions-divider.md`](features/F040-thread-actions-divider.md) | F040：Thread row actions & header divider（Clowder 式更多操作菜单、重命名移入列表、分隔线下移） |
 | [`plans/0015-w6c-observability-trajectory.md`](plans/0015-w6c-observability-trajectory.md) | W6c observability/trajectory 实施计划与 AC 映射 |
 | [`plans/0018-f016a-a2a-ingress-e2e.md`](plans/0018-f016a-a2a-ingress-e2e.md) | F016a：8 类 ingress × scenario real RPC E2E、P0 工具面、withdraw/parallel/loop guard |
 | [`plans/0020-f018-thread-first-runtime.md`](plans/0020-f018-thread-first-runtime.md) | F018：A2A runtime v1 R0-R5、AgentConfig/Registry、schema/migration、same/cross-thread post、multi_mention fan-out、验收与回滚 |

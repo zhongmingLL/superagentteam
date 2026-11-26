@@ -102,7 +102,8 @@ eyebrow 颜色/字号与 Threads 头部不一致。
 eyebrow/title 样式。Settings 内的说明文案仍保留中文，与“不做全局 i18n”的实现边界
 一致。`.pen` 为明文 JSON 设计源（F039 更新后 4 个 frame、365 个节点、61 个变量），
 重新导出的 4 张 PNG 与上述设计图逐像素一致。F039 已把消息姓名/时间移到气泡上方，
-并把 thread 标题下的分隔线提升为 `hairline-strong`。
+并把 thread 标题下的分隔线提升为 `hairline-strong`；F040 已把分隔线进一步下移到
+项目路径行下方。
 
 ## 验证
 

@@ -377,10 +377,114 @@ svg {
 	align-items: center;
 	gap: 8px;
 	min-width: 0;
-	padding: 7px 7px 7px 9px;
+	padding: 7px 30px 7px 9px;
 	border-radius: var(--st-radius-md);
 	color: var(--st-body);
 	text-decoration: none;
+}
+
+.st-thread-row-wrap {
+	position: relative;
+}
+
+.st-thread-actions {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	z-index: 3;
+}
+
+.st-thread-more {
+	width: 22px;
+	height: 22px;
+	border: 0;
+	border-radius: var(--st-radius-sm);
+	background: transparent;
+	color: var(--st-muted);
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.st-thread-row-wrap:hover .st-thread-more,
+.st-thread-more:focus-visible,
+.st-thread-more[aria-expanded="true"] {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.st-thread-more:hover {
+	background: var(--st-surface-1);
+	color: var(--st-ink);
+}
+
+.st-thread-more:focus-visible {
+	outline: 2px solid var(--st-focus);
+	outline-offset: 1px;
+}
+
+.st-thread-menu {
+	position: absolute;
+	top: 26px;
+	right: 0;
+	z-index: 30;
+	min-width: 150px;
+	padding: 4px;
+	border: 1px solid var(--st-hairline);
+	border-radius: var(--st-radius-md);
+	background: var(--st-surface-1);
+	box-shadow: var(--st-shadow-soft);
+}
+
+.st-thread-menu-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	padding: 7px 9px;
+	border: 0;
+	border-radius: var(--st-radius-sm);
+	background: transparent;
+	color: var(--st-ink);
+	font: inherit;
+	font-size: 11px;
+	text-align: left;
+	cursor: pointer;
+}
+
+.st-thread-menu-item:hover {
+	background: var(--st-surface-2);
+}
+
+.st-thread-menu-item:focus-visible {
+	outline: 2px solid var(--st-focus);
+	outline-offset: -2px;
+}
+
+.st-thread-rename {
+	width: 100%;
+	height: 24px;
+	padding: 0 6px;
+	border: 1px solid var(--st-primary);
+	border-radius: var(--st-radius-sm);
+	background: var(--st-surface-1);
+	color: var(--st-ink);
+	font: inherit;
+	font-size: 12px;
+	outline: none;
+}
+
+.st-thread-rename:focus {
+	box-shadow: 0 0 0 2px var(--st-primary-soft);
+}
+
+.st-thread-rename-error {
+	color: var(--st-danger);
+	font-size: 9px;
 }
 
 .st-thread-row:hover {
@@ -606,7 +710,6 @@ svg {
 	align-items: center;
 	gap: 8px;
 	padding: 0 24px;
-	border-bottom: 1px solid var(--st-hairline-strong);
 	background: var(--st-canvas);
 }
 
@@ -874,6 +977,13 @@ svg {
 	padding: 10px 0 8px;
 }
 
+.st-thread-divider {
+	flex: none;
+	height: 1px;
+	margin-bottom: 2px;
+	background: var(--st-hairline-strong);
+}
+
 .st-thread-meta-row {
 	display: flex;
 	align-items: center;
@@ -885,35 +995,6 @@ svg {
 .st-thread-meta-row .st-thread-header-meta {
 	flex: 1;
 	min-width: 0;
-}
-
-.st-rename-form {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	flex-wrap: wrap;
-}
-
-.st-rename-input {
-	height: 36px;
-	min-width: 240px;
-	max-width: 100%;
-	padding: 0 10px;
-	border: 1px solid var(--st-hairline-strong);
-	border-radius: var(--st-radius-md);
-	background: var(--st-surface-1);
-	color: var(--st-ink);
-	outline: none;
-}
-
-.st-rename-input:focus-visible {
-	border-color: var(--st-primary);
-	box-shadow: 0 0 0 2px var(--st-primary-soft);
-}
-
-.st-rename-actions {
-	display: flex;
-	gap: 6px;
 }
 
 .st-thread-members {
@@ -2839,6 +2920,11 @@ svg {
 
 	.st-message.is-user .st-message-stack {
 		max-width: 82%;
+	}
+
+	.st-thread-more {
+		opacity: 1;
+		pointer-events: auto;
 	}
 
 	.st-composer-hint {

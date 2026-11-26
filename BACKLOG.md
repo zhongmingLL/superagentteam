@@ -51,7 +51,8 @@ created: 2026-10-25
 | F036 | Chat surface polish — agent message bubble + operator avatar | implemented — PR #197 merged `469e858ce`; 墨墨 4-viewport visual approve @ `d25ebfe64`; CI 5/5; deployed live `a33054f24` (3005); operator close pending | 宪宪 | [F036](docs/features/F036-chat-surface-polish.md) |
 | F037 | Thread-first full-feature E2E — 用例 → 逐项执行 → 记 bug → 修复 | implemented — PR #211 landed `2db3f3b79`; reviewed HEAD `e7b27af5b`; 墨墨 approve; CI 5/5; daemon 507 / web 109; operator 验收 pending | 宪宪 | [F037](docs/features/F037-thread-first-e2e.md) |
 | F038 | Hub UI acceptance polish — plus 去重、thread 头部、停止位置、Settings 统一 | implemented — PR #215 landed `e3700094b`; reviewed HEAD `3f3f36c9a`; 墨墨 approve; CI 5/5; web 110; operator 验收 pending | 宪宪 | [F038](docs/features/F038-hub-ui-polish.md) |
-| F039 | Conversation layout polish — thread 顶部分隔线、agent/operator 名字时间移到气泡上方 | in-progress — operator 2026-11-26 验收反馈 | 宪宪 | [F039](docs/features/F039-conversation-layout-polish.md) |
+| F039 | Conversation layout polish — thread 顶部分隔线、agent/operator 名字时间移到气泡上方 | implemented — PR #218 landed `9e005c416`; reviewed HEAD `791c54c7a`; 墨墨 approve; CI 5/5; web 114; F040 follow-up | 宪宪 | [F039](docs/features/F039-conversation-layout-polish.md) |
+| F040 | Thread row actions & header divider placement — Clowder 式更多操作菜单、重命名移入列表、分隔线下移到项目路径下方 | in-progress — operator 2026-11-26 验收反馈 | 宪宪 | [F040](docs/features/F040-thread-actions-divider.md) |
 
 > F030.5 account/provider catalog design: [plan 0045](docs/plans/0045-f030.5-account-provider-catalog.md)
 > （design only；固定 v1 vendor catalog 不再继续打补丁）。

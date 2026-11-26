@@ -93,6 +93,7 @@ updated: 2026-11-24
 | [`features/F034-agent-run-control.md`](features/F034-agent-run-control.md) | F034：Agent run control（有界自动重试、停止运行中 agent、队列说明） |
 | [`features/F035-settings-hub.md`](features/F035-settings-hub.md) | F035：Settings hub（侧边栏设置入口、账号/Agents 设置页） |
 | [`features/F036-chat-surface-polish.md`](features/F036-chat-surface-polish.md) | F036：Chat surface polish（agent 消息气泡、operator 头像） |
+| [`features/F037-thread-first-e2e.md`](features/F037-thread-first-e2e.md) | F037：Thread-first full-feature E2E（后端 A2A 契约、Hub 操作面、真实 provider 链路；用例 → 执行 → bug → 修复） |
 | [`plans/0015-w6c-observability-trajectory.md`](plans/0015-w6c-observability-trajectory.md) | W6c observability/trajectory 实施计划与 AC 映射 |
 | [`plans/0018-f016a-a2a-ingress-e2e.md`](plans/0018-f016a-a2a-ingress-e2e.md) | F016a：8 类 ingress × scenario real RPC E2E、P0 工具面、withdraw/parallel/loop guard |
 | [`plans/0020-f018-thread-first-runtime.md`](plans/0020-f018-thread-first-runtime.md) | F018：A2A runtime v1 R0-R5、AgentConfig/Registry、schema/migration、same/cross-thread post、multi_mention fan-out、验收与回滚 |

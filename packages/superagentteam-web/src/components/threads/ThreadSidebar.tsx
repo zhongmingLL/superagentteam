@@ -46,6 +46,10 @@ export function ThreadSidebar({ open, onClose }: ThreadSidebarProps) {
 					<Icon name="memory" size={16} />
 					<span>Memory</span>
 				</button>
+				<Link to="/settings" onClick={onClose}>
+					<Icon name="settings" size={16} />
+					<span>设置</span>
+				</Link>
 			</nav>
 			<button type="button" className="st-new-thread" onClick={() => showDialog()}>
 				<Icon name="plus" size={14} />

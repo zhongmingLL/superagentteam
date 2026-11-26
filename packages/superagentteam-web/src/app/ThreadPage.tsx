@@ -194,8 +194,9 @@ export function ThreadPage() {
 		name: agents.find((agent) => agent.id === id)?.displayName ?? id,
 	}));
 	return (
-		<section className="st-thread-page" aria-busy={!chatMatches || chatStatus === "loading"}>
-			<header className="st-thread-header">
+		<>
+			<section className="st-thread-page-head" aria-busy={!chatMatches || chatStatus === "loading"}>
+				<header className="st-thread-header">
 				<div className="st-thread-meta-row">
 					<div className="st-thread-header-meta">
 						<code title={thread.projectPath}>{thread.projectPath}</code>
@@ -215,8 +216,10 @@ export function ThreadPage() {
 						</div>
 					) : null}
 				</div>
-			</header>
+				</header>
+			</section>
 			<div className="st-thread-divider" data-testid="thread-header-divider" aria-hidden="true" />
+			<section className="st-thread-page-body" aria-busy={!chatMatches || chatStatus === "loading"}>
 			{deleted ? <p className="st-thread-deleted">这个对话已删除，历史只读。</p> : null}
 			{realtimeStatus === "fallback" ? (
 				<p className="st-realtime-note" role="status">
@@ -284,6 +287,7 @@ export function ThreadPage() {
 				disabled={deleted}
 				disabledReason="这个对话已删除，不能再发送消息。"
 			/>
-		</section>
+			</section>
+		</>
 	);
 }

@@ -704,7 +704,7 @@ svg {
 }
 
 .st-topbar {
-	height: 56px;
+	height: 48px;
 	flex: none;
 	display: flex;
 	align-items: center;
@@ -787,6 +787,8 @@ svg {
 	flex: 1;
 	min-height: 0;
 	overflow: hidden;
+	display: flex;
+	flex-direction: column;
 }
 
 .st-live-pills {
@@ -957,16 +959,23 @@ svg {
 	font-size: 12px;
 }
 
-.st-thread-page {
-	height: 100%;
+.st-thread-page-head {
+	flex: none;
 	width: 100%;
 	max-width: 980px;
 	margin: 0 auto;
+	padding: 0 24px;
+}
+
+.st-thread-page-body {
+	flex: 1;
+	min-height: 0;
+	width: 100%;
+	max-width: 980px;
+	margin: 0 auto;
+	padding: 0 24px;
 	display: flex;
 	flex-direction: column;
-	gap: 0;
-	min-height: 0;
-	padding: 0 24px;
 }
 
 .st-thread-header {
@@ -974,7 +983,7 @@ svg {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
-	padding: 10px 0 8px;
+	padding: 2px 0 8px;
 }
 
 .st-thread-divider {
@@ -2877,7 +2886,7 @@ svg {
 	}
 
 	.st-topbar {
-		height: 52px;
+		height: 44px;
 		padding: 0 14px;
 	}
 
@@ -2897,13 +2906,13 @@ svg {
 		padding: 0;
 	}
 
-	.st-thread-page {
-		max-width: none;
+	.st-thread-page-head,
+	.st-thread-page-body {
 		padding: 0 14px;
 	}
 
 	.st-thread-header {
-		padding-top: 14px;
+		padding-top: 8px;
 	}
 
 	.st-thread-members-count {

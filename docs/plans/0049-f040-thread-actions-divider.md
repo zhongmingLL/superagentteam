@@ -31,7 +31,9 @@ source_decision: "operator 2026-11-26 conversation list/header feedback"
 
 - 移除 `ThreadPage` 的重命名 state/handler/form/link。
 - `.st-topbar` 移除 `border-bottom`。
-- header 后插入 `.st-thread-divider`，横跨 `.st-thread-page` 内容宽度。
+- `.st-content` 改为 flex 列；`ThreadPage` 拆为 `.st-thread-page-head` 与
+  `.st-thread-page-body`，`.st-thread-divider` 作为全宽兄弟节点横跨主内容区。
+- `.st-topbar` 高度收到 48/44，header padding-top 收到 2/8，收紧标题与路径间距。
 - 保持项目路径/成员在 divider 上方，消息在下方。
 
 ## 3b. 侧栏标题去掉副标题

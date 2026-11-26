@@ -72,8 +72,9 @@ rich block 语义。
 - 样式：`.st-topbar` 分隔线提升到 `--st-hairline-strong`；390/1440 同步。
 - 测试：web 114 passed（25 files）；web typecheck / `build:offline` 通过。
 - 视觉：`docs/design/F039/` 下 1440/390 浅色/深色截图。
-- Pencil：4 个 frame / 365 nodes / 61 variables；Thread 1440/390 已加顶部分隔线、
-  消息 meta 移到气泡上方，operator 标签改为 `operator`；4 张 PNG 重新导出。
+- Pencil：F039 时点 4 个 frame / 365 nodes / 61 variables；F040 更新后 363 nodes。
+  Thread 1440/390 已加顶部分隔线、消息 meta 移到气泡上方，operator 标签改为
+  `operator`；4 张 PNG 重新导出。
 - 证据：`docs/reports/2026-11-26-f039-conversation-layout-polish.md`。
 - 非作者 review：墨墨 approve `791c54c7a`；独立复核 web 114 / typecheck / doc index /
   CI 5/5 / 4 张实机截图。

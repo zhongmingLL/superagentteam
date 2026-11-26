@@ -19,8 +19,9 @@ F039 合并后，operator 在验收时又给了两条修正：
 
 1. thread 页内的“重命名”入口应该去掉；所有 thread 编辑都收进 thread 列表行的
    “更多操作”菜单，和 Clowder 的交互一致。
-2. 分隔线不应该紧贴 thread 标题；应下移到项目路径行下方，并横向铺到聊天区左侧。
+2. 分隔线不应该紧贴 thread 标题；应下移到项目路径行下方，并连到主内容区左边框。
 3. 侧栏标题下的 `3 conversations · local dev` 副标题不要了。
+4. thread 标题与项目路径的垂直距离偏大，需要收紧。
 
 这两条是 thread 导航与对话页头部的布局修正，不改消息、A2A、队列、取消语义。
 
@@ -28,8 +29,9 @@ F039 合并后，operator 在验收时又给了两条修正：
 
 - thread 列表每行右侧有“更多操作”按钮；菜单里提供 `重命名对话`，点击后在行内编辑标题。
 - thread 页头部不再有“重命名”按钮或重命名表单；项目路径/成员保留。
-- thread 页头部在项目路径行下方有一条浅色分隔线，横向覆盖聊天内容区；
-  topbar 不再单独画线。
+- thread 页头部在项目路径行下方有一条浅色分隔线，横向贯通主内容区并连到
+  左侧栏边界；topbar 不再单独画线。
+- thread 标题与项目路径的垂直间距收紧。
 - 侧栏头部只保留 `SUPERAGENTTEAM` eyebrow 与 `Threads` 标题，不再显示
   `N conversations · local dev`。
 - 1440/390、浅色/深色一致；Pencil 设计稿同步。
@@ -56,11 +58,13 @@ F039 合并后，operator 在验收时又给了两条修正：
 - [x] AC-1：thread 行有“更多操作”按钮；菜单可打开/关闭，菜单位置不遮挡行内容。
 - [x] AC-2：菜单中的“重命名对话”进入行内编辑；Enter 保存、Escape 取消；失败有可见错误。
 - [x] AC-3：thread 页不再出现“重命名”按钮或重命名表单；项目路径/成员保留。
-- [x] AC-4：分隔线位于项目路径行之后，横向覆盖聊天内容区；topbar 不再单独画线。
+- [x] AC-4：分隔线位于项目路径行之后，横向贯通主内容区（连到左侧栏边界）；
+  topbar 不再单独画线。
 - [x] AC-5：1440/390、浅色/深色截图通过；无横向滚动。
 - [ ] AC-6：web tests / typecheck / build / doc-index 绿；非作者视觉 review。
 - [x] AC-7：Pencil 设计源与 4 张导出图同步更新。
 - [x] AC-8：侧栏头部不再出现 `N conversations · local dev` 副标题。
+- [x] AC-9：thread 标题与项目路径的垂直间距收紧，不再出现大段空白。
 
 ## 风险
 
@@ -73,6 +77,8 @@ F039 合并后，operator 在验收时又给了两条修正：
 - 实现：`ThreadRow` 增加更多操作菜单/行内重命名；`ThreadPage` 移除重命名入口并在
   项目路径行后渲染 `.st-thread-divider`；`ThreadSidebar` 去掉 conversation count 副标题。
 - 样式：topbar 去 border；更多操作按钮 hover/focus 可见，移动端常显；菜单/输入框/错误态。
+- 布局：`.st-content` flex 列；ThreadPage 拆为 head/body 两段，分隔线作为全宽
+  兄弟节点贯通主区；topbar 48/44，header padding-top 2/8。
 - 测试：thread-page / thread-sidebar / thread-row 定向 17 passed；待跑全量。
 - 视觉：`docs/design/F040/` 下 sidebar menu、inline rename、1440/390 浅色/深色。
 - Pencil：Thread 1440/390 顶部分隔线移除，Thread Header Divider 下移到 meta row 后；

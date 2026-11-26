@@ -2226,7 +2226,7 @@
               "id": "fpnnZ",
               "name": "Topbar",
               "width": "fill_container",
-              "height": 52,
+              "height": 48,
               "justifyContent": "space_between",
               "alignItems": "center",
               "children": [
@@ -2349,16 +2349,6 @@
                           "fontWeight": "normal"
                         }
                       ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "HsStZ",
-                      "name": "Rename Link",
-                      "fill": "$muted",
-                      "content": "重命名",
-                      "fontFamily": "$font",
-                      "fontSize": 10,
-                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2451,14 +2441,6 @@
                   ]
                 }
               ]
-            },
-            {
-              "type": "rectangle",
-              "id": "rVTOT",
-              "name": "Thread Header Divider",
-              "fill": "$hairline-strong",
-              "width": 1332,
-              "height": 1
             },
             {
               "type": "frame",
@@ -3185,6 +3167,17 @@
               ]
             }
           ]
+        },
+        {
+          "type": "rectangle",
+          "id": "v4JAyv",
+          "layoutPosition": "absolute",
+          "x": 352,
+          "y": 78,
+          "name": "Thread Header Divider",
+          "fill": "$hairline-strong",
+          "width": 1088,
+          "height": 1
         }
       ]
     },
@@ -3209,7 +3202,7 @@
           "id": "Pplmd",
           "name": "Mobile Topbar",
           "width": "fill_container",
-          "height": 48,
+          "height": 44,
           "justifyContent": "space_between",
           "alignItems": "center",
           "children": [
@@ -3341,16 +3334,6 @@
                       "fontWeight": "normal"
                     }
                   ]
-                },
-                {
-                  "type": "text",
-                  "id": "X6H4z",
-                  "name": "Mobile Rename",
-                  "fill": "$muted",
-                  "content": "重命名",
-                  "fontFamily": "$font",
-                  "fontSize": 9,
-                  "fontWeight": "normal"
                 }
               ]
             },
@@ -3433,14 +3416,6 @@
               ]
             }
           ]
-        },
-        {
-          "type": "rectangle",
-          "id": "bXItb",
-          "name": "Thread Header Divider",
-          "fill": "$hairline-strong",
-          "width": 362,
-          "height": 1
         },
         {
           "type": "frame",
@@ -4145,6 +4120,17 @@
               ]
             }
           ]
+        },
+        {
+          "type": "rectangle",
+          "id": "OEmeb",
+          "layoutPosition": "absolute",
+          "x": 0,
+          "y": 72,
+          "name": "Thread Header Divider",
+          "fill": "$hairline-strong",
+          "width": 390,
+          "height": 1
         }
       ]
     }
@@ -4741,5 +4727,5 @@
       "value": "#CBD5E1"
     }
   },
-  "fileToken": "beb6f693-7852-4f24-bfd1-cd54bb127673"
+  "fileToken": "59ef3bb4-ce06-4bc6-87ca-acc4cbdd40e2"
 }

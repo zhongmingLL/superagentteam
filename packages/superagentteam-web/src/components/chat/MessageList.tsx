@@ -37,7 +37,7 @@ export interface MessageListProps {
 }
 
 function senderLabel(message: MessageView, agentLabel?: (agentId: string) => string): string {
-	if (message.from.kind === "user") return "你";
+	if (message.from.kind === "user") return "operator";
 	if (message.from.kind === "agent") return agentLabel?.(message.from.agentId) ?? message.from.agentId;
 	return message.from.service;
 }
@@ -138,21 +138,15 @@ function MessageRow({
 			setRetrying(false);
 		}
 	};
-	return (
-		<article
-			className={`st-message is-${sender}${sender === "agent" ? " is-nameplate" : ""}`}
-			data-message-id={message.id}
-		>
-			{agentId !== null ? (
-				<span className={`st-message-avatar tone-${toneFor(agentId)}`} aria-hidden="true">
-					{initialForName(senderName)}
-				</span>
-			) : null}
-			<div className="st-message-body">
-				<div className="st-message-meta">
-					<span className="st-message-sender">{senderName}</span>
-					<time dateTime={new Date(message.timestamp).toISOString()}>{formatRelative(message.timestamp)}</time>
-				</div>
+	const meta = (
+		<div className="st-message-meta">
+			<span className="st-message-sender">{senderName}</span>
+			<time dateTime={new Date(message.timestamp).toISOString()}>{formatRelative(message.timestamp)}</time>
+		</div>
+	);
+	const body = (
+		<div className="st-message-body">
+			{sender === "system" ? meta : null}
 				{crossPost || multiMention || message.mentionsUser ? (
 					<div className="st-message-badges">
 						{crossPost ? (
@@ -216,10 +210,25 @@ function MessageRow({
 						) : null}
 					</div>
 				) : null}
+		</div>
+	);
+	return (
+		<article
+			className={`st-message is-${sender}${sender === "agent" ? " is-nameplate" : ""}`}
+			data-message-id={message.id}
+		>
+			{agentId !== null ? (
+				<span className={`st-message-avatar tone-${toneFor(agentId)}`} aria-hidden="true">
+					{initialForName(senderName)}
+				</span>
+			) : null}
+			<div className={`st-message-stack${sender === "user" ? " is-user" : ""}`}>
+				{sender !== "system" ? meta : null}
+				{body}
 			</div>
 			{sender === "user" ? (
 				<span className="st-message-avatar is-operator" aria-hidden="true">
-					你
+					{initialForName("operator")}
 				</span>
 			) : null}
 		</article>
@@ -391,15 +400,17 @@ export function MessageList({
 			))}
 			{pendingUserMessages.map((pending) => (
 				<article className="st-message is-user is-pending" key={pending.messageId}>
-					<div className="st-message-body">
+					<div className="st-message-stack is-user">
 						<div className="st-message-meta">
-							<span className="st-message-sender">你</span>
+							<span className="st-message-sender">operator</span>
 							<span>发送中…</span>
 						</div>
-						<MessageContent content={pending.content} />
+						<div className="st-message-body">
+							<MessageContent content={pending.content} />
+						</div>
 					</div>
 					<span className="st-message-avatar is-operator" aria-hidden="true">
-						你
+						{initialForName("operator")}
 					</span>
 				</article>
 			))}
@@ -412,14 +423,16 @@ export function MessageList({
 						<span className={`st-message-avatar tone-${toneFor(invocation.agentId)}`} aria-hidden="true">
 							{initialForName(agentLabel?.(invocation.agentId) ?? invocation.agentId)}
 						</span>
-						<div className="st-message-body">
+						<div className="st-message-stack">
 							<div className="st-message-meta">
 								<span className="st-message-sender">{agentLabel?.(invocation.agentId) ?? invocation.agentId}</span>
 								<span>已受理</span>
 							</div>
-							<MessageExecutionRecord live={live} state="processing" />
-							{live?.text ? <MessageContent content={live.text} /> : null}
-							<p className="st-message-processing">正在处理… · {formatElapsed(invocation.startedAt)}</p>
+							<div className="st-message-body">
+								<MessageExecutionRecord live={live} state="processing" />
+								{live?.text ? <MessageContent content={live.text} /> : null}
+								<p className="st-message-processing">正在处理… · {formatElapsed(invocation.startedAt)}</p>
+							</div>
 						</div>
 						</article>
 					);

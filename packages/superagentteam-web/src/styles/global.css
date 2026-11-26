@@ -606,7 +606,7 @@ svg {
 	align-items: center;
 	gap: 8px;
 	padding: 0 24px;
-	border-bottom: 1px solid var(--st-hairline);
+	border-bottom: 1px solid var(--st-hairline-strong);
 	background: var(--st-canvas);
 }
 
@@ -1044,6 +1044,25 @@ svg {
 	min-width: 0;
 }
 
+.st-message-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
+.st-message.is-nameplate .st-message-stack {
+	width: 100%;
+	max-width: 100%;
+}
+
+.st-message.is-user .st-message-stack {
+	flex: 0 1 auto;
+	align-items: flex-end;
+	max-width: min(620px, 72%);
+}
+
 .st-message.is-user {
 	justify-content: flex-end;
 }
@@ -1065,7 +1084,7 @@ svg {
 }
 
 .st-message.is-user .st-message-body {
-	max-width: min(620px, 72%);
+	max-width: 100%;
 	background: var(--st-surface-3);
 	border-color: transparent;
 	border-bottom-right-radius: var(--st-radius-sm);
@@ -1108,6 +1127,7 @@ svg {
 	display: flex;
 	align-items: center;
 	gap: 7px;
+	padding: 0 5px;
 	color: var(--st-muted);
 	font-size: 9px;
 	line-height: 1.3;
@@ -2810,10 +2830,14 @@ svg {
 	}
 
 	.st-message-body {
-		max-width: 86%;
+		max-width: 100%;
 	}
 
 	.st-message.is-user .st-message-body {
+		max-width: 100%;
+	}
+
+	.st-message.is-user .st-message-stack {
 		max-width: 82%;
 	}
 

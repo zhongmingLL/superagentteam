@@ -88,8 +88,9 @@ F039 合并后，operator 在验收时又给了两条修正：
   独立复核 web 116 / typecheck / doc-index / CI 5/5 / 布局 delta。
 - PR #219 merged `5ebfdc56a`；F040 进入 `superagentteam-work`。
 - Live 3005 已部署 runtime head `604dce3ec`，实机验证侧栏/菜单/分隔线/重命名移除。
-- Post-merge fix（operator 2026-11-27 bug）：移除 thread head/body 的 `max-width: 980px`，
-  标题、项目路径、消息列与 composer 统一左对齐并使用主内容区全宽；2551/1440/390 验证。
+- Post-merge fix（operator 2026-11-27 bug）：PR #222 merged `abda22e5f`；reviewed HEAD
+  `8428d612f`；墨墨 approve；移除 thread head/body 的 `max-width: 980px`，标题、项目路径、
+  消息列与 composer 统一左对齐并使用主内容区全宽；2551/1440/390 验证。
 - 剩余：operator 验收。
 
 [宪宪/deepseek-flash🐾]

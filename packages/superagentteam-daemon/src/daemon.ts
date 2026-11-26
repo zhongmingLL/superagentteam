@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { join } from "node:path";
 import { type BrowserApi, createBrowserApi } from "./api/browser.ts";
+import { isLoopbackOrigin } from "./api/session.ts";
 import { createStaticHandler } from "./api/static.ts";
 import { appendBootRecord, nextBootSequence } from "./boot-ledger.ts";
 import { A2ADaemonControlPlane, type A2ADaemonControlPlaneOptions } from "./daemon-a2a.ts";
@@ -36,6 +37,8 @@ export interface StartDaemonOptions {
 	a2aControlPlane?: Omit<A2ADaemonControlPlaneOptions, "dataDir"> | false;
 	/** Hub origin allowed to use the browser API; defaults to SUPERAGENTTEAM_HUB_ORIGIN or http://localhost:3000. */
 	hubOrigin?: string;
+	/** Additional Hub origins (tunnels/LAN) allowed beside hubOrigin; exact matches only. */
+	hubOrigins?: readonly string[];
 	/** Dev-only loopback auto-login; defaults to SUPERAGENTTEAM_DEV_AUTO_LOGIN=1. */
 	devAutoLogin?: boolean;
 	/** Set Secure on browser session cookies when the Hub is served over https. */
@@ -303,15 +306,23 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 		staticHandler !== null &&
 		(configuredHubOrigin === undefined || originPort(configuredHubOrigin) === String(healthPort));
 	if (serveStatic && configuredHubOrigin === undefined) hubOrigin = `http://localhost:${healthPort}`;
+	const allowedOrigins = [
+		...new Set([hubOrigin, ...(options.hubOrigins ?? [])].map((origin) => origin.trim())),
+	].filter((origin) => origin.length > 0);
+	const devAutoLoginEnv = envValue(process.env, "DEV_AUTO_LOGIN");
+	const devAutoLoginRequested = options.devAutoLogin ?? devAutoLoginEnv === "1";
+	const devAutoLogin =
+		devAutoLoginRequested && (devAutoLoginEnv === "1" || allowedOrigins.every((origin) => isLoopbackOrigin(origin)));
 	persist();
 	browserApi = createBrowserApi({
 		dataDir: paths.dataDir,
 		hubOrigin,
+		allowedOrigins,
 		consoleRedirect: serveStatic ? "/" : undefined,
 		secureCookies: options.secureCookies ?? false,
 		changeBus,
 		eventHeartbeatMs: options.eventHeartbeatMs,
-		devAutoLogin: options.devAutoLogin ?? envValue(process.env, "DEV_AUTO_LOGIN") === "1",
+		devAutoLogin,
 		a2a: a2aControlPlane
 			? {
 					runtime: a2aControlPlane.runtime,

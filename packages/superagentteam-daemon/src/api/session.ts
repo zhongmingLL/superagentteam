@@ -123,8 +123,13 @@ function isLoopbackHost(hostname: string): boolean {
 	return LOOPBACK_HOSTS.has(hostname);
 }
 
-export function isAllowedOrigin(origin: string | undefined, allowedOrigin: string): boolean {
-	if (origin === undefined) return false;
+export function isLoopbackOrigin(origin: string): boolean {
+	const parsed = parseHttpOrigin(origin);
+	return parsed !== null && isLoopbackHost(parsed.hostname);
+}
+
+function matchesAllowedOrigin(origin: string, allowedOrigin: string): boolean {
+	if (allowedOrigin === "") return false;
 	if (origin === allowedOrigin) return true;
 	// Browsers may expose the same loopback server as localhost, 127.0.0.1, or
 	// [::1]. Treat those aliases as equivalent only on the same protocol/port;
@@ -138,6 +143,12 @@ export function isAllowedOrigin(origin: string | undefined, allowedOrigin: strin
 		isLoopbackHost(actual.hostname) &&
 		isLoopbackHost(allowed.hostname)
 	);
+}
+
+export function isAllowedOrigin(origin: string | undefined, allowedOrigin: string | readonly string[]): boolean {
+	if (origin === undefined) return false;
+	const allowedOrigins = typeof allowedOrigin === "string" ? [allowedOrigin] : allowedOrigin;
+	return allowedOrigins.some((candidate) => matchesAllowedOrigin(origin, candidate));
 }
 
 export function requireCsrf(session: BrowserSession, token: string | undefined): boolean {

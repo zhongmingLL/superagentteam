@@ -4,7 +4,13 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { consoleLinkUrl, createConsoleToken } from "../src/api/console-link.ts";
-import { hasForbiddenIdentityHeaders, isAllowedOrigin, requireCsrf, SessionStore } from "../src/api/session.ts";
+import {
+	hasForbiddenIdentityHeaders,
+	isAllowedOrigin,
+	isLoopbackOrigin,
+	requireCsrf,
+	SessionStore,
+} from "../src/api/session.ts";
 import { initOperatorCredential } from "../src/auth/operator.ts";
 import { runCli } from "../src/cli/index.ts";
 import { type DaemonHandle, startDaemon } from "../src/index.ts";
@@ -168,6 +174,22 @@ describe("SessionStore", () => {
 		expect(isAllowedOrigin("http://127.0.0.1:3001", "http://localhost:3000")).toBe(false);
 		expect(isAllowedOrigin("https://127.0.0.1:3000", "http://localhost:3000")).toBe(false);
 		expect(isAllowedOrigin("http://192.168.0.104:3000", "http://localhost:3000")).toBe(false);
+	});
+
+	it("allows any explicitly configured extra origin", () => {
+		const allowed = ["http://localhost:3000", "https://agentteam.hn.takin.cc"];
+		expect(isAllowedOrigin("https://agentteam.hn.takin.cc", allowed)).toBe(true);
+		expect(isAllowedOrigin("http://localhost:3000", allowed)).toBe(true);
+		expect(isAllowedOrigin("https://evil.example", allowed)).toBe(false);
+		expect(isAllowedOrigin(undefined, allowed)).toBe(false);
+	});
+
+	it("classifies loopback origins for the auto-login policy", () => {
+		expect(isLoopbackOrigin("http://localhost:3005")).toBe(true);
+		expect(isLoopbackOrigin("http://127.0.0.1:3005")).toBe(true);
+		expect(isLoopbackOrigin("http://[::1]:3005")).toBe(true);
+		expect(isLoopbackOrigin("https://agentteam.hn.takin.cc")).toBe(false);
+		expect(isLoopbackOrigin("not-a-url")).toBe(false);
 	});
 });
 

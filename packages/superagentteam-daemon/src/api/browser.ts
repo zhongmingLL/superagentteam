@@ -23,11 +23,34 @@ import {
 	serializeSessionCookie,
 } from "./session.ts";
 
+function selectConsoleRedirectOrigin(
+	request: IncomingMessage,
+	allowedOrigins: readonly string[],
+	fallback: string,
+): string {
+	const origin = request.headers.origin;
+	if (origin !== undefined && isAllowedOrigin(origin, allowedOrigins)) return origin;
+	const host = request.headers.host;
+	if (host !== undefined) {
+		const hostname = host.replace(/:\d+$/, "").toLowerCase();
+		for (const candidate of allowedOrigins) {
+			try {
+				if (new URL(candidate).hostname.toLowerCase() === hostname) return candidate;
+			} catch {
+				// Ignore malformed allowlist entries; the fallback remains in force.
+			}
+		}
+	}
+	return fallback;
+}
+
 export const RELOGIN_HINT = "run `superagentteam auth console-link` and open the printed URL";
 
 export interface BrowserApiOptions {
 	dataDir: string;
 	hubOrigin: string;
+	/** Additional browser origins allowed beside hubOrigin; exact matches only. */
+	allowedOrigins?: readonly string[];
 	/** Where a successful console exchange redirects; defaults to hubOrigin. */
 	consoleRedirect?: string;
 	clock?: () => number;
@@ -54,6 +77,7 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 	const clock = options.clock ?? Date.now;
 	const sessions = options.sessionStore ?? new SessionStore({ clock });
 	const devAutoLogin = options.devAutoLogin ?? false;
+	const allowedOrigins = options.allowedOrigins ?? [options.hubOrigin];
 	const nonces = new Map<string, number>();
 	const threadRoutes = options.a2a
 		? createThreadRoutes({ runtime: options.a2a.runtime, clock, changeBus: options.changeBus })
@@ -120,7 +144,7 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 
 	function authenticate(request: IncomingMessage, response: ServerResponse): ApiRouteContext | null {
 		const origin = request.headers.origin;
-		if (origin !== undefined && !isAllowedOrigin(origin, options.hubOrigin)) {
+		if (origin !== undefined && !isAllowedOrigin(origin, allowedOrigins)) {
 			sendError(response, 403, "forbidden", "origin not allowed");
 			return null;
 		}
@@ -152,7 +176,7 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 
 		if (request.method === "GET" && url.pathname === "/auth/console") {
 			const origin = request.headers.origin;
-			if (origin !== undefined && !isAllowedOrigin(origin, options.hubOrigin)) {
+			if (origin !== undefined && !isAllowedOrigin(origin, allowedOrigins)) {
 				sendError(response, 403, "forbidden", "origin not allowed");
 				return true;
 			}
@@ -171,7 +195,8 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 				// Keep the token-bearing URL out of any Referer; a future multi-origin
 				// allowlist must choose the matched origin rather than a single field.
 				response.writeHead(302, {
-					location: options.consoleRedirect ?? options.hubOrigin,
+					location:
+						options.consoleRedirect ?? selectConsoleRedirectOrigin(request, allowedOrigins, options.hubOrigin),
 					"cache-control": "no-store",
 					"referrer-policy": "no-referrer",
 					"set-cookie": serializeSessionCookie(session.id, {

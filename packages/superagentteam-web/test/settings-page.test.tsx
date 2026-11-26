@@ -80,8 +80,9 @@ describe("settings page", () => {
 		);
 
 		expect(screen.getByRole("button", { name: /^Agents/ })).toHaveAttribute("aria-current", "page");
-		fireEvent.click(screen.getByRole("button", { name: /^账户与登录/ }));
-		expect(screen.getByRole("button", { name: /^账户与登录/ })).toHaveAttribute("aria-current", "page");
+		fireEvent.click(screen.getByRole("button", { name: /^Accounts/ }));
+		expect(screen.getByRole("button", { name: /^Accounts/ })).toHaveAttribute("aria-current", "page");
+		expect(screen.getByRole("heading", { name: "Accounts" })).toBeInTheDocument();
 	});
 
 	it("offers a way back to threads from the settings page", () => {
@@ -91,7 +92,8 @@ describe("settings page", () => {
 			</MemoryRouter>,
 		);
 
-		const back = screen.getByRole("link", { name: "← 返回对话" });
+		expect(screen.getByRole("heading", { name: "Settings" })).toBeInTheDocument();
+		const back = screen.getByRole("link", { name: "← Back to threads" });
 		expect(back).toHaveAttribute("href", "/");
 	});
 

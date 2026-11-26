@@ -75,6 +75,8 @@ W0b upstream/CI 治理：与 W1–W4 并行，W5 前完成
 | [`0043-f035-settings-hub.md`](0043-f035-settings-hub.md) | F035：设置路由、账号/Agents 面板抽取、侧边栏入口、响应式 | 墨墨（信息层级/文案）+ 砚砚（状态/契约） |
 | [`0044-f036-chat-surface-polish.md`](0044-f036-chat-surface-polish.md) | F036：agent 消息气泡恢复、operator 消息头像、光暗/窄屏验证 | 墨墨（视觉/文案） |
 | [`0045-f030.5-account-provider-catalog.md`](0045-f030.5-account-provider-catalog.md) | F030.5：account/provider catalog 架构：protocol/client vs vendor、从 pi catalog 派生 provider/model、custom gateway、迁移 | 砚砚（契约/安全）+ 墨墨（account UI/可发现性） |
+| [`0046-f037-thread-first-e2e.md`](0046-f037-thread-first-e2e.md) | F037：thread-first 全特性 E2E：矩阵、真实 provider、确定性全栈测试、bug 修复 | 墨墨（Hub/测试 review） |
+| [`0047-f038-hub-ui-polish.md`](0047-f038-hub-ui-polish.md) | F038：Hub UI acceptance polish：plus 去重、thread 头部、停止位置、Settings 统一 | 墨墨（视觉/UX） |
 
 ## W0–W8 一览
 

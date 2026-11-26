@@ -71,7 +71,7 @@ export function NavRail({ theme, onToggleTheme }: NavRailProps) {
 				aria-current={settingsActive ? "page" : undefined}
 			>
 				<Icon name="settings" size={18} />
-				<span className="st-nav-item-label">设置</span>
+				<span className="st-nav-item-label">Settings</span>
 			</Link>
 			<span className="st-nav-version">v1 · local</span>
 		</nav>

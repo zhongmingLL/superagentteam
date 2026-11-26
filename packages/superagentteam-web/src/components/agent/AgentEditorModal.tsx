@@ -293,7 +293,7 @@ export function AgentEditorModal({
 											onClose();
 										}}
 									>
-										去「账户与登录」新建
+										去「Accounts」新建
 									</button>
 								</div>
 							) : null}

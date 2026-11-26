@@ -871,24 +871,20 @@ svg {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
-	padding: 18px 0 8px;
+	padding: 10px 0 8px;
 }
 
-.st-thread-title-row {
+.st-thread-meta-row {
 	display: flex;
 	align-items: center;
 	gap: 10px;
+	min-width: 0;
 	flex-wrap: wrap;
 }
 
-.st-thread-title-row h1 {
-	font-family: var(--st-font-display);
-	font-weight: 600;
-	font-size: 26px;
-	line-height: 1.2;
-	letter-spacing: -0.02em;
-	color: var(--st-ink);
-	margin: 0;
+.st-thread-meta-row .st-thread-header-meta {
+	flex: 1;
+	min-width: 0;
 }
 
 .st-rename-form {
@@ -973,36 +969,6 @@ svg {
 	align-items: center;
 	gap: 6px;
 	padding: 0 0 8px;
-}
-
-.st-thread-context {
-	flex: none;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	margin-bottom: 8px;
-	padding: 6px 10px;
-	border: 1px solid var(--st-hairline);
-	border-radius: var(--st-radius-md);
-	background: var(--st-surface-2);
-	color: var(--st-muted);
-	font-size: 10px;
-}
-
-.st-thread-context > svg {
-	color: var(--st-primary);
-}
-
-.st-thread-context-dim {
-	opacity: 0.5;
-}
-
-.st-thread-context-tag {
-	margin-left: auto;
-	font-size: 8px;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	opacity: 0.75;
 }
 
 .st-thread-empty {
@@ -2839,21 +2805,8 @@ svg {
 		padding-top: 14px;
 	}
 
-	.st-thread-title-row h1 {
-		font-size: 22px;
-	}
-
 	.st-thread-members-count {
 		display: none;
-	}
-
-	.st-thread-context-tag {
-		display: none;
-	}
-
-	.st-thread-context {
-		font-size: 9.5px;
-		gap: 5px;
 	}
 
 	.st-message-body {
@@ -2936,15 +2889,20 @@ svg {
 }
 
 .st-settings-eyebrow {
-	color: var(--st-muted);
-	font-size: 9px;
+	color: var(--st-primary);
+	font-size: 8px;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
+	font-weight: 600;
 }
 
 .st-settings-brand h1 {
-	margin: 4px 0 6px;
-	font-size: 22px;
+	margin: 1px 0 6px;
+	font-family: var(--st-font-display);
+	font-size: 17px;
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	line-height: 1.3;
 }
 
 .st-settings-brand p {

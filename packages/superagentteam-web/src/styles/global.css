@@ -1949,8 +1949,8 @@ svg {
 
 .st-composer-wrap {
 	flex: none;
-	width: 80%;
-	margin-left: 38px;
+	width: calc(100% - 95px);
+	margin-left: 40px;
 }
 
 .st-composer.is-disabled {
@@ -2922,11 +2922,6 @@ svg {
 	.st-thread-more {
 		opacity: 1;
 		pointer-events: auto;
-	}
-
-	.st-composer-wrap {
-		width: 100%;
-		margin-left: 0;
 	}
 
 	.st-composer-hint {

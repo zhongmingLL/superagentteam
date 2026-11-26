@@ -100,8 +100,9 @@ eyebrow 颜色/字号与 Threads 头部不一致。
 设计稿以 F038 已实现的 4 点反馈为基线：Thread 页单标题 + 紧凑 meta + Composer
 上方运行态/停止；Settings 页统一顶层 `Settings` / `Accounts` / `Agents` 与
 eyebrow/title 样式。Settings 内的说明文案仍保留中文，与“不做全局 i18n”的实现边界
-一致。`.pen` 为明文 JSON 设计源（4 个 frame、351 个节点、60 个变量），重新导出的
-4 张 PNG 与上述设计图逐像素一致。
+一致。`.pen` 为明文 JSON 设计源（F039 更新后 4 个 frame、365 个节点、61 个变量），
+重新导出的 4 张 PNG 与上述设计图逐像素一致。F039 已把消息姓名/时间移到气泡上方，
+并把 thread 标题下的分隔线提升为 `hairline-strong`。
 
 ## 验证
 

@@ -2305,6 +2305,17 @@
                       ]
                     }
                   ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "i2Qle",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 51,
+                  "name": "Topbar Divider",
+                  "fill": "$hairline-strong",
+                  "width": 1332,
+                  "height": 1
                 }
               ]
             },
@@ -2475,29 +2486,75 @@
                   "children": [
                     {
                       "type": "frame",
-                      "id": "Fl3di",
-                      "name": "User Bubble",
+                      "id": "Q1LazT",
+                      "name": "User Stack",
                       "width": 430,
-                      "fill": "$surface-2",
-                      "cornerRadius": 14,
-                      "stroke": "$hairline",
-                      "strokeWidth": 1,
-                      "padding": [
-                        10,
-                        14
-                      ],
+                      "layout": "vertical",
+                      "gap": 4,
+                      "alignItems": "end",
                       "children": [
                         {
-                          "type": "text",
-                          "id": "dKrN8",
-                          "name": "User Text",
-                          "fill": "$body",
-                          "textGrowth": "fixed-width",
+                          "type": "frame",
+                          "id": "U5Rka",
+                          "name": "User Meta",
                           "width": "fill_container",
-                          "content": "Reply with exactly F037_HUB_OK and nothing else. Do not call any tool.",
-                          "fontFamily": "$font",
-                          "fontSize": 11.5,
-                          "fontWeight": "normal"
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            4
+                          ],
+                          "justifyContent": "end",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Wxpj6",
+                              "name": "User Meta Name",
+                              "fill": "$ink",
+                              "content": "operator",
+                              "fontFamily": "$font",
+                              "fontSize": 10.5,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "tOaEk",
+                              "name": "User Meta Time",
+                              "fill": "$muted",
+                              "content": "刚刚",
+                              "fontFamily": "$font",
+                              "fontSize": 9,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Fl3di",
+                          "name": "User Bubble",
+                          "width": 430,
+                          "fill": "$surface-2",
+                          "cornerRadius": 14,
+                          "stroke": "$hairline",
+                          "strokeWidth": 1,
+                          "padding": [
+                            10,
+                            14
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "dKrN8",
+                              "name": "User Text",
+                              "fill": "$body",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Reply with exactly F037_HUB_OK and nothing else. Do not call any tool.",
+                              "fontFamily": "$font",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
+                            }
+                          ]
                         }
                       ]
                     },
@@ -2517,7 +2574,7 @@
                           "id": "ontLD",
                           "name": "User Avatar Letter",
                           "fill": "$muted",
-                          "content": "你",
+                          "content": "O",
                           "fontFamily": "$font",
                           "fontSize": 8,
                           "fontWeight": "normal"
@@ -2558,25 +2615,21 @@
                     },
                     {
                       "type": "frame",
-                      "id": "k6Llal",
-                      "name": "Agent Bubble",
+                      "id": "I6kVP",
+                      "name": "Agent Stack",
                       "width": "fill_container",
-                      "fill": "$surface-1",
-                      "cornerRadius": 14,
-                      "stroke": "$hairline",
-                      "strokeWidth": 1,
                       "layout": "vertical",
-                      "gap": 8,
-                      "padding": [
-                        12,
-                        16
-                      ],
+                      "gap": 4,
                       "children": [
                         {
                           "type": "frame",
                           "id": "GyOaj",
                           "name": "Agent Head",
                           "width": "fill_container",
+                          "padding": [
+                            0,
+                            4
+                          ],
                           "justifyContent": "space_between",
                           "alignItems": "center",
                           "children": [
@@ -2604,113 +2657,131 @@
                         },
                         {
                           "type": "frame",
-                          "id": "RwP0i",
-                          "name": "Thinking Row",
+                          "id": "k6Llal",
+                          "name": "Agent Bubble",
                           "width": "fill_container",
-                          "fill": "$surface-2",
-                          "cornerRadius": 8,
-                          "gap": 6,
-                          "padding": [
-                            6,
-                            10
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "HpkqG",
-                              "name": "Thinking Icon",
-                              "width": 12,
-                              "height": 12,
-                              "icon": "sparkles",
-                              "library": "lucide",
-                              "fill": "$primary"
-                            },
-                            {
-                              "type": "text",
-                              "id": "e6Ctb",
-                              "name": "Thinking Text",
-                              "fill": "$muted",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "Thinking  The user asks to reply with exactly F037_HUB_OK...",
-                              "fontFamily": "$font",
-                              "fontSize": 9.5,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "msQJJ",
-                          "name": "Agent Reply",
-                          "fill": "$body",
-                          "content": "F037_HUB_OK",
-                          "fontFamily": "$font",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "zsyF5",
-                          "name": "Desktop Rich Card",
-                          "width": "fill_container",
-                          "fill": "$surface-2",
-                          "cornerRadius": 9,
+                          "fill": "$surface-1",
+                          "cornerRadius": 14,
                           "stroke": "$hairline",
                           "strokeWidth": 1,
                           "layout": "vertical",
-                          "gap": 4,
+                          "gap": 8,
                           "padding": [
-                            10,
-                            12
+                            12,
+                            16
                           ],
                           "children": [
                             {
-                              "type": "text",
-                              "id": "KTdqe",
-                              "name": "Desktop Rich Title",
-                              "fill": "$ink",
-                              "content": "F037 Rich Card",
-                              "fontFamily": "$font",
-                              "fontSize": 11,
-                              "fontWeight": "600"
+                              "type": "frame",
+                              "id": "RwP0i",
+                              "name": "Thinking Row",
+                              "width": "fill_container",
+                              "fill": "$surface-2",
+                              "cornerRadius": 8,
+                              "gap": 6,
+                              "padding": [
+                                6,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "HpkqG",
+                                  "name": "Thinking Icon",
+                                  "width": 12,
+                                  "height": 12,
+                                  "icon": "sparkles",
+                                  "library": "lucide",
+                                  "fill": "$primary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "e6Ctb",
+                                  "name": "Thinking Text",
+                                  "fill": "$muted",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Thinking  The user asks to reply with exactly F037_HUB_OK...",
+                                  "fontFamily": "$font",
+                                  "fontSize": 9.5,
+                                  "fontWeight": "normal"
+                                }
+                              ]
                             },
                             {
                               "type": "text",
-                              "id": "qCAPm",
-                              "name": "Desktop Rich Body",
+                              "id": "msQJJ",
+                              "name": "Agent Reply",
                               "fill": "$body",
-                              "content": "Rich blocks work end to end.",
+                              "content": "F037_HUB_OK",
                               "fontFamily": "$font",
-                              "fontSize": 9.5,
+                              "fontSize": 12,
                               "fontWeight": "normal"
                             },
                             {
                               "type": "frame",
-                              "id": "G9L147",
-                              "name": "Desktop Rich Fields",
-                              "gap": 10,
+                              "id": "zsyF5",
+                              "name": "Desktop Rich Card",
+                              "width": "fill_container",
+                              "fill": "$surface-2",
+                              "cornerRadius": 9,
+                              "stroke": "$hairline",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "padding": [
+                                10,
+                                12
+                              ],
                               "children": [
                                 {
                                   "type": "text",
-                                  "id": "BCecg",
-                                  "name": "Desktop Field Label",
-                                  "fill": "$muted",
-                                  "content": "Status",
+                                  "id": "KTdqe",
+                                  "name": "Desktop Rich Title",
+                                  "fill": "$ink",
+                                  "content": "F037 Rich Card",
                                   "fontFamily": "$font",
-                                  "fontSize": 9,
-                                  "fontWeight": "normal"
+                                  "fontSize": 11,
+                                  "fontWeight": "600"
                                 },
                                 {
                                   "type": "text",
-                                  "id": "pHtK4",
-                                  "name": "Desktop Field Value",
+                                  "id": "qCAPm",
+                                  "name": "Desktop Rich Body",
                                   "fill": "$body",
-                                  "content": "OK",
+                                  "content": "Rich blocks work end to end.",
                                   "fontFamily": "$font",
-                                  "fontSize": 9,
+                                  "fontSize": 9.5,
                                   "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "G9L147",
+                                  "name": "Desktop Rich Fields",
+                                  "gap": 10,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "BCecg",
+                                      "name": "Desktop Field Label",
+                                      "fill": "$muted",
+                                      "content": "Status",
+                                      "fontFamily": "$font",
+                                      "fontSize": 9,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "pHtK4",
+                                      "name": "Desktop Field Value",
+                                      "fill": "$body",
+                                      "content": "OK",
+                                      "fontFamily": "$font",
+                                      "fontSize": 9,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -2752,25 +2823,21 @@
                     },
                     {
                       "type": "frame",
-                      "id": "qvNyI",
-                      "name": "A2A Bubble",
+                      "id": "WXUgo",
+                      "name": "A2A Stack",
                       "width": "fill_container",
-                      "fill": "$surface-1",
-                      "cornerRadius": 14,
-                      "stroke": "$hairline",
-                      "strokeWidth": 1,
                       "layout": "vertical",
-                      "gap": 6,
-                      "padding": [
-                        10,
-                        16
-                      ],
+                      "gap": 4,
                       "children": [
                         {
                           "type": "frame",
                           "id": "G5D1ac",
                           "name": "A2A Head",
                           "width": "fill_container",
+                          "padding": [
+                            0,
+                            4
+                          ],
                           "justifyContent": "space_between",
                           "alignItems": "center",
                           "children": [
@@ -2798,75 +2865,93 @@
                         },
                         {
                           "type": "frame",
-                          "id": "Fe3Tm",
-                          "name": "Dispatch Row",
-                          "gap": 5,
-                          "alignItems": "center",
+                          "id": "qvNyI",
+                          "name": "A2A Bubble",
+                          "width": "fill_container",
+                          "fill": "$surface-1",
+                          "cornerRadius": 14,
+                          "stroke": "$hairline",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": [
+                            10,
+                            16
+                          ],
                           "children": [
                             {
-                              "type": "text",
-                              "id": "RcCx5",
-                              "name": "Dispatch Caption",
-                              "fill": "$muted",
-                              "content": "发送给",
-                              "fontFamily": "$font",
-                              "fontSize": 9,
-                              "fontWeight": "normal"
-                            },
-                            {
                               "type": "frame",
-                              "id": "smQKm",
-                              "name": "Dispatch Avatar",
-                              "width": 16,
-                              "height": 16,
-                              "fill": "#0891B2",
-                              "cornerRadius": 999,
-                              "justifyContent": "center",
+                              "id": "Fe3Tm",
+                              "name": "Dispatch Row",
+                              "gap": 5,
                               "alignItems": "center",
                               "children": [
                                 {
                                   "type": "text",
-                                  "id": "UO6aB",
-                                  "name": "Dispatch Avatar Letter",
-                                  "fill": "#FFFFFF",
-                                  "content": "F",
+                                  "id": "RcCx5",
+                                  "name": "Dispatch Caption",
+                                  "fill": "$muted",
+                                  "content": "发送给",
                                   "fontFamily": "$font",
-                                  "fontSize": 7,
-                                  "fontWeight": "700"
+                                  "fontSize": 9,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "smQKm",
+                                  "name": "Dispatch Avatar",
+                                  "width": 16,
+                                  "height": 16,
+                                  "fill": "#0891B2",
+                                  "cornerRadius": 999,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "UO6aB",
+                                      "name": "Dispatch Avatar Letter",
+                                      "fill": "#FFFFFF",
+                                      "content": "F",
+                                      "fontFamily": "$font",
+                                      "fontSize": 7,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "d1Arbe",
+                                  "name": "Dispatch Target",
+                                  "fill": "$body",
+                                  "content": "F037 Agent B",
+                                  "fontFamily": "$font",
+                                  "fontSize": 9,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "mWxow",
+                                  "name": "Dispatch State",
+                                  "fill": "$success",
+                                  "content": "已回复",
+                                  "fontFamily": "$font",
+                                  "fontSize": 9,
+                                  "fontWeight": "normal"
                                 }
                               ]
                             },
                             {
                               "type": "text",
-                              "id": "d1Arbe",
-                              "name": "Dispatch Target",
+                              "id": "vpeKN",
+                              "name": "A2A Content",
                               "fill": "$body",
-                              "content": "F037 Agent B",
+                              "content": "A2A_FROM_A",
                               "fontFamily": "$font",
-                              "fontSize": 9,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "text",
-                              "id": "mWxow",
-                              "name": "Dispatch State",
-                              "fill": "$success",
-                              "content": "已回复",
-                              "fontFamily": "$font",
-                              "fontSize": 9,
+                              "fontSize": 11.5,
                               "fontWeight": "normal"
                             }
                           ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "vpeKN",
-                          "name": "A2A Content",
-                          "fill": "$body",
-                          "content": "A2A_FROM_A",
-                          "fontFamily": "$font",
-                          "fontSize": 11.5,
-                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -3215,6 +3300,17 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "rectangle",
+              "id": "sVrbp",
+              "layoutPosition": "absolute",
+              "x": 0,
+              "y": 47,
+              "name": "Topbar Divider",
+              "fill": "$hairline-strong",
+              "width": 362,
+              "height": 1
             }
           ]
         },
@@ -3375,29 +3471,75 @@
               "children": [
                 {
                   "type": "frame",
-                  "id": "NZ9fd",
-                  "name": "Mobile User Bubble",
+                  "id": "F3xa9",
+                  "name": "Mobile User Stack",
                   "width": 292,
-                  "fill": "$surface-2",
-                  "cornerRadius": 12,
-                  "stroke": "$hairline",
-                  "strokeWidth": 1,
-                  "padding": [
-                    8,
-                    12
-                  ],
+                  "layout": "vertical",
+                  "gap": 4,
+                  "alignItems": "end",
                   "children": [
                     {
-                      "type": "text",
-                      "id": "c1AiJ",
-                      "name": "Mobile User Text",
-                      "fill": "$body",
-                      "textGrowth": "fixed-width",
+                      "type": "frame",
+                      "id": "HYTG7",
+                      "name": "Mobile User Meta",
                       "width": "fill_container",
-                      "content": "Reply with exactly F037_HUB_OK and nothing else. Do not call any tool.",
-                      "fontFamily": "$font",
-                      "fontSize": 10.5,
-                      "fontWeight": "normal"
+                      "gap": 6,
+                      "padding": [
+                        0,
+                        4
+                      ],
+                      "justifyContent": "end",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "TVawH",
+                          "name": "Mobile User Meta Name",
+                          "fill": "$ink",
+                          "content": "operator",
+                          "fontFamily": "$font",
+                          "fontSize": 10.5,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "DyAKJ",
+                          "name": "Mobile User Meta Time",
+                          "fill": "$muted",
+                          "content": "刚刚",
+                          "fontFamily": "$font",
+                          "fontSize": 9,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "NZ9fd",
+                      "name": "Mobile User Bubble",
+                      "width": 292,
+                      "fill": "$surface-2",
+                      "cornerRadius": 12,
+                      "stroke": "$hairline",
+                      "strokeWidth": 1,
+                      "padding": [
+                        8,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "c1AiJ",
+                          "name": "Mobile User Text",
+                          "fill": "$body",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Reply with exactly F037_HUB_OK and nothing else. Do not call any tool.",
+                          "fontFamily": "$font",
+                          "fontSize": 10.5,
+                          "fontWeight": "normal"
+                        }
+                      ]
                     }
                   ]
                 },
@@ -3417,7 +3559,7 @@
                       "id": "sOt38",
                       "name": "Mobile User Avatar Letter",
                       "fill": "$muted",
-                      "content": "你",
+                      "content": "O",
                       "fontFamily": "$font",
                       "fontSize": 7.5,
                       "fontWeight": "normal"
@@ -3458,25 +3600,21 @@
                 },
                 {
                   "type": "frame",
-                  "id": "v9o3wl",
-                  "name": "Mobile Agent Bubble",
+                  "id": "Mw8Dm",
+                  "name": "Mobile Agent Stack",
                   "width": "fill_container",
-                  "fill": "$surface-1",
-                  "cornerRadius": 12,
-                  "stroke": "$hairline",
-                  "strokeWidth": 1,
                   "layout": "vertical",
-                  "gap": 7,
-                  "padding": [
-                    10,
-                    12
-                  ],
+                  "gap": 4,
                   "children": [
                     {
                       "type": "frame",
                       "id": "mGeGI",
                       "name": "Mobile Agent Head",
                       "width": "fill_container",
+                      "padding": [
+                        0,
+                        4
+                      ],
                       "justifyContent": "space_between",
                       "alignItems": "center",
                       "children": [
@@ -3504,113 +3642,131 @@
                     },
                     {
                       "type": "frame",
-                      "id": "S4lBVz",
-                      "name": "Mobile Thinking",
+                      "id": "v9o3wl",
+                      "name": "Mobile Agent Bubble",
                       "width": "fill_container",
-                      "fill": "$surface-2",
-                      "cornerRadius": 8,
-                      "gap": 5,
-                      "padding": [
-                        5,
-                        8
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "kKapu",
-                          "name": "Mobile Thinking Icon",
-                          "width": 10,
-                          "height": 10,
-                          "icon": "sparkles",
-                          "library": "lucide",
-                          "fill": "$primary"
-                        },
-                        {
-                          "type": "text",
-                          "id": "exTzf",
-                          "name": "Mobile Thinking Text",
-                          "fill": "$muted",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Thinking  The user asks to reply...",
-                          "fontFamily": "$font",
-                          "fontSize": 8.5,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "mLLae",
-                      "name": "Mobile Agent Reply",
-                      "fill": "$body",
-                      "content": "F037_HUB_OK",
-                      "fontFamily": "$font",
-                      "fontSize": 11,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "ws7e1",
-                      "name": "Mobile Rich Card",
-                      "width": "fill_container",
-                      "fill": "$surface-2",
-                      "cornerRadius": 8,
+                      "fill": "$surface-1",
+                      "cornerRadius": 12,
                       "stroke": "$hairline",
                       "strokeWidth": 1,
                       "layout": "vertical",
-                      "gap": 3,
+                      "gap": 7,
                       "padding": [
-                        8,
-                        10
+                        10,
+                        12
                       ],
                       "children": [
                         {
-                          "type": "text",
-                          "id": "X80Wgi",
-                          "name": "Mobile Rich Title",
-                          "fill": "$ink",
-                          "content": "F037 Rich Card",
-                          "fontFamily": "$font",
-                          "fontSize": 10,
-                          "fontWeight": "600"
+                          "type": "frame",
+                          "id": "S4lBVz",
+                          "name": "Mobile Thinking",
+                          "width": "fill_container",
+                          "fill": "$surface-2",
+                          "cornerRadius": 8,
+                          "gap": 5,
+                          "padding": [
+                            5,
+                            8
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "kKapu",
+                              "name": "Mobile Thinking Icon",
+                              "width": 10,
+                              "height": 10,
+                              "icon": "sparkles",
+                              "library": "lucide",
+                              "fill": "$primary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "exTzf",
+                              "name": "Mobile Thinking Text",
+                              "fill": "$muted",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Thinking  The user asks to reply...",
+                              "fontFamily": "$font",
+                              "fontSize": 8.5,
+                              "fontWeight": "normal"
+                            }
+                          ]
                         },
                         {
                           "type": "text",
-                          "id": "NDv2y",
-                          "name": "Mobile Rich Body",
+                          "id": "mLLae",
+                          "name": "Mobile Agent Reply",
                           "fill": "$body",
-                          "content": "Rich blocks work end to end.",
+                          "content": "F037_HUB_OK",
                           "fontFamily": "$font",
-                          "fontSize": 9,
+                          "fontSize": 11,
                           "fontWeight": "normal"
                         },
                         {
                           "type": "frame",
-                          "id": "Q2ZOk",
-                          "name": "Mobile Rich Fields",
-                          "gap": 10,
+                          "id": "ws7e1",
+                          "name": "Mobile Rich Card",
+                          "width": "fill_container",
+                          "fill": "$surface-2",
+                          "cornerRadius": 8,
+                          "stroke": "$hairline",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "gap": 3,
+                          "padding": [
+                            8,
+                            10
+                          ],
                           "children": [
                             {
                               "type": "text",
-                              "id": "y68bM",
-                              "name": "Mobile Field Label",
-                              "fill": "$muted",
-                              "content": "Status",
+                              "id": "X80Wgi",
+                              "name": "Mobile Rich Title",
+                              "fill": "$ink",
+                              "content": "F037 Rich Card",
                               "fontFamily": "$font",
-                              "fontSize": 8.5,
-                              "fontWeight": "normal"
+                              "fontSize": 10,
+                              "fontWeight": "600"
                             },
                             {
                               "type": "text",
-                              "id": "ci6tu",
-                              "name": "Mobile Field Value",
+                              "id": "NDv2y",
+                              "name": "Mobile Rich Body",
                               "fill": "$body",
-                              "content": "OK",
+                              "content": "Rich blocks work end to end.",
                               "fontFamily": "$font",
-                              "fontSize": 8.5,
+                              "fontSize": 9,
                               "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Q2ZOk",
+                              "name": "Mobile Rich Fields",
+                              "gap": 10,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "y68bM",
+                                  "name": "Mobile Field Label",
+                                  "fill": "$muted",
+                                  "content": "Status",
+                                  "fontFamily": "$font",
+                                  "fontSize": 8.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "ci6tu",
+                                  "name": "Mobile Field Value",
+                                  "fill": "$body",
+                                  "content": "OK",
+                                  "fontFamily": "$font",
+                                  "fontSize": 8.5,
+                                  "fontWeight": "normal"
+                                }
+                              ]
                             }
                           ]
                         }
@@ -3652,25 +3808,21 @@
                 },
                 {
                   "type": "frame",
-                  "id": "c0ME2Z",
-                  "name": "Mobile A2A Bubble",
+                  "id": "tsP96",
+                  "name": "Mobile A2A Stack",
                   "width": "fill_container",
-                  "fill": "$surface-1",
-                  "cornerRadius": 12,
-                  "stroke": "$hairline",
-                  "strokeWidth": 1,
                   "layout": "vertical",
-                  "gap": 5,
-                  "padding": [
-                    9,
-                    12
-                  ],
+                  "gap": 4,
                   "children": [
                     {
                       "type": "frame",
                       "id": "PhoJI",
                       "name": "Mobile A2A Head",
                       "width": "fill_container",
+                      "padding": [
+                        0,
+                        4
+                      ],
                       "justifyContent": "space_between",
                       "alignItems": "center",
                       "children": [
@@ -3698,75 +3850,93 @@
                     },
                     {
                       "type": "frame",
-                      "id": "qMRIB",
-                      "name": "Mobile Dispatch",
-                      "gap": 4,
-                      "alignItems": "center",
+                      "id": "c0ME2Z",
+                      "name": "Mobile A2A Bubble",
+                      "width": "fill_container",
+                      "fill": "$surface-1",
+                      "cornerRadius": 12,
+                      "stroke": "$hairline",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 5,
+                      "padding": [
+                        9,
+                        12
+                      ],
                       "children": [
                         {
-                          "type": "text",
-                          "id": "txkg8",
-                          "name": "Mobile Dispatch Caption",
-                          "fill": "$muted",
-                          "content": "发送给",
-                          "fontFamily": "$font",
-                          "fontSize": 8.5,
-                          "fontWeight": "normal"
-                        },
-                        {
                           "type": "frame",
-                          "id": "GQ2UD",
-                          "name": "Mobile Dispatch Avatar",
-                          "width": 14,
-                          "height": 14,
-                          "fill": "#0891B2",
-                          "cornerRadius": 999,
-                          "justifyContent": "center",
+                          "id": "qMRIB",
+                          "name": "Mobile Dispatch",
+                          "gap": 4,
                           "alignItems": "center",
                           "children": [
                             {
                               "type": "text",
-                              "id": "YacRa",
-                              "name": "Mobile Dispatch Letter",
-                              "fill": "#FFFFFF",
-                              "content": "F",
+                              "id": "txkg8",
+                              "name": "Mobile Dispatch Caption",
+                              "fill": "$muted",
+                              "content": "发送给",
                               "fontFamily": "$font",
-                              "fontSize": 6.5,
-                              "fontWeight": "700"
+                              "fontSize": 8.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "GQ2UD",
+                              "name": "Mobile Dispatch Avatar",
+                              "width": 14,
+                              "height": 14,
+                              "fill": "#0891B2",
+                              "cornerRadius": 999,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "YacRa",
+                                  "name": "Mobile Dispatch Letter",
+                                  "fill": "#FFFFFF",
+                                  "content": "F",
+                                  "fontFamily": "$font",
+                                  "fontSize": 6.5,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "R5Yf7J",
+                              "name": "Mobile Dispatch Target",
+                              "fill": "$body",
+                              "content": "F037 Agent B",
+                              "fontFamily": "$font",
+                              "fontSize": 8.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "rmqMg",
+                              "name": "Mobile Dispatch State",
+                              "fill": "$success",
+                              "content": "已回复",
+                              "fontFamily": "$font",
+                              "fontSize": 8.5,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
                         {
                           "type": "text",
-                          "id": "R5Yf7J",
-                          "name": "Mobile Dispatch Target",
+                          "id": "H4QSSw",
+                          "name": "Mobile A2A Content",
                           "fill": "$body",
-                          "content": "F037 Agent B",
+                          "content": "A2A_FROM_A",
                           "fontFamily": "$font",
-                          "fontSize": 8.5,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "rmqMg",
-                          "name": "Mobile Dispatch State",
-                          "fill": "$success",
-                          "content": "已回复",
-                          "fontFamily": "$font",
-                          "fontSize": 8.5,
+                          "fontSize": 10.5,
                           "fontWeight": "normal"
                         }
                       ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "H4QSSw",
-                      "name": "Mobile A2A Content",
-                      "fill": "$body",
-                      "content": "A2A_FROM_A",
-                      "fontFamily": "$font",
-                      "fontSize": 10.5,
-                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -4571,7 +4741,11 @@
     "mono": {
       "type": "string",
       "value": "JetBrains Mono"
+    },
+    "hairline-strong": {
+      "type": "color",
+      "value": "#CBD5E1"
     }
   },
-  "fileToken": "42532013-c25e-4268-b89b-1d572b28dc16"
+  "fileToken": "a4cc871d-0794-46e1-aba5-dd0f9d908382"
 }

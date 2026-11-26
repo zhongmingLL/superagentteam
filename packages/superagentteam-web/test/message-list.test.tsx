@@ -138,6 +138,73 @@ describe("message list", () => {
 		expect(container.querySelectorAll<HTMLElement>(".st-message-avatar.is-operator")).toHaveLength(2);
 	});
 
+	it("places agent and operator metadata above the bubble surface", () => {
+		const { container } = renderList({
+			messages: [
+				message({
+					id: "msg:agent",
+					type: "assistant",
+					from: { kind: "agent", agentId: "a1" },
+					content: "agent answer",
+				}),
+				message({ id: "msg:user", content: "operator question" }),
+			],
+		});
+
+		for (const id of ["msg:agent", "msg:user"]) {
+			const article = container.querySelector<HTMLElement>(`article[data-message-id="${id}"]`);
+			const stack = article?.querySelector<HTMLElement>(".st-message-stack");
+			const meta = stack?.querySelector<HTMLElement>(".st-message-meta");
+			const body = stack?.querySelector<HTMLElement>(".st-message-body");
+			expect(stack).not.toBeNull();
+			expect(meta?.parentElement).toBe(stack);
+			expect(body?.parentElement).toBe(stack);
+			expect(meta?.nextElementSibling).toBe(body);
+			expect(body?.querySelector(".st-message-meta")).toBeNull();
+		}
+	});
+
+	it("labels operator messages as operator instead of 你", () => {
+		renderList({ messages: [message()] });
+
+		expect(screen.getByText("operator")).toBeInTheDocument();
+		expect(screen.queryByText("你")).not.toBeInTheDocument();
+	});
+
+	it("labels pending operator messages as operator", () => {
+		renderList({ messages: [], pendingUserMessages: [{ messageId: "msg:sent", content: "new message" }] });
+
+		expect(screen.getByText("operator")).toBeInTheDocument();
+		expect(screen.getByText("发送中…")).toBeInTheDocument();
+		expect(screen.queryByText("你")).not.toBeInTheDocument();
+	});
+
+	it("keeps live invocation metadata above its bubble surface", () => {
+		const { container } = renderList({
+			messages: [],
+			liveInvocations: [
+				{
+					agentId: "a1",
+					turnExecutionId: "turn:1",
+					parentInvocationId: "inv:1",
+					startedAt: Date.now(),
+					childStatus: "running",
+					responseStatus: "missing",
+					evidenceRank: "record+tracker",
+				},
+			],
+			agentLabel: (agentId) => (agentId === "a1" ? "Agent A1" : agentId),
+		});
+
+		const article = container.querySelector<HTMLElement>("article.st-message.is-live");
+		const stack = article?.querySelector<HTMLElement>(".st-message-stack");
+		const meta = stack?.querySelector<HTMLElement>(".st-message-meta");
+		const body = stack?.querySelector<HTMLElement>(".st-message-body");
+		expect(meta?.parentElement).toBe(stack);
+		expect(body?.parentElement).toBe(stack);
+		expect(meta?.nextElementSibling).toBe(body);
+	});
+
 	it("keeps agent content inside the nameplate surface", () => {
 		const { container } = renderList({
 			messages: [

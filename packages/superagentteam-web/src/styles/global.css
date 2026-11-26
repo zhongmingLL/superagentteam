@@ -1141,8 +1141,9 @@ svg {
 }
 
 .st-message.is-nameplate .st-message-stack {
-	width: 100%;
-	max-width: 100%;
+	flex: 0 1 80%;
+	width: 80%;
+	max-width: 80%;
 }
 
 .st-message.is-user .st-message-stack {

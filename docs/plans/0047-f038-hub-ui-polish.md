@@ -1,7 +1,7 @@
 ---
 title: "F038 execution plan — Hub UI acceptance polish"
 doc_kind: plan
-status: active
+status: done
 created: 2026-11-26
 updated: 2026-11-26
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -63,6 +63,8 @@ source_decision: "operator 2026-11-26 UI feedback during F037 acceptance"
 - 4 点均已落地；`AccountModal` 标题、`AgentEditorModal` 空账号引导同步为 `Accounts`。
 - LivePill 位于 QueueStrip 之后、Composer 之前；无 live 时整行不渲染。
 - web 110 passed；typecheck/build/`npm run check` 绿；1440/390 截图通过。
-- 剩余：PR + 非作者 review + CI。
+- 非作者 review：墨墨 approve `3f3f36c9a`；CI 5/5。
+- PR #215 landed `e3700094b28cd6b09e97a971f11b20e7b640d039`。
+- 剩余：operator 验收。
 
 [宪宪/deepseek-flash🐾]

@@ -16,6 +16,10 @@ source_decision: "operator 2026-11-26: 新建对话两个+；thread 页去掉 Th
 
 operator 的 4 点 UI 反馈全部落地，A2A/queue/cancel/rename 语义未改：
 
+**收口**：PR #215 landed `e3700094b28cd6b09e97a971f11b20e7b640d039`；reviewed HEAD
+`3f3f36c9a`；墨墨非作者 approve；CI 5/5。F038 进入 `superagentteam-work`，
+operator 验收 pending。
+
 | # | 反馈 | 结果 |
 |---|---|---|
 | 1 | 新建对话有两个 `+` | 保留 plus icon，文字改为 `新对话`；空态文案同步 |

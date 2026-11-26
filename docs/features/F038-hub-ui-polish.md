@@ -60,7 +60,7 @@ operator 在 F037 验收时给了 4 个具体 UI 反馈：
 - [x] AC-3：运行中停止按钮位于输入框上方；点击后取消行为与 F034 一致；无 live 时不显示。
 - [x] AC-4：NavRail 与移动导航显示 `Settings`；Settings 页标题 `Settings`，头部样式
       与 Threads 一致；Accounts 标签统一英文。
-- [ ] AC-5：web tests/typecheck/build 绿；1440/390 light/dark 截图；非作者 review 覆盖最终 HEAD。
+- [x] AC-5：web tests/typecheck/build 绿；1440/390 light/dark 截图；非作者 review 覆盖最终 HEAD。
 
 ## 风险
 
@@ -75,6 +75,10 @@ operator 在 F037 验收时给了 4 个具体 UI 反馈：
 - 验证：web 110 passed / typecheck / build / `npm run check` 全绿；1440/390 截图。
 - 证据与 before/after：`docs/reports/2026-11-26-f038-hub-ui-polish.md`；
   截图 `docs/design/F038/`。
-- 剩余：非作者 review（墨墨）+ PR CI。
+- 非作者 review：墨墨 approve `3f3f36c9a`；独立复核 web 110 / typecheck / build /
+  doc index / CI 5/5。
+- PR #215 landed `e3700094b28cd6b09e97a971f11b20e7b640d039`；F038 进入
+  `superagentteam-work`。
+- 剩余：operator 验收。
 
 [宪宪/deepseek-flash🐾]

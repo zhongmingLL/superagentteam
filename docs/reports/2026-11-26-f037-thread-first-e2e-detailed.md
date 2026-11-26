@@ -115,7 +115,7 @@ source_decision: "operator 2026-11-26: 写一份详细的测试报告，测试�
 | P-02 | 同 thread A/B | A 调 `post_message` 给 B；B 回复 | A/B 两次 invocation 完成；B 回复可见 | `A2A_FROM_A` + B 回复；A toolEvents `post_message` | pass | thread 消息；DB |
 | P-03 | thread1/thread2 | A 跨帖到 thread2；B 回帖 thread1 | 双向；provenance 正确 | `CROSS_FROM_THREAD1` / `CROSS_ACK_FROM_THREAD2` | pass | `f037-cross-thread-1440.png` |
 | P-04 | A/B/C | A 调 `multi_mention` 给 B+C | B/C 回答；aggregate；A 回调 | `MULTI_B_OK` / `MULTI_C_OK`；A 汇总 | pass | `f037-multi-mention-1440.png` |
-| P-05 | 长任务 | provider 在飞时停止 | turn/attempt canceled；worker 释放 | `operator_canceled`；live 清空 | pass | `f037-cancel-1440.png`；DB |
+| P-05 | 长任务 | provider 在飞时停止 | turn/attempt canceled；worker 释放 | `operator_canceled`；live 清空 | pass | `f037-stop-button-1440.png`、`f037-cancel-1440.png`；DB |
 | P-06 | 重启后 | 重启动；新回合 | 历史保留；新回合成功 | `RESTART_OK` | pass | 消息 + DB |
 
 ## 5. 截图证据
@@ -152,7 +152,12 @@ multi_mention：B/C 各自回复，系统 aggregate，A 收到 callback 并汇�
 
 ![multi_mention + callback](../design/F037/f037-multi-mention-1440.png)
 
-运行中取消：点击“停止”后 live 清空，消息显示“已取消”。
+运行中取消：thread 顶部 live 条右侧会出现“停止”按钮（红框）；只有 agent 正在运行时
+出现，队列条和 Composer 没有这个按钮。
+
+![停止按钮](../design/F037/f037-stop-button-1440.png)
+
+点击“停止”后 live 条消失，agent 回复显示“已取消”。
 
 ![运行中取消](../design/F037/f037-cancel-1440.png)
 
@@ -281,7 +286,7 @@ Azure、Cloudflare 等 composite auth provider 显示为 disabled。
 ## 10. 证据索引
 
 - 简明执行记录：`docs/reports/2026-11-26-f037-thread-first-e2e.md`
-- 截图目录：`docs/design/F037/`（15 张，含修复前/后）
+- 截图目录：`docs/design/F037/`（16 张，含修复前/后、停止按钮）
 - 确定性全栈测试：`packages/superagentteam-daemon/test/f037-fullstack-e2e.test.ts`
 - 移动端回归测试：`packages/superagentteam-web/test/thread-sidebar.test.tsx`、
   `packages/superagentteam-web/test/settings-page.test.tsx`

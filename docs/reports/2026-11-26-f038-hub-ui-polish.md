@@ -81,6 +81,28 @@ eyebrow 颜色/字号与 Threads 头部不一致。
 
 ![after: settings 390](../design/F038/after-settings-390.png)
 
+## 5. Pencil 页面设计
+
+本轮的 1440/390 页面设计在 Pencil 中完成，设计源与导出图已入库，作为后续 UI
+迭代的可编辑基线：
+
+| Frame | 设计图 | 设计源 |
+|---|---|---|
+| Thread 1440 | [F038-thread-1440-design.png](../design/F038/F038-thread-1440-design.png) | `docs/design/F038/F038-design.pen` |
+| Thread 390 | [F038-thread-390-design.png](../design/F038/F038-thread-390-design.png) | 同上 |
+| Settings 1440 | [F038-settings-1440-design.png](../design/F038/F038-settings-1440-design.png) | 同上 |
+| Settings 390 | [F038-settings-390-design.png](../design/F038/F038-settings-390-design.png) | 同上 |
+
+![Pencil design: thread 1440](../design/F038/F038-thread-1440-design.png)
+
+![Pencil design: settings 1440](../design/F038/F038-settings-1440-design.png)
+
+设计稿以 F038 已实现的 4 点反馈为基线：Thread 页单标题 + 紧凑 meta + Composer
+上方运行态/停止；Settings 页统一顶层 `Settings` / `Accounts` / `Agents` 与
+eyebrow/title 样式。Settings 内的说明文案仍保留中文，与“不做全局 i18n”的实现边界
+一致。`.pen` 为明文 JSON 设计源（4 个 frame、351 个节点、60 个变量），重新导出的
+4 张 PNG 与上述设计图逐像素一致。
+
 ## 验证
 
 | 命令 | 结果 |

@@ -1947,6 +1947,12 @@ svg {
 	background: var(--st-canvas);
 }
 
+.st-composer-wrap {
+	flex: none;
+	width: 80%;
+	margin-left: 38px;
+}
+
 .st-composer.is-disabled {
 	padding: 12px 0 2px;
 	color: var(--st-muted);
@@ -2916,6 +2922,11 @@ svg {
 	.st-thread-more {
 		opacity: 1;
 		pointer-events: auto;
+	}
+
+	.st-composer-wrap {
+		width: 100%;
+		margin-left: 0;
 	}
 
 	.st-composer-hint {

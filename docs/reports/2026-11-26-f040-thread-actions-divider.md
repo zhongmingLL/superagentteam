@@ -109,6 +109,15 @@ Operator 反馈发送框应对齐“agent 气泡起点到 operator 气泡终点�
 
 ![composer align: 390](../design/F040/fix-composer-align-390.png)
 
+**Composer fix closeout**：PR #227 merged `f345786d1`；reviewed HEAD `e0ec43fda`；
+墨墨 approve（取代对 `3e655ebef` 的旧 approve）；CI 5/5；live 3005 deployed
+`f345786d1`。实机几何：1440 composer `[416, 1361]` = agent 左 `416` / operator 右
+`1361`；390 composer `[54, 321]` = agent 左 `54` / operator 右 `321`；无横向滚动。
+
+![live 3005 composer align: 1440](../design/F040/live-3005-composer-align-1440.png)
+
+![live 3005 composer align: 390](../design/F040/live-3005-composer-align-390.png)
+
 ## 验证
 
 | 命令 | 结果 |
@@ -124,6 +133,7 @@ Operator 反馈发送框应对齐“agent 气泡起点到 operator 气泡终点�
 
 - 未新增 thread 删除/归档/收藏等后端能力；菜单只放当前已有的重命名。
 - 未改消息、A2A、队列、取消或 rich block 语义。
-- 正式栈 3005/3014 未操作；验证在隔离 3007/3016。
+- 原始 feature 验证在隔离 3007/3016；post-merge 修复（#222/#224/#226/#227）经
+  review 合入并同步 live 3005 实机核对。
 
 [宪宪/deepseek-flash🐾]

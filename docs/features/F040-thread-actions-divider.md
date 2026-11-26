@@ -91,8 +91,10 @@ F039 合并后，operator 在验收时又给了两条修正：
 - Post-merge fix（operator 2026-11-27 bug）：PR #222 merged `abda22e5f`；reviewed HEAD
   `8428d612f`；墨墨 approve；移除 thread head/body 的 `max-width: 980px`，标题、项目路径、
   消息列与 composer 统一左对齐并使用主内容区全宽；2551/1440/390 验证。
-- Bubble width fix（operator 2026-11-27）：agent/nameplate bubble 限制为聊天框宽度的
-  80%（`.st-message-stack` `flex: 0 1 80%`），保留全宽页面列；2551/1440/390 验证。
+- Bubble width fix（operator 2026-11-27）：PR #224 merged `85bdb7e1e`；reviewed HEAD
+  `3b3b31406`；墨墨 approve；agent/nameplate bubble 限制为聊天框宽度的 80%
+  （`.st-message-stack` `flex: 0 1 80%`），保留全宽页面列；2551/1440/390 验证；
+  live 3005 `85bdb7e1e`。
 - 剩余：operator 验收。
 
 [宪宪/deepseek-flash🐾]

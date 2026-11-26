@@ -84,6 +84,17 @@ describe("settings page", () => {
 		expect(screen.getByRole("button", { name: /^账户与登录/ })).toHaveAttribute("aria-current", "page");
 	});
 
+	it("offers a way back to threads from the settings page", () => {
+		render(
+			<MemoryRouter>
+				<SettingsPage />
+			</MemoryRouter>,
+		);
+
+		const back = screen.getByRole("link", { name: "← 返回对话" });
+		expect(back).toHaveAttribute("href", "/");
+	});
+
 	it("shows GLM model suggestions for the Z.AI provider", async () => {
 		vi.mocked(accountApi.providers).mockResolvedValueOnce({
 			providers: [

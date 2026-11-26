@@ -2921,6 +2921,20 @@ svg {
 	padding: 4px 8px 14px;
 }
 
+.st-settings-back {
+	display: none;
+	width: fit-content;
+	margin-bottom: 10px;
+	color: var(--st-muted);
+	font-size: 11px;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.st-settings-back:hover {
+	color: var(--st-ink);
+}
+
 .st-settings-eyebrow {
 	color: var(--st-muted);
 	font-size: 9px;
@@ -3097,6 +3111,10 @@ svg {
 }
 
 @media (max-width: 900px) {
+	.st-settings-back {
+		display: flex;
+	}
+
 	.st-settings-page {
 		grid-template-columns: 1fr;
 		padding: 14px;

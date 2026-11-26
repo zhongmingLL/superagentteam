@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { AccountsModal } from "@/components/agent/AccountsModal";
 import { AgentEditorModal } from "@/components/agent/AgentEditorModal";
@@ -117,6 +118,9 @@ export function SettingsPage({ initialTab = "accounts" }: SettingsPageProps) {
 		<div className="st-settings-page">
 			<aside className="st-settings-nav" aria-label="设置导航">
 				<div className="st-settings-brand">
+					<Link className="st-settings-back" to="/">
+						← 返回对话
+					</Link>
 					<span className="st-settings-eyebrow">SuperAgentTeam</span>
 					<h1>设置</h1>
 				</div>

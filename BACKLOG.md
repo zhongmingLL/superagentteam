@@ -49,6 +49,7 @@ created: 2026-10-25
 | F034 | Agent run control — bounded automatic retries, cancel running agent, queue clarity | implemented — PR #195 merged `8ed21a710`; isolated E2E covers 5-retry cap + in-flight cancel; CI 5/5; deployed live `a33054f24` (3005); live 3005 stop click pending operator | 宪宪 | [F034](docs/features/F034-agent-run-control.md) |
 | F035 | Settings hub — sidebar Settings entry, accounts/agents pages | implemented — PR #196 merged `29f104852`; 墨墨 1440/390 visual + isolated create, 砚砚 aria/state approve; CI 5/5; deployed live `a33054f24` (3005); design fix: settings is now a peer page (thread sidebar/topbar hidden) + Clowder-style sub-nav; create pages with auto id/ref, avatar/color, model chips; live create pending operator | 宪宪 | [F035](docs/features/F035-settings-hub.md) |
 | F036 | Chat surface polish — agent message bubble + operator avatar | implemented — PR #197 merged `469e858ce`; 墨墨 4-viewport visual approve @ `d25ebfe64`; CI 5/5; deployed live `a33054f24` (3005); operator close pending | 宪宪 | [F036](docs/features/F036-chat-surface-polish.md) |
+| F037 | Thread-first full-feature E2E — 用例 → 逐项执行 → 记 bug → 修复 | review — E2E 矩阵已执行；真实 Kimi 单/A2A/跨 thread/multi_mention/cancel/restart 通过；P2 移动 Settings 缺口已修；daemon 507 / web 109；待非作者 review + CI | 宪宪 | [F037](docs/features/F037-thread-first-e2e.md) |
 
 > F030.5 account/provider catalog design: [plan 0045](docs/plans/0045-f030.5-account-provider-catalog.md)
 > （design only；固定 v1 vendor catalog 不再继续打补丁）。

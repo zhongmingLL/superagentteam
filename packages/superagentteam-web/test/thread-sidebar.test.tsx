@@ -68,6 +68,18 @@ describe("thread sidebar", () => {
 		expect(screen.getByLabelText("3 条未读")).toHaveTextContent("3");
 	});
 
+	it("exposes the settings entry in the mobile navigation", () => {
+		useThreadStore.setState({ threads: [], status: "ready", query: "" });
+		render(
+			<MemoryRouter>
+				<ThreadSidebar open onClose={() => {}} />
+			</MemoryRouter>,
+		);
+
+		const settings = screen.getByRole("link", { name: "设置" });
+		expect(settings).toHaveAttribute("href", "/settings");
+	});
+
 	it("shows the empty state and opens the new-thread dialog", () => {
 		useThreadStore.setState({ threads: [], status: "ready", query: "" });
 		render(

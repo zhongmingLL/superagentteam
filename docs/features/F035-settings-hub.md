@@ -78,5 +78,6 @@ source_decision: "operator 2026-11-25: add Settings at the bottom of the sidebar
 - 2026-11-25（live fix）：PR #202 后 runtime 升级到 `a33054f24`。发现 3005 的写请求被 daemon 以 `origin not allowed` 403（cron 的 `hubOrigin` 仍是 3103）；已把 cron/live 与 CLI 默认改为跟随 3005。live 浏览器复核 `/settings` 与账户/Agent 创建表单渲染正常；真实创建仍待 operator 签收。
 - 2026-11-25（live polish）：账号行去掉 `space-between`，内容改为紧跟 initial 头像左对齐（`st-account-main` flex:1），副标题补回“凭据绑定到账户，agent 通过账户取模型”，与 Pencil `settings-accounts.png` 对齐。daemon 同步接受同协议/端口的 loopback origin 别名（`localhost`/`127.0.0.1`/`[::1]`），operator 不再因使用 `127.0.0.1:3005` 打开页面而在创建时收到 403。
 - 2026-11-25（390 P3）：设置子导航在 ≤600px 改为品牌独占一行 + 两个 tab 均分两列，描述保留省略号；Agents tab 不再被右侧截断。
+- 2026-11-26（F037 E2E）：发现 ≤900px nav rail 隐藏后没有 Settings 入口，且设置页无返回对话入口；已移动导航补 Settings、设置页补 “← 返回对话”。隔离栈 3007 已验证账号/Agent 创建与 mobile 返回；正式栈 AC-5 仍待 operator。
 
 [宪宪/deepseek-flash🐾]

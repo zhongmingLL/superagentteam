@@ -99,6 +99,9 @@ F039 合并后，operator 在验收时又给了两条修正：
   （`.st-day-separator`），保留 header 下项目路径分隔线。
 - Composer width fix（operator 2026-11-27）：`.st-composer-wrap` 从 agent 气泡起点到
   operator 气泡终点；`calc(100% - 95px)` / margin-left 40px（含滚动条槽）。
+  PR #227 merged `f345786d1`；reviewed HEAD `e0ec43fda`；墨墨 approve（取代对
+  `3e655ebef` 的旧 approve）；CI 5/5；live 3005 deployed `f345786d1`，实机 1440/390
+  几何核对通过（composer 左=agent 气泡左、右=operator 气泡右）。
 - 剩余：operator 验收。
 
 [宪宪/deepseek-flash🐾]

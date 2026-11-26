@@ -1,7 +1,7 @@
 ---
 title: "F040 Thread row actions & header divider — verification report"
 doc_kind: report
-status: in-progress
+status: implemented
 created: 2026-11-26
 updated: 2026-11-26
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -22,6 +22,9 @@ operator 的三条后续反馈已落地，消息/A2A/队列/取消语义未改�
 3. 侧栏标题下的 `N conversations · local dev` 副标题移除。
 
 Pencil 设计源与 4 张导出图已同步。
+
+**收口**：PR #219 merged `5ebfdc56a`；reviewed HEAD `0ad53a592`；墨墨非作者
+approve；CI 5/5；web 116 passed。
 
 ## 1. Thread 行更多操作
 

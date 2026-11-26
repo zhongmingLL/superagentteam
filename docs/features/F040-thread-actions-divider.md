@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F040]
 related_features: [superagentteam/F037, superagentteam/F038, superagentteam/F039]
 title: "F040: Thread row actions & header divider placement"
-status: in-progress
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -61,7 +61,7 @@ F039 合并后，operator 在验收时又给了两条修正：
 - [x] AC-4：分隔线位于项目路径行之后，横向贯通主内容区（连到左侧栏边界）；
   topbar 不再单独画线。
 - [x] AC-5：1440/390、浅色/深色截图通过；无横向滚动。
-- [ ] AC-6：web tests / typecheck / build / doc-index 绿；非作者视觉 review。
+- [x] AC-6：web tests / typecheck / build / doc-index 绿；非作者视觉 review。
 - [x] AC-7：Pencil 设计源与 4 张导出图同步更新。
 - [x] AC-8：侧栏头部不再出现 `N conversations · local dev` 副标题。
 - [x] AC-9：thread 标题与项目路径的垂直间距收紧，不再出现大段空白。
@@ -84,6 +84,9 @@ F039 合并后，operator 在验收时又给了两条修正：
 - Pencil：Thread 1440/390 顶部分隔线移除，Thread Header Divider 下移到 meta row 后；
   Sidebar Sub 移除；Thread Row 1 增加更多操作图标；4 张 PNG 重导出。
 - 证据：`docs/reports/2026-11-26-f040-thread-actions-divider.md`。
-- 剩余：全量验证与非作者 review。
+- 非作者 review：墨墨 approve `0ad53a592`（覆盖 `bd0f48783` 的早期 approve）；
+  独立复核 web 116 / typecheck / doc-index / CI 5/5 / 布局 delta。
+- PR #219 merged `5ebfdc56a`；F040 进入 `superagentteam-work`。
+- 剩余：operator 验收。
 
 [宪宪/deepseek-flash🐾]

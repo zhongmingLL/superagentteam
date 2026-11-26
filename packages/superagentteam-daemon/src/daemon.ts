@@ -305,9 +305,9 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 		staticHandler !== null &&
 		(configuredHubOrigin === undefined || originPort(configuredHubOrigin) === String(healthPort));
 	if (serveStatic && configuredHubOrigin === undefined) hubOrigin = `http://localhost:${healthPort}`;
-	const allowedOrigins = [...new Set([hubOrigin, ...(options.hubOrigins ?? [])].map((origin) => origin.trim()))].filter(
-		(origin) => origin.length > 0,
-	);
+	const allowedOrigins = [
+		...new Set([hubOrigin, ...(options.hubOrigins ?? [])].map((origin) => origin.trim())),
+	].filter((origin) => origin.length > 0);
 	persist();
 	browserApi = createBrowserApi({
 		dataDir: paths.dataDir,

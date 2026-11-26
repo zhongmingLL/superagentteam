@@ -140,10 +140,7 @@ function matchesAllowedOrigin(origin: string, allowedOrigin: string): boolean {
 	);
 }
 
-export function isAllowedOrigin(
-	origin: string | undefined,
-	allowedOrigin: string | readonly string[],
-): boolean {
+export function isAllowedOrigin(origin: string | undefined, allowedOrigin: string | readonly string[]): boolean {
 	if (origin === undefined) return false;
 	const allowedOrigins = typeof allowedOrigin === "string" ? [allowedOrigin] : allowedOrigin;
 	return allowedOrigins.some((candidate) => matchesAllowedOrigin(origin, candidate));

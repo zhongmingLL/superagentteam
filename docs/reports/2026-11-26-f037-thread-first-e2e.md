@@ -134,9 +134,9 @@ reviewed HEAD `e7b27af5b`；墨墨非作者 approve；GitHub CI 5/5 绿。F037 �
 
 ## 证据文件
 
-- 截图：`docs/design/F037/`（13 张；含 1440/390 light/dark、A2A、multi_mention、rich block、
-  settings、mobile nav）
-- 详细测试报告（29 个用例 + 15 张截图）：`docs/reports/2026-11-26-f037-thread-first-e2e-detailed.md`。
+- 截图：`docs/design/F037/`（16 张；含 1440/390 light/dark、A2A、multi_mention、rich block、
+  settings、mobile nav、停止按钮）
+- 详细测试报告（29 个用例 + 16 张截图）：`docs/reports/2026-11-26-f037-thread-first-e2e-detailed.md`。
 - 自动化：`packages/superagentteam-daemon/test/f037-fullstack-e2e.test.ts`
 - 前后端修复测试：`packages/superagentteam-web/test/settings-page.test.tsx` /
   `thread-sidebar.test.tsx`

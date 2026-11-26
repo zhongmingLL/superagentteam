@@ -101,6 +101,7 @@ execution record、rich block、账号/Agent 热更新、未读/重命名/重试
   `AppShell` 在 settings 路由隐藏 topbar/sidebar，`SettingsPage` 又没有返回链接。
 - **修复**：移动导航新增 Settings Link；Settings 页新增 mobile-only “← 返回对话”；
   `st-settings-back` 桌面隐藏、≤900px 显示。
+- **修复 commit**：`93997c049`（与 F037 文档/全栈测试同一提交）。
 - **回归**：`thread-sidebar.test.tsx` 新增移动 Settings 入口断言；`settings-page.test.tsx`
   新增返回链接断言；390 实机复验 + 截图。
 - **状态**：fixed / verified（web 109 tests + typecheck/build）。

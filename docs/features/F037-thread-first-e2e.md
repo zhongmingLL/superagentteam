@@ -132,7 +132,8 @@ Agent 管理、执行记录、富块、停止/重试、Settings、视觉与启�
 - 新增确定性全栈测试 `f037-fullstack-e2e.test.ts`：真实 daemon + 真实 pi worker +
   mock provider，A→B `post_message` 两段 invocation 完成；daemon 507 passed。
 - 发现并修复 BUG-F037-001（P2）：≤900px 没有 Settings 入口、进入设置后无法返回；
-  移动导航与 Settings 返回链接已补，web 109 tests + typecheck/build 绿。
+  移动导航与 Settings 返回链接已补，修复 commit `93997c049`；web 109 tests +
+  typecheck/build 绿。
 - BUG-F037-002（P3）：A2A body 只有标签时收件 agent 可能回“没有请求”；prompt
   current-request 标记列为 F018 prompt 语义 follow-up，不在 F037 改契约。
 - 执行记录与矩阵：`docs/reports/2026-11-26-f037-thread-first-e2e.md`。

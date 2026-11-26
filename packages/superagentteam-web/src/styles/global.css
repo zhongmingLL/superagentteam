@@ -962,7 +962,6 @@ svg {
 .st-thread-page-head {
 	flex: none;
 	width: 100%;
-	max-width: 980px;
 	margin: 0 auto;
 	padding: 0 24px;
 }
@@ -971,7 +970,6 @@ svg {
 	flex: 1;
 	min-height: 0;
 	width: 100%;
-	max-width: 980px;
 	margin: 0 auto;
 	padding: 0 24px;
 	display: flex;

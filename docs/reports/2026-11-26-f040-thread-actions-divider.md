@@ -3,7 +3,7 @@ title: "F040 Thread row actions & header divider — verification report"
 doc_kind: report
 status: implemented
 created: 2026-11-26
-updated: 2026-11-26
+updated: 2026-11-27
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 feature: F040
 related_features: [superagentteam/F037, superagentteam/F038, superagentteam/F039]
@@ -55,6 +55,19 @@ Enter 保存、Escape 取消；失败在行内显示错误。
 
 `ThreadSidebar` 头部只保留 `SUPERAGENTTEAM` eyebrow 与 `Threads` 标题，不再显示
 `N conversations · local dev`。
+
+## 4. Post-merge fix — 全宽 thread 内容
+
+operator 在 2551 宽窗口发现标题在左、项目路径/消息列/composer 仍被 980px 居中限宽，
+分隔线与内容列不对齐。修复：移除 `.st-thread-page-head` / `.st-thread-page-body`
+的 `max-width: 980px`，让标题、项目路径、消息列和 composer 共享主内容区左边缘并使用
+全宽；分隔线继续保持全宽。
+
+![post-merge fix: 2551](../design/F040/fix-wide-2551.png)
+
+![post-merge fix: 1440](../design/F040/fix-wide-1440.png)
+
+![post-merge fix: 390](../design/F040/fix-wide-390.png)
 
 ## 验证
 

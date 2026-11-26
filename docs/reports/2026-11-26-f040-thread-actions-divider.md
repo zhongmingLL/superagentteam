@@ -73,6 +73,18 @@ operator 在 2551 宽窗口发现标题在左、项目路径/消息列/composer 
 **Fix closeout**：PR #222 merged `abda22e5f`；reviewed HEAD `8428d612f`；墨墨 approve；
 CI 5/5；live 3005 deployed `abda22e5f`。
 
+### Bubble 80% follow-up
+
+Operator 反馈 agent 气泡在全宽页面下过长；将 `.st-message.is-nameplate .st-message-stack`
+设为 `flex: 0 1 80%` / `width: 80%` / `max-width: 80%`，气泡与上方 meta 保持 80% 聊天框
+宽度，页面列仍全宽。
+
+![bubble 80%: 2551](../design/F040/fix-bubble80-2551.png)
+
+![bubble 80%: 1440](../design/F040/fix-bubble80-1440.png)
+
+![bubble 80%: 390](../design/F040/fix-bubble80-390.png)
+
 ## 验证
 
 | 命令 | 结果 |

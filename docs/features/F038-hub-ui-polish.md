@@ -75,9 +75,9 @@ operator 在 F037 验收时给了 4 个具体 UI 反馈：
 - 验证：web 110 passed / typecheck / build / `npm run check` 全绿；1440/390 截图。
 - 证据与 before/after：`docs/reports/2026-11-26-f038-hub-ui-polish.md`；
   截图 `docs/design/F038/`。
-- Pencil 页面设计：`docs/design/F038/F038-design.pen`（4 个 frame / 365 nodes /
-  61 variables；F039 已把消息元信息移到气泡上方并加强 topbar 分隔线）+
-  4 张 1440/390 导出图，和实现截图放在同一目录。
+- Pencil 页面设计：`docs/design/F038/F038-design.pen`（F040 更新后 4 个 frame /
+  363 nodes / 61 variables；F039 已把消息元信息移到气泡上方，F040 已把分隔线
+  下移到项目路径行并贯通主区）＋ 4 张 1440/390 导出图，和实现截图放在同一目录。
 - 非作者 review：墨墨 approve `3f3f36c9a`；独立复核 web 110 / typecheck / build /
   doc index / CI 5/5。
 - PR #215 landed `e3700094b28cd6b09e97a971f11b20e7b640d039`；F038 进入

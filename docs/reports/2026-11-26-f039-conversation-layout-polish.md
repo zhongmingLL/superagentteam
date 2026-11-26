@@ -1,7 +1,7 @@
 ---
 title: "F039 Conversation layout polish — verification report"
 doc_kind: report
-status: in-progress
+status: implemented
 created: 2026-11-26
 updated: 2026-11-26
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -20,12 +20,16 @@ operator 的两条验收反馈已落地，消息排序、A2A、队列、取消�
 - agent 与 operator 的姓名/时间都在气泡上方；气泡内不再重复元信息。
 - operator 显示名为 `operator`，头像字母为 `O`；pending 与 live 受理态同样处理。
 - Pencil 设计源与 4 张导出图已同步更新。
+- 收口：PR #218 landed `9e005c416`；reviewed HEAD `791c54c7a`；墨墨非作者 approve；
+  CI 5/5；operator 后续两条反馈转 F040。
 
 ## 1. Thread 顶部分隔线
 
 Before：`.st-topbar` 使用 `--st-hairline`，在浅色画布上几乎不可见。
 
 After：改为 `--st-hairline-strong`，1440/390、浅色/深色都保留一条轻量但可见的分隔线。
+
+> F040 后续：分隔线已下移到项目路径行下方，topbar 不再单独画线；本图保留 F039 时点证据。
 
 ![after: thread 1440 light](../design/F039/thread-1440-light.png)
 

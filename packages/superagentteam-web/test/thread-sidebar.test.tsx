@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -32,6 +32,7 @@ afterEach(() => {
 		load: vi.fn(async () => {}),
 		refresh: vi.fn(async () => true),
 		create: vi.fn(),
+		rename: vi.fn(async (threadId: string, title: string) => ({ ...thread({ id: threadId }), title })),
 	});
 });
 
@@ -49,6 +50,7 @@ describe("thread sidebar", () => {
 
 		expect(screen.getByText("Alpha")).toBeInTheDocument();
 		expect(screen.getByText("Beta")).toBeInTheDocument();
+		expect(screen.queryByText(/conversations · local dev/)).not.toBeInTheDocument();
 		fireEvent.change(screen.getByLabelText("搜索对话"), { target: { value: "beta" } });
 		expect(screen.queryByText("Alpha")).not.toBeInTheDocument();
 		expect(screen.getByText("Beta")).toBeInTheDocument();
@@ -66,6 +68,63 @@ describe("thread sidebar", () => {
 		);
 
 		expect(screen.getByLabelText("3 条未读")).toHaveTextContent("3");
+	});
+
+	it("renames a thread from the row more-actions menu", async () => {
+		const rename = vi.fn(async (threadId: string, title: string) => ({ ...thread({ id: threadId }), title }));
+		useThreadStore.setState({ threads: [thread()], status: "ready", rename });
+		render(
+			<MemoryRouter>
+				<ThreadSidebar open onClose={() => {}} />
+			</MemoryRouter>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "更多操作" }));
+		fireEvent.click(screen.getByRole("menuitem", { name: "重命名对话" }));
+		const input = screen.getByLabelText("对话名");
+		fireEvent.change(input, { target: { value: "Beta" } });
+		fireEvent.keyDown(input, { key: "Enter" });
+
+		await waitFor(() => expect(rename).toHaveBeenCalledWith("thread:1", "Beta"));
+	});
+
+	it("cancels inline rename on Escape", async () => {
+		const rename = vi.fn(async (threadId: string, title: string) => ({ ...thread({ id: threadId }), title }));
+		useThreadStore.setState({ threads: [thread()], status: "ready", rename });
+		render(
+			<MemoryRouter>
+				<ThreadSidebar open onClose={() => {}} />
+			</MemoryRouter>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "更多操作" }));
+		fireEvent.click(screen.getByRole("menuitem", { name: "重命名对话" }));
+		const input = screen.getByLabelText("对话名");
+		fireEvent.change(input, { target: { value: "Beta" } });
+		fireEvent.keyDown(input, { key: "Escape" });
+
+		expect(screen.queryByLabelText("对话名")).not.toBeInTheDocument();
+		expect(rename).not.toHaveBeenCalled();
+	});
+
+	it("shows an inline error when rename fails", async () => {
+		const rename = vi.fn(async () => {
+			throw new Error("重命名失败");
+		});
+		useThreadStore.setState({ threads: [thread()], status: "ready", rename });
+		render(
+			<MemoryRouter>
+				<ThreadSidebar open onClose={() => {}} />
+			</MemoryRouter>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "更多操作" }));
+		fireEvent.click(screen.getByRole("menuitem", { name: "重命名对话" }));
+		const input = screen.getByLabelText("对话名");
+		fireEvent.change(input, { target: { value: "Beta" } });
+		fireEvent.keyDown(input, { key: "Enter" });
+
+		expect(await screen.findByRole("alert")).toHaveTextContent("重命名失败");
 	});
 
 	it("exposes the settings entry in the mobile navigation", () => {

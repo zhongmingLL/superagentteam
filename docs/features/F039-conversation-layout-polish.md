@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F039]
 related_features: [superagentteam/F036, superagentteam/F037, superagentteam/F038]
 title: "F039: Conversation layout polish — header divider & message metadata"
-status: in-progress
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -56,7 +56,7 @@ rich block 语义。
       `.st-message-body` 内；气泡内不再重复显示元信息。
 - [x] AC-3：operator 消息显示 `operator`，不再显示“你”；头像为 `O`。
 - [x] AC-4：pending 发送态与 live 受理态使用相同的元信息位置。
-- [ ] AC-5：web tests / typecheck / build 绿；1440/390 截图；非作者视觉 review。
+- [x] AC-5：web tests / typecheck / build 绿；1440/390 截图；非作者视觉 review。
 - [x] AC-6：Pencil 设计源与 4 张导出图同步更新，重新导出一致。
 
 ## 风险
@@ -72,9 +72,14 @@ rich block 语义。
 - 样式：`.st-topbar` 分隔线提升到 `--st-hairline-strong`；390/1440 同步。
 - 测试：web 114 passed（25 files）；web typecheck / `build:offline` 通过。
 - 视觉：`docs/design/F039/` 下 1440/390 浅色/深色截图。
-- Pencil：4 个 frame / 365 nodes / 61 variables；Thread 1440/390 已加顶部分隔线、
-  消息 meta 移到气泡上方，operator 标签改为 `operator`；4 张 PNG 重新导出。
+- Pencil：F039 时点 4 个 frame / 365 nodes / 61 variables；F040 更新后 363 nodes。
+  Thread 1440/390 已加顶部分隔线、消息 meta 移到气泡上方，operator 标签改为
+  `operator`；4 张 PNG 重新导出。
 - 证据：`docs/reports/2026-11-26-f039-conversation-layout-polish.md`。
-- 剩余：非作者视觉 review。
+- 非作者 review：墨墨 approve `791c54c7a`；独立复核 web 114 / typecheck / doc index /
+  CI 5/5 / 4 张实机截图。
+- PR #218 landed `9e005c416`；F039 进入 `superagentteam-work`。
+- operator 后续反馈（thread 更多操作菜单、分隔线下移到项目路径下方、侧栏副标题移除）
+  转 F040 继续；F040 已把 topbar border 改为项目路径行后的 `.st-thread-divider`。
 
 [宪宪/deepseek-flash🐾]

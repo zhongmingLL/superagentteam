@@ -1773,16 +1773,6 @@
                   "fontFamily": "$font",
                   "fontSize": 17,
                   "fontWeight": "600"
-                },
-                {
-                  "type": "text",
-                  "id": "UoopM",
-                  "name": "Sidebar Sub",
-                  "fill": "$muted",
-                  "content": "3 conversations · local dev",
-                  "fontFamily": "$font",
-                  "fontSize": 10,
-                  "fontWeight": "normal"
                 }
               ]
             },
@@ -1974,6 +1964,16 @@
                       "fontFamily": "$font",
                       "fontSize": 9,
                       "fontWeight": "normal"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "R4aTl",
+                      "name": "Thread Row 1 More",
+                      "width": 12,
+                      "height": 12,
+                      "icon": "ellipsis-vertical",
+                      "library": "lucide",
+                      "fill": "$muted"
                     }
                   ]
                 },
@@ -2226,7 +2226,7 @@
               "id": "fpnnZ",
               "name": "Topbar",
               "width": "fill_container",
-              "height": 52,
+              "height": 48,
               "justifyContent": "space_between",
               "alignItems": "center",
               "children": [
@@ -2305,17 +2305,6 @@
                       ]
                     }
                   ]
-                },
-                {
-                  "type": "rectangle",
-                  "id": "i2Qle",
-                  "layoutPosition": "absolute",
-                  "x": 0,
-                  "y": 51,
-                  "name": "Topbar Divider",
-                  "fill": "$hairline-strong",
-                  "width": 1332,
-                  "height": 1
                 }
               ]
             },
@@ -2360,16 +2349,6 @@
                           "fontWeight": "normal"
                         }
                       ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "HsStZ",
-                      "name": "Rename Link",
-                      "fill": "$muted",
-                      "content": "重命名",
-                      "fontFamily": "$font",
-                      "fontSize": 10,
-                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -3188,6 +3167,17 @@
               ]
             }
           ]
+        },
+        {
+          "type": "rectangle",
+          "id": "v4JAyv",
+          "layoutPosition": "absolute",
+          "x": 352,
+          "y": 78,
+          "name": "Thread Header Divider",
+          "fill": "$hairline-strong",
+          "width": 1088,
+          "height": 1
         }
       ]
     },
@@ -3212,7 +3202,7 @@
           "id": "Pplmd",
           "name": "Mobile Topbar",
           "width": "fill_container",
-          "height": 48,
+          "height": 44,
           "justifyContent": "space_between",
           "alignItems": "center",
           "children": [
@@ -3300,17 +3290,6 @@
                   ]
                 }
               ]
-            },
-            {
-              "type": "rectangle",
-              "id": "sVrbp",
-              "layoutPosition": "absolute",
-              "x": 0,
-              "y": 47,
-              "name": "Topbar Divider",
-              "fill": "$hairline-strong",
-              "width": 362,
-              "height": 1
             }
           ]
         },
@@ -3355,16 +3334,6 @@
                       "fontWeight": "normal"
                     }
                   ]
-                },
-                {
-                  "type": "text",
-                  "id": "X6H4z",
-                  "name": "Mobile Rename",
-                  "fill": "$muted",
-                  "content": "重命名",
-                  "fontFamily": "$font",
-                  "fontSize": 9,
-                  "fontWeight": "normal"
                 }
               ]
             },
@@ -4151,6 +4120,17 @@
               ]
             }
           ]
+        },
+        {
+          "type": "rectangle",
+          "id": "OEmeb",
+          "layoutPosition": "absolute",
+          "x": 0,
+          "y": 72,
+          "name": "Thread Header Divider",
+          "fill": "$hairline-strong",
+          "width": 390,
+          "height": 1
         }
       ]
     }
@@ -4747,5 +4727,5 @@
       "value": "#CBD5E1"
     }
   },
-  "fileToken": "a4cc871d-0794-46e1-aba5-dd0f9d908382"
+  "fileToken": "59ef3bb4-ce06-4bc6-87ca-acc4cbdd40e2"
 }

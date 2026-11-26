@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/shared/types";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { initOperatorCredential, operatorCredentialPaths } from "../src/auth/operator.ts";
 import { type DaemonHandle, startDaemon } from "../src/index.ts";
 
@@ -47,6 +47,7 @@ describe("F026 dev auto-login", () => {
 	afterEach(async () => {
 		await daemon?.stop();
 		daemon = null;
+		vi.unstubAllEnvs();
 		rmSync(root, { recursive: true, force: true });
 	});
 
@@ -115,6 +116,7 @@ describe("F026 dev auto-login", () => {
 	});
 
 	it("accepts a configured tunnel origin while rejecting unknown origins", async () => {
+		vi.stubEnv("SUPERAGENTTEAM_DEV_AUTO_LOGIN", "1");
 		const tunnelOrigin = "https://agentteam.hn.takin.cc";
 		const base = await start(true, [tunnelOrigin]);
 
@@ -147,5 +149,16 @@ describe("F026 dev auto-login", () => {
 
 		const unknown = await fetch(`${base}/api/session`, { headers: { origin: "https://evil.example" } });
 		expect(unknown.status).toBe(403);
+	});
+
+	it("disables auto-login by default when a non-loopback origin is allowed", async () => {
+		const base = await start(true, ["https://agentteam.hn.takin.cc"]);
+		expect((await fetch(`${base}/api/session`)).status).toBe(401);
+	});
+
+	it("allows auto-login with external origins only when explicitly opted in", async () => {
+		vi.stubEnv("SUPERAGENTTEAM_DEV_AUTO_LOGIN", "1");
+		const base = await start(true, ["https://agentteam.hn.takin.cc"]);
+		expect((await fetch(`${base}/api/session`)).status).toBe(200);
 	});
 });

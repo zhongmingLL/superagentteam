@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { join } from "node:path";
 import { type BrowserApi, createBrowserApi } from "./api/browser.ts";
+import { isLoopbackOrigin } from "./api/session.ts";
 import { createStaticHandler } from "./api/static.ts";
 import { appendBootRecord, nextBootSequence } from "./boot-ledger.ts";
 import { A2ADaemonControlPlane, type A2ADaemonControlPlaneOptions } from "./daemon-a2a.ts";
@@ -308,6 +309,10 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 	const allowedOrigins = [
 		...new Set([hubOrigin, ...(options.hubOrigins ?? [])].map((origin) => origin.trim())),
 	].filter((origin) => origin.length > 0);
+	const devAutoLoginEnv = envValue(process.env, "DEV_AUTO_LOGIN");
+	const devAutoLoginRequested = options.devAutoLogin ?? devAutoLoginEnv === "1";
+	const devAutoLogin =
+		devAutoLoginRequested && (devAutoLoginEnv === "1" || allowedOrigins.every((origin) => isLoopbackOrigin(origin)));
 	persist();
 	browserApi = createBrowserApi({
 		dataDir: paths.dataDir,
@@ -317,7 +322,7 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 		secureCookies: options.secureCookies ?? false,
 		changeBus,
 		eventHeartbeatMs: options.eventHeartbeatMs,
-		devAutoLogin: options.devAutoLogin ?? envValue(process.env, "DEV_AUTO_LOGIN") === "1",
+		devAutoLogin,
 		a2a: a2aControlPlane
 			? {
 					runtime: a2aControlPlane.runtime,

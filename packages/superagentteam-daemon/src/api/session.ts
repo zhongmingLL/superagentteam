@@ -123,6 +123,11 @@ function isLoopbackHost(hostname: string): boolean {
 	return LOOPBACK_HOSTS.has(hostname);
 }
 
+export function isLoopbackOrigin(origin: string): boolean {
+	const parsed = parseHttpOrigin(origin);
+	return parsed !== null && isLoopbackHost(parsed.hostname);
+}
+
 function matchesAllowedOrigin(origin: string, allowedOrigin: string): boolean {
 	if (allowedOrigin === "") return false;
 	if (origin === allowedOrigin) return true;

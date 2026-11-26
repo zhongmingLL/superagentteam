@@ -28,6 +28,8 @@ export const RELOGIN_HINT = "run `superagentteam auth console-link` and open the
 export interface BrowserApiOptions {
 	dataDir: string;
 	hubOrigin: string;
+	/** Additional browser origins allowed beside hubOrigin; exact matches only. */
+	allowedOrigins?: readonly string[];
 	/** Where a successful console exchange redirects; defaults to hubOrigin. */
 	consoleRedirect?: string;
 	clock?: () => number;
@@ -54,6 +56,7 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 	const clock = options.clock ?? Date.now;
 	const sessions = options.sessionStore ?? new SessionStore({ clock });
 	const devAutoLogin = options.devAutoLogin ?? false;
+	const allowedOrigins = options.allowedOrigins ?? [options.hubOrigin];
 	const nonces = new Map<string, number>();
 	const threadRoutes = options.a2a
 		? createThreadRoutes({ runtime: options.a2a.runtime, clock, changeBus: options.changeBus })
@@ -120,7 +123,7 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 
 	function authenticate(request: IncomingMessage, response: ServerResponse): ApiRouteContext | null {
 		const origin = request.headers.origin;
-		if (origin !== undefined && !isAllowedOrigin(origin, options.hubOrigin)) {
+		if (origin !== undefined && !isAllowedOrigin(origin, allowedOrigins)) {
 			sendError(response, 403, "forbidden", "origin not allowed");
 			return null;
 		}
@@ -152,7 +155,7 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 
 		if (request.method === "GET" && url.pathname === "/auth/console") {
 			const origin = request.headers.origin;
-			if (origin !== undefined && !isAllowedOrigin(origin, options.hubOrigin)) {
+			if (origin !== undefined && !isAllowedOrigin(origin, allowedOrigins)) {
 				sendError(response, 403, "forbidden", "origin not allowed");
 				return true;
 			}

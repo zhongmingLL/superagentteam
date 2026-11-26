@@ -50,12 +50,13 @@ describe("F026 dev auto-login", () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
-	async function start(devAutoLogin: boolean): Promise<string> {
+	async function start(devAutoLogin: boolean, hubOrigins: readonly string[] = []): Promise<string> {
 		daemon = await startDaemon({
 			installationRoot,
 			dataDir,
 			runningRevision: "f026-test",
 			hubOrigin: HUB_ORIGIN,
+			hubOrigins,
 			devAutoLogin,
 			a2aControlPlane: { pollIntervalMs: 3_600_000, sweepIntervalMs: 3_600_000 },
 		});
@@ -111,5 +112,40 @@ describe("F026 dev auto-login", () => {
 		const base = await start(false);
 		expect((await fetch(`${base}/api/session`)).status).toBe(401);
 		expect((await fetch(`${base}/api/agents`)).status).toBe(401);
+	});
+
+	it("accepts a configured tunnel origin while rejecting unknown origins", async () => {
+		const tunnelOrigin = "https://agentteam.hn.takin.cc";
+		const base = await start(true, [tunnelOrigin]);
+
+		const response = await fetch(`${base}/api/session`, { headers: { origin: tunnelOrigin } });
+		expect(response.status).toBe(200);
+		const session = (await response.json()) as { csrfToken: string };
+		const cookie = response.headers.get("set-cookie")!.split(";")[0]!;
+
+		const write = await fetch(`${base}/api/agents`, {
+			method: "POST",
+			headers: {
+				origin: tunnelOrigin,
+				cookie,
+				"content-type": "application/json",
+				"x-csrf-token": session.csrfToken,
+			},
+			body: JSON.stringify({
+				id: "a2",
+				displayName: "Agent a2",
+				mentionPatterns: ["@a2"],
+				accountRef: "main",
+				defaultModel: "m1",
+				roleId: "worker",
+			}),
+		});
+		expect(write.status).toBe(201);
+
+		const localhost = await fetch(`${base}/api/session`, { headers: { origin: HUB_ORIGIN } });
+		expect(localhost.status).toBe(200);
+
+		const unknown = await fetch(`${base}/api/session`, { headers: { origin: "https://evil.example" } });
+		expect(unknown.status).toBe(403);
 	});
 });

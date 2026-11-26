@@ -36,6 +36,8 @@ export interface StartDaemonOptions {
 	a2aControlPlane?: Omit<A2ADaemonControlPlaneOptions, "dataDir"> | false;
 	/** Hub origin allowed to use the browser API; defaults to SUPERAGENTTEAM_HUB_ORIGIN or http://localhost:3000. */
 	hubOrigin?: string;
+	/** Additional Hub origins (tunnels/LAN) allowed beside hubOrigin; exact matches only. */
+	hubOrigins?: readonly string[];
 	/** Dev-only loopback auto-login; defaults to SUPERAGENTTEAM_DEV_AUTO_LOGIN=1. */
 	devAutoLogin?: boolean;
 	/** Set Secure on browser session cookies when the Hub is served over https. */
@@ -303,10 +305,14 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 		staticHandler !== null &&
 		(configuredHubOrigin === undefined || originPort(configuredHubOrigin) === String(healthPort));
 	if (serveStatic && configuredHubOrigin === undefined) hubOrigin = `http://localhost:${healthPort}`;
+	const allowedOrigins = [...new Set([hubOrigin, ...(options.hubOrigins ?? [])].map((origin) => origin.trim()))].filter(
+		(origin) => origin.length > 0,
+	);
 	persist();
 	browserApi = createBrowserApi({
 		dataDir: paths.dataDir,
 		hubOrigin,
+		allowedOrigins,
 		consoleRedirect: serveStatic ? "/" : undefined,
 		secureCookies: options.secureCookies ?? false,
 		changeBus,

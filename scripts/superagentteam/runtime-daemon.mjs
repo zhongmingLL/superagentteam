@@ -15,6 +15,10 @@ const repoRoot = resolve(import.meta.dirname, "..", "..");
 const dataDir = resolve(process.env.SUPERAGENTTEAM_E2E_DATA_DIR ?? join(repoRoot, ".e2e-data"));
 const port = Number(process.env.SUPERAGENTTEAM_E2E_PORT ?? "3011");
 const hubOrigin = process.env.SUPERAGENTTEAM_HUB_ORIGIN ?? "http://localhost:3000";
+const hubOrigins = (process.env.SUPERAGENTTEAM_HUB_ORIGINS ?? "")
+	.split(",")
+	.map((origin) => origin.trim())
+	.filter((origin) => origin.length > 0);
 
 mkdirSync(dataDir, { recursive: true, mode: 0o700 });
 if (!existsSync(join(dataDir, "agent-catalog.json"))) {
@@ -34,6 +38,7 @@ const daemon = await startDaemon({
 	runningRevision: process.env.SUPERAGENTTEAM_RUNNING_REVISION ?? "unknown",
 	a2aControlPlane: { pollIntervalMs: 500, sweepIntervalMs: 30_000 },
 	hubOrigin,
+	hubOrigins,
 	devAutoLogin: process.env.SUPERAGENTTEAM_DEV_AUTO_LOGIN !== "0",
 	port,
 	staticDir: false,

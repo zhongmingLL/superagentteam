@@ -81,11 +81,11 @@ describe("thread page", () => {
 		expect(await screen.findByText("hello")).toBeInTheDocument();
 		expect(screen.queryByRole("heading", { name: "Alpha" })).not.toBeInTheDocument();
 		expect(screen.getByText("/tmp/project")).toBeInTheDocument();
-			expect(screen.queryByRole("button", { name: "重命名对话" })).not.toBeInTheDocument();
-			const divider = screen.getByTestId("thread-header-divider");
-			expect(
-				screen.getByText("/tmp/project").compareDocumentPosition(divider) & Node.DOCUMENT_POSITION_FOLLOWING,
-			).not.toBe(0);
+		expect(screen.queryByRole("button", { name: "重命名对话" })).not.toBeInTheDocument();
+		const divider = screen.getByTestId("thread-header-divider");
+		expect(
+			screen.getByText("/tmp/project").compareDocumentPosition(divider) & Node.DOCUMENT_POSITION_FOLLOWING,
+		).not.toBe(0);
 		expect(screen.queryByText("线程上下文")).not.toBeInTheDocument();
 		expect(loadDetail).toHaveBeenCalledWith("thread:1");
 		expect(loadLatest).toHaveBeenCalledWith("thread:1");

@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F041]
 related_features: [superagentteam/F033, superagentteam/F037]
 title: "F041: Tunnel access for the Hub"
-status: in_progress
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -65,7 +65,7 @@ localhost 访问必须保持原样，不能为了穿透把 daemon 改成只认�
 - [x] AC-6：允许列表含非 loopback origin 时，未显式 `SUPERAGENTTEAM_DEV_AUTO_LOGIN=1`
   的 `/api/session` 返回 401；显式 opt-in 后返回 200。
 - [x] AC-7：隧道 Host/Origin 的 console exchange 302 到隧道 origin；未知 Host 回 hubOrigin。
-- [ ] AC-5：live 3005/3014 重启后实测穿透 Host/Origin 通过，本机页面无回归。
+- [x] AC-5：live 3005/3014 重启后实测穿透 Host/Origin 通过，本机页面无回归。
 
 ## 风险
 
@@ -91,4 +91,15 @@ localhost 访问必须保持原样，不能为了穿透把 daemon 改成只认�
   loopback 伪装击穿（任何穿透访客无凭据获得 operator session），P2 发现 console-link
   远程会跳到 localhost。已按建议修复：外部 origin 默认关闭 auto-login（显式 opt-in 才能开）；
   console redirect 选择已验证的请求 Origin/Host。
+- 复审：墨墨 approve `f19728715`（CI 5/5）。
+- 合入：PR #229 merged `25dab74ff`；runtime worktree 已部署 `25dab74ff` 并重建 daemon dist。
+- Live 实测（`https://agentteam.hn.takin.cc`）：
+  - 页面 200；无凭据 `/api/session` 401（P1 收紧生效）；evil Origin 403。
+  - console exchange 302 到 `https://agentteam.hn.takin.cc`，cookie 建立后
+    `/api/session` 200；带 cookie+CSRF 的写请求返回 400 invalid_input（origin/session/CSRF
+    门禁全部通过，不是 403）。
+- runtime env（本机 0600）：`SUPERAGENTTEAM_ALLOWED_HOSTS=agentteam.hn.takin.cc`、
+  `SUPERAGENTTEAM_HUB_ORIGINS=https://agentteam.hn.takin.cc`、
+  `SUPERAGENTTEAM_DEV_AUTO_LOGIN=0`。
+- 剩余：operator 用穿透地址完成一次登录/写入验收。
 - 待办：PR review、合入、runtime env 配置与 3005/3014 重启实测。

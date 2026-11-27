@@ -62,7 +62,8 @@ export type A2AToolErrorCode =
 	| "multi_mention_invalid_callback"
 	| "multi_mention_invalid_timeout"
 	| "multi_mention_cascade"
-	| "multi_mention_not_found";
+	| "multi_mention_not_found"
+	| "multi_mention_auto_delivery";
 
 export class A2AToolError extends Error {
 	readonly code: A2AToolErrorCode;
@@ -87,6 +88,8 @@ export interface A2AToolContext {
 	/** Caller's causal A2A depth; the new queue entry uses +1. */
 	a2aDepth?: number | null;
 	multiMentionCallbackDepth?: number | null;
+	/** Set when this turn is executing a multi-mention target (or callback). */
+	multiMentionRequestId?: string | null;
 	now?: number;
 }
 
@@ -253,6 +256,29 @@ export class A2AToolService {
 		if (targets.length > 1) {
 			if (!crossPost) fail("use_multi_mention", "same-thread messages with multiple targets must use multi_mention");
 			fail("invalid_input", "cross_post_message supports at most 1 agent target");
+		}
+		if (!crossPost && ctx.multiMentionRequestId && targets.length === 1) {
+			const request = this.deps.db
+				.prepare(
+					"SELECT callback_to_agent_id, target_agent_ids_json FROM multi_mention_requests WHERE request_id = ?",
+				)
+				.get(ctx.multiMentionRequestId) as
+				| { callback_to_agent_id: string; target_agent_ids_json: string }
+				| undefined;
+			if (request) {
+				let requestTargets: string[] = [];
+				try {
+					requestTargets = JSON.parse(request.target_agent_ids_json) as string[];
+				} catch {
+					requestTargets = [];
+				}
+				if (requestTargets.includes(ctx.callerAgentId) && targets[0]!.id === request.callback_to_agent_id) {
+					fail(
+						"multi_mention_auto_delivery",
+						"multi-mention 的回答会自动汇总并投递给发起者；不要再用 post_message 发送同一回答。",
+					);
+				}
+			}
 		}
 
 		const sourceThread = this.deps.threads.get(ctx.threadId);

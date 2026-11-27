@@ -18,6 +18,9 @@ import { envValue } from "./env.ts";
 import { DaemonError } from "./errors.ts";
 import { F018Database } from "./infrastructure/db/database.ts";
 
+/** Bounded concurrent drains: a parked provider turn must not block another agent's entry. */
+const MAX_ACTIVE_DRAINS = 8;
+
 // F018 R5-b: A2A daemon control plane. One SQLite database, one registry,
 // one ephemeral worker pool, one control socket, and a daemon-owned drain /
 // recovery loop. This is opt-in via startDaemon({ a2aControlPlane }); the
@@ -83,7 +86,7 @@ export class A2ADaemonControlPlane {
 	private closed = false;
 	private drainTimer: ReturnType<typeof setInterval> | null = null;
 	private sweepTimer: ReturnType<typeof setInterval> | null = null;
-	private ticking: Promise<unknown> | null = null;
+	private readonly activeDrains = new Set<Promise<Awaited<ReturnType<A2ARuntime["processor"]["drainAll"]>>>>();
 	private sweeping: Promise<void> | null = null;
 	private lastDrainAt: number | null = null;
 	private lastSweepAt: number | null = null;
@@ -227,11 +230,7 @@ export class A2ADaemonControlPlane {
 		if (this.sweepTimer) clearInterval(this.sweepTimer);
 		this.drainTimer = null;
 		this.sweepTimer = null;
-		try {
-			await this.ticking;
-		} catch {
-			// tick records its own error; cleanup still proceeds.
-		}
+		await Promise.allSettled([...this.activeDrains]);
 		try {
 			await this.sweeping;
 		} catch {
@@ -252,23 +251,24 @@ export class A2ADaemonControlPlane {
 
 	private async tick(maxEntries = 10): Promise<Awaited<ReturnType<A2ARuntime["processor"]["drainAll"]>> | null> {
 		if (!this.started || this.closing) return null;
-		if (this.ticking) return (await this.ticking) as Awaited<ReturnType<A2ARuntime["processor"]["drainAll"]>>;
+		if (this.activeDrains.size >= MAX_ACTIVE_DRAINS) return null;
 		if (this.runtime.queue.countQueuedAll() === 0) return null;
 		const queuedThreads = this.runtime.queue.listQueuedThreadIds();
 		for (const threadId of queuedThreads) this.changeBus?.publish(threadId, ["queue", "live"]);
-		this.ticking = (async () => {
+		const drain = (async () => {
 			const result = await this.runtime.processor.drainAll(maxEntries);
 			this.lastDrainAt = this.clock();
 			return result;
 		})();
+		this.activeDrains.add(drain);
 		try {
-			const result = (await this.ticking) as Awaited<ReturnType<A2ARuntime["processor"]["drainAll"]>>;
+			const result = await drain;
 			for (const threadId of queuedThreads) {
 				this.changeBus?.publish(threadId, ["messages", "queue", "live", "thread"]);
 			}
 			return result;
 		} finally {
-			this.ticking = null;
+			this.activeDrains.delete(drain);
 		}
 	}
 

@@ -240,6 +240,26 @@ describe("F018 R3-b multi_mention create", () => {
 		}
 	});
 
+	it("rejects a multi-mention target's post_message to the initiator as auto-delivered", () => {
+		const w = makeWorld();
+		const created = w.runtime.multiMentionOrchestrator.create(ctx(), multiMentionInput());
+		const before = w.runtime.messages.getByThread("t1", 100).length;
+		try {
+			w.runtime.a2aTools.postMessage(
+				ctx({
+					callerAgentId: "a2",
+					multiMentionRequestId: created.requestId,
+					piExtToolCallId: "post-after-mm",
+				}),
+				{ targets: [{ kind: "agent", id: "a1" }], bodyMd: "duplicate answer" },
+			);
+			throw new Error("expected error");
+		} catch (error) {
+			expectCode(error, "multi_mention_auto_delivery");
+		}
+		expect(w.runtime.messages.getByThread("t1", 100)).toHaveLength(before);
+	});
+
 	it("validates targets/callback/timeout/cascade", () => {
 		const w = makeWorld();
 		try {

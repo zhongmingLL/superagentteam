@@ -74,14 +74,26 @@ export class HistoryAssembler {
 	 * state exists yet; otherwise strictly after the delivery cursor. Does
 	 * not write the cursor — the caller acks in the T1 transaction.
 	 */
-	loadHistory(threadId: string, agentId: string, windowSize = BOOTSTRAP_WINDOW): HistoryWindow {
+	loadHistory(
+		threadId: string,
+		agentId: string,
+		windowSize = BOOTSTRAP_WINDOW,
+		options: { upToSeq?: number; includeSourceMessageId?: string } = {},
+	): HistoryWindow {
 		const cursor = this.readState.get(threadId, agentId)?.deliveryCursor;
 		const fetched =
 			cursor === undefined
 				? this.messages.getByThread(threadId, windowSize)
 				: this.messages.getByThreadAfter(threadId, cursor, windowSize);
-		const lastFetchedSeq = fetched.length > 0 ? fetched[fetched.length - 1]!.seq : (cursor ?? 0);
-		let boundarySeq = lastFetchedSeq;
+		const bounded =
+			options.upToSeq === undefined ? fetched : fetched.filter((message) => message.seq <= options.upToSeq!);
+		const lastFetchedSeq = bounded.length > 0 ? bounded[bounded.length - 1]!.seq : (cursor ?? 0);
+		// The trigger snapshot caps the window at the source message, but a source
+		// below the delivery cursor (a post_message wake) must never rewind the ack.
+		let boundarySeq =
+			options.upToSeq === undefined
+				? lastFetchedSeq
+				: Math.min(lastFetchedSeq, Math.max(options.upToSeq, cursor ?? 0));
 		// Boundary cap (0007 §3.5.1): query the earliest processing response
 		// INDEPENDENTLY of the fetched window — the bootstrap window takes the
 		// LAST N visible rows, so a placeholder below the window start would
@@ -93,9 +105,23 @@ export class HistoryAssembler {
 		if (earliestProcessingSeq !== null) {
 			boundarySeq = Math.min(boundarySeq, earliestProcessingSeq - 1);
 		}
+		let rows = bounded.filter((message) => visibleTo(message, agentId));
+		if (options.includeSourceMessageId !== undefined) {
+			const source = this.messages.get(options.includeSourceMessageId, { includeDeleted: true });
+			if (
+				source !== null &&
+				source.threadId === threadId &&
+				visibleTo(source, agentId) &&
+				!rows.some((message) => message.id === source.id)
+			) {
+				// The exact trigger is part of this turn even when it is older than the
+				// agent's delivery cursor; it is not a second copy of history.
+				rows = [source, ...rows];
+			}
+		}
 		return {
 			mode: cursor === undefined ? "bootstrap" : "incremental",
-			rows: fetched.filter((message) => visibleTo(message, agentId)),
+			rows,
 			boundarySeq,
 		};
 	}

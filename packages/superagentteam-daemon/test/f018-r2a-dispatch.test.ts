@@ -49,7 +49,10 @@ function makeRegistry(
 	return buildRegistry(catalog, accounts, defaultAgentId);
 }
 
-function makeWorld(agents: AgentConfig[] = [agentConfig(), agentConfig({ id: "a2", mentionPatterns: ["@a2"] })]) {
+function makeWorld(
+	agents: AgentConfig[] = [agentConfig(), agentConfig({ id: "a2", mentionPatterns: ["@a2"] })],
+	dispatchTarget?: { dispatch(prepared: PreparedDispatch): Promise<void> },
+) {
 	const dir = mkdtempSync(join(tmpdir(), "f018-r2a-"));
 	dirs.push(dir);
 	const db = new F018Database({ path: join(dir, "f018.db") });
@@ -85,7 +88,7 @@ function makeWorld(agents: AgentConfig[] = [agentConfig(), agentConfig({ id: "a2
 		messages,
 		threads,
 		tracker,
-		dispatchTarget: {
+		dispatchTarget: dispatchTarget ?? {
 			async dispatch(prepared: PreparedDispatch) {
 				dispatched.push(prepared);
 			},
@@ -768,5 +771,26 @@ describe("QueueProcessor (0007 §3.2)", () => {
 		expect(responseMessage?.lifecycle).toMatchObject({ kind: "response", status: "canceled" });
 		expect(w.queue.listQueued("t1")).toHaveLength(0);
 		expect(w.records.get(invocationId)?.status).toBe("canceled");
+	});
+
+	it("fans out all targets of one multi-target entry concurrently", async () => {
+		const started: string[] = [];
+		let releaseA!: () => void;
+		const w = makeWorld(undefined, {
+			async dispatch(prepared) {
+				started.push(prepared.agentId);
+				if (prepared.agentId === "a1") {
+					await new Promise<void>((resolve) => {
+						releaseA = resolve;
+					});
+				}
+			},
+		});
+		w.ingress.submit({ threadId: "t1", userId: "u1", body: "@a1 @a2", now: 10 });
+		const draining = w.processor.drain("t1", "u1", { maxEntries: 1 });
+		await new Promise((resolve) => setTimeout(resolve, 100));
+		expect(new Set(started)).toEqual(new Set(["a1", "a2"]));
+		releaseA();
+		await draining;
 	});
 });

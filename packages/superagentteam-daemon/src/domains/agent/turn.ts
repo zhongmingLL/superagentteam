@@ -84,8 +84,18 @@ export class RunAgentTurn implements DispatchTargetPort {
 		}
 		const aborted = (): boolean => prepared.signal?.aborted === true;
 
-		// Step 2: history window (read-only cursor — ack happens in T1).
-		const window = this.deps.assembler.loadHistory(prepared.threadId, prepared.agentId);
+		// Step 2: history window (read-only cursor — ack happens in T1). The queue
+		// source message is the turn's trigger snapshot: rows after it must not leak
+		// into this turn, and the exact source stays visible even when the agent's
+		// delivery cursor has already moved past it.
+		const sourceMessage =
+			prepared.sourceMessageId === null
+				? null
+				: this.deps.messages.get(prepared.sourceMessageId, { includeDeleted: true });
+		const window = this.deps.assembler.loadHistory(prepared.threadId, prepared.agentId, undefined, {
+			...(sourceMessage !== null ? { upToSeq: sourceMessage.seq } : {}),
+			...(prepared.sourceMessageId !== null ? { includeSourceMessageId: prepared.sourceMessageId } : {}),
+		});
 
 		// Step 3: acquire the ephemeral worker and bind it to the attempt.
 		const poolKey: WorkerPoolKey = {

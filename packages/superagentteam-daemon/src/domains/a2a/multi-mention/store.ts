@@ -18,7 +18,7 @@ import {
 	type MultiMentionTargetStatus,
 	type MultiMentionTriggerType,
 } from "@superagentteam/shared/types";
-import { runInTransaction } from "../../infrastructure/db/database.ts";
+import { runInTransaction } from "../../../infrastructure/db/database.ts";
 
 // F018 R3 MultiMentionStore (0007 §3.8): durable group lifecycle, per-target
 // outcome pointers and one callback delivery per request. First-write-wins

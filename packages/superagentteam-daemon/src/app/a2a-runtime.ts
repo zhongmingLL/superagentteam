@@ -2,6 +2,8 @@ import type { DatabaseSync } from "node:sqlite";
 import type { AgentStreamEvent } from "@superagentteam/shared/types";
 import { OperatorMessageIngress } from "../domains/a2a/ingress/router.ts";
 import { LoopGuardService } from "../domains/a2a/loop-guard.ts";
+import { MultiMentionOrchestrator } from "../domains/a2a/multi-mention/orchestrator.ts";
+import { MultiMentionStore } from "../domains/a2a/multi-mention/store.ts";
 import { AgentRouter, createContextAssembler } from "../domains/a2a/routing/route.ts";
 import { A2AControlServer } from "../domains/a2a/tools/control.ts";
 import { ThreadContextService } from "../domains/a2a/tools/thread-context.ts";
@@ -19,8 +21,6 @@ import {
 } from "../domains/invocation/recovery/index.ts";
 import { ResponseRecoveryService, RouteResponseCommitter } from "../domains/invocation/settlement/index.ts";
 import { AgentReadStateStore, MessageStore } from "../domains/messages/store.ts";
-import { MultiMentionOrchestrator } from "../domains/multi-mention/orchestrator.ts";
-import { MultiMentionStore } from "../domains/multi-mention/store.ts";
 import { QueueLedgerStore } from "../domains/queue/ledger/store.ts";
 import { QueueProcessor } from "../domains/queue/processor/index.ts";
 import { InvocationTracker } from "../domains/queue/tracker/index.ts";

@@ -37,6 +37,9 @@ for (const name of [
 if (existsSync(join(srcRoot, "domains", "invocation", "store.ts"))) {
 	failures.push("forbidden src/domains/invocation/store.ts (F051b: split into records/turns/attempts)");
 }
+if (existsSync(join(srcRoot, "domains", "multi-mention"))) {
+	failures.push("forbidden src/domains/multi-mention/ (F051b: a2a/multi-mention)");
+}
 
 for (const required of [
 	"app/daemon.ts",
@@ -50,6 +53,8 @@ for (const required of [
 	"domains/a2a/ingress/router.ts",
 	"domains/a2a/tools/tool-service.ts",
 	"domains/a2a/routing/route.ts",
+	"domains/a2a/multi-mention/orchestrator.ts",
+	"domains/a2a/multi-mention/store.ts",
 	"domains/agents/registry.ts",
 	"domains/execution/turn.ts",
 	"domains/context/assembler.ts",

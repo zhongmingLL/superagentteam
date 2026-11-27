@@ -16,21 +16,21 @@ import {
 	type MultiMentionTriggerType,
 	type StoredMessage,
 } from "@superagentteam/shared/types";
-import { runInTransaction } from "../../infrastructure/db/database.ts";
-import type { LoopGuardService } from "../a2a/loop-guard.ts";
+import { runInTransaction } from "../../../infrastructure/db/database.ts";
+import type { AgentRegistry } from "../../agents/registry.ts";
+import type { InvocationCredentialStore } from "../../credentials/store.ts";
+import type { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "../../invocation/index.ts";
+import type { MessageStore } from "../../messages/store.ts";
+import type { QueueLedgerStore } from "../../queue/ledger/store.ts";
+import type { ThreadStore } from "../../threads/store.ts";
+import type { LoopGuardService } from "../loop-guard.ts";
 import {
 	type A2ATarget,
 	type A2AToolContext,
 	A2AToolError,
 	assertCredentialAllowsTool,
 	normalizeTargets,
-} from "../a2a/tools/tool-service.ts";
-import type { AgentRegistry } from "../agents/registry.ts";
-import type { InvocationCredentialStore } from "../credentials/store.ts";
-import type { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "../invocation/index.ts";
-import type { MessageStore } from "../messages/store.ts";
-import type { QueueLedgerStore } from "../queue/ledger/store.ts";
-import type { ThreadStore } from "../threads/store.ts";
+} from "../tools/tool-service.ts";
 import type { MultiMentionStore } from "./store.ts";
 
 // F018 R3-b MultiMentionOrchestrator.create (0007 §3.8, DP-F018MM-1=B):

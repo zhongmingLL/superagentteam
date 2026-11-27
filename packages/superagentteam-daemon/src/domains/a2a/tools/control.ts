@@ -7,9 +7,9 @@ import { dirname, join } from "node:path";
 import type { InvocationCredential, ThreadContextInput, TurnExecution } from "@superagentteam/shared/types";
 import type { InvocationCredentialStore } from "../../credentials/store.ts";
 import type { TurnExecutionStore } from "../../invocation/index.ts";
-import type { MultiMentionInput, MultiMentionOrchestrator } from "../../multi-mention/orchestrator.ts";
 import { RichBlockError, type RichBlockService } from "../../rich-blocks/service.ts";
 import type { WorkerBindingStore, WorkerStore } from "../../workers/store.ts";
+import type { MultiMentionInput, MultiMentionOrchestrator } from "../multi-mention/orchestrator.ts";
 import type { ThreadContextService } from "./thread-context.ts";
 import {
 	type A2AToolContext,

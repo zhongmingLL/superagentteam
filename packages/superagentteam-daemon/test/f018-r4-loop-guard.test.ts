@@ -6,13 +6,13 @@ import type { AccountConfig, AgentCatalog, AgentConfig, StoredMessage } from "@s
 import { afterEach, describe, expect, it } from "vitest";
 
 import { LoopGuardService } from "../src/domains/a2a/loop-guard.ts";
+import { MultiMentionOrchestrator } from "../src/domains/a2a/multi-mention/orchestrator.ts";
+import { MultiMentionStore } from "../src/domains/a2a/multi-mention/store.ts";
 import { type A2AToolContext, A2AToolError, A2AToolService } from "../src/domains/a2a/tools/tool-service.ts";
 import { buildRegistry } from "../src/domains/agents/registry.ts";
 import { InvocationCredentialStore } from "../src/domains/credentials/store.ts";
 import { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "../src/domains/invocation/index.ts";
 import { MessageStore } from "../src/domains/messages/store.ts";
-import { MultiMentionOrchestrator } from "../src/domains/multi-mention/orchestrator.ts";
-import { MultiMentionStore } from "../src/domains/multi-mention/store.ts";
 import { QueueLedgerStore } from "../src/domains/queue/ledger/store.ts";
 import { AgentSessionStore } from "../src/domains/sessions/store.ts";
 import { ResponseDraftStore } from "../src/domains/streaming/store.ts";

@@ -88,14 +88,11 @@ operator 2026-11-27：当前 `packages/superagentteam-daemon/src` 目录设计�
   禁止 domain→app import；已加入 `npm run check`。
 - 验证：daemon **559 passed / 5 skipped**、tsc、`check:ts-imports`、`check:entry-graphs`、
   doc-index、layout guard 绿；移动前后同一 fullstack/daemon 套件结果一致。
-- **F051b 未完成**：`domains/a2a` 内部 ingress/routing/tools 子目录、
-  `domains/invocation` 的 records/attempts/turns/settlement/aggregate/recovery/read-models
-  文件拆分仍未做；AC-2 保持未勾选。
-
 ### F051b 落地（2026-11-28）
 
 - `domains/a2a`：`router.ts`→`ingress/router.ts`；`tool-service/thread-context/control/
-  tool-surface`→`tools/`；`agent/route.ts`→`a2a/routing/route.ts`；`log.ts`→`shared/a2a-log.ts`。
+  tool-surface`→`tools/`；`agent/route.ts`→`a2a/routing/route.ts`；
+  `multi-mention/`→`a2a/multi-mention/`；`log.ts`→`shared/a2a-log.ts`。
 - `domains/agent` 拆成 `agents/`（catalog/registry/mentions）+`execution/`（turn/invoke-single-agent）。
 - domain 复数化：`history→context`、`message→messages`、`thread→threads`、`session→sessions`、
   `auth→credentials`、`account→accounts`、`worker→workers`、`response→streaming`、

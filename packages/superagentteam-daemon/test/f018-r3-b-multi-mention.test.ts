@@ -5,9 +5,9 @@ import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/s
 import { afterEach, describe, expect, it } from "vitest";
 
 import { type A2ARuntime, buildA2ARuntime } from "../src/app/a2a-runtime.ts";
+import { MultiMentionOrchestrator } from "../src/domains/a2a/multi-mention/orchestrator.ts";
 import { type A2AToolContext, A2AToolError } from "../src/domains/a2a/tools/tool-service.ts";
 import { buildRegistry } from "../src/domains/agents/registry.ts";
-import { MultiMentionOrchestrator } from "../src/domains/multi-mention/orchestrator.ts";
 import { QUEUE_CAP_PER_KIND } from "../src/domains/queue/ledger/store.ts";
 import type { WorkerRpcConnection, WorkerSpawnPort } from "../src/domains/workers/pool.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";

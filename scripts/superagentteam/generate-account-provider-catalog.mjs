@@ -12,7 +12,7 @@ const outputPath = join(
 	"superagentteam-daemon",
 	"src",
 	"domains",
-	"account",
+	"accounts",
 	"provider-catalog.generated.ts",
 );
 

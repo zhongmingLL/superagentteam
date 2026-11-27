@@ -1,8 +1,8 @@
 import type { AccountConfig, AgentCatalog } from "@superagentteam/shared/types";
 import { describe, expect, it } from "vitest";
 
-import { computeExclusionSpans, parseOperatorMentions, scanOperatorMentions } from "../src/domains/agent/mentions.ts";
-import { buildRegistry, CatalogError, reloadRegistry, resolveExplicitTarget } from "../src/domains/agent/registry.ts";
+import { computeExclusionSpans, parseOperatorMentions, scanOperatorMentions } from "../src/domains/agents/mentions.ts";
+import { buildRegistry, CatalogError, reloadRegistry, resolveExplicitTarget } from "../src/domains/agents/registry.ts";
 
 function makeCatalog(): { catalog: AgentCatalog; accounts: AccountConfig[] } {
 	const accounts: AccountConfig[] = [

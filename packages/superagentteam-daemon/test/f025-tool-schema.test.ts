@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { A2A_V1_TOOL_SPECS } from "../src/domains/a2a/tool-surface.ts";
+import { A2A_V1_TOOL_SPECS } from "../src/domains/a2a/tools/tool-surface.ts";
 
 type JSONSchemaNode = Record<string, unknown>;
 

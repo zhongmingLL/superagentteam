@@ -3,10 +3,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { RichBlock } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it } from "vitest";
-import { InvocationCredentialStore } from "../src/domains/auth/store.ts";
-import { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "../src/domains/invocation/store.ts";
-import { ResponseDraftStore } from "../src/domains/response/store.ts";
-import { AgentSessionStore } from "../src/domains/session/store.ts";
+import { InvocationCredentialStore } from "../src/domains/credentials/store.ts";
+import { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "../src/domains/invocation/index.ts";
+import { AgentSessionStore } from "../src/domains/sessions/store.ts";
+import { ResponseDraftStore } from "../src/domains/streaming/store.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
 
 const dirs: string[] = [];

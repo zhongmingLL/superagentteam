@@ -4,7 +4,7 @@ import { join } from "node:path";
 import type { AccountConfig } from "@superagentteam/shared/types";
 import { describe, expect, it } from "vitest";
 
-import { prepareWorkerAgentDir } from "../src/domains/worker/pi-spawn.ts";
+import { prepareWorkerAgentDir } from "../src/domains/workers/pi-spawn.ts";
 
 function account(overrides: Partial<AccountConfig> = {}): AccountConfig {
 	return {

@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { createConsoleToken } from "../src/api/console-link.ts";
 import { initOperatorCredential } from "../src/domains/access/operator.ts";
-import { ThreadStore } from "../src/domains/thread/store.ts";
+import { ThreadStore } from "../src/domains/threads/store.ts";
 import { type DaemonHandle, startDaemon } from "../src/index.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
 

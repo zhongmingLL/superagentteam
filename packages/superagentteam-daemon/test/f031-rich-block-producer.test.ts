@@ -6,10 +6,10 @@ import type { AccountConfig, AgentCatalog, AgentConfig, RichBlock } from "@super
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { type A2ARuntime, buildA2ARuntime } from "../src/app/a2a-runtime.ts";
-import { buildRegistry } from "../src/domains/agent/registry.ts";
-import { RichBlockService } from "../src/domains/rich-block/service.ts";
-import { RICH_BLOCK_TOOL_NAME, RICH_BLOCK_TOOL_SPEC } from "../src/domains/rich-block/tool-surface.ts";
-import type { WorkerRpcConnection, WorkerSpawnPort } from "../src/domains/worker/pool.ts";
+import { buildRegistry } from "../src/domains/agents/registry.ts";
+import { RichBlockService } from "../src/domains/rich-blocks/service.ts";
+import { RICH_BLOCK_TOOL_NAME, RICH_BLOCK_TOOL_SPEC } from "../src/domains/rich-blocks/tool-surface.ts";
+import type { WorkerRpcConnection, WorkerSpawnPort } from "../src/domains/workers/pool.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
 import superagentteamA2AExtension from "../src/pi-worker/a2a-extension.ts";
 import type { RpcEvent } from "../src/pi-worker/rpc-client.ts";

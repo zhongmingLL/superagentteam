@@ -1,7 +1,7 @@
 import type { DraftRecord, StoredMessage } from "@superagentteam/shared/types";
-import type { TurnExecutionStore } from "../invocation/store.ts";
-import type { MessageStore } from "../message/store.ts";
-import type { ResponseDraftStore } from "../response/store.ts";
+import type { TurnExecutionStore } from "../invocation/index.ts";
+import type { MessageStore } from "../messages/store.ts";
+import type { ResponseDraftStore } from "../streaming/store.ts";
 
 // F018 R4-b loop guard (0007 §3.8, DP-F018SURFACE-2=A): durable A2A lineage
 // rebuilt from turn_executions.causal. Same unordered pair counts short,

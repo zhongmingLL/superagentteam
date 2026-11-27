@@ -3,10 +3,10 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { ThreadContextService } from "../src/domains/a2a/thread-context.ts";
-import { A2AToolError } from "../src/domains/a2a/tool-service.ts";
-import { MessageStore } from "../src/domains/message/store.ts";
-import { ThreadStore } from "../src/domains/thread/store.ts";
+import { ThreadContextService } from "../src/domains/a2a/tools/thread-context.ts";
+import { A2AToolError } from "../src/domains/a2a/tools/tool-service.ts";
+import { MessageStore } from "../src/domains/messages/store.ts";
+import { ThreadStore } from "../src/domains/threads/store.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
 
 const dirs: string[] = [];

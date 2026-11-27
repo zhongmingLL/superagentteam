@@ -1,37 +1,37 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { AgentStreamEvent } from "@superagentteam/shared/types";
-import { A2AControlServer } from "../domains/a2a/control.ts";
-import type { A2ALog } from "../domains/a2a/log.ts";
+import { OperatorMessageIngress } from "../domains/a2a/ingress/router.ts";
 import { LoopGuardService } from "../domains/a2a/loop-guard.ts";
-import { OperatorMessageIngress } from "../domains/a2a/router.ts";
-import { ThreadContextService } from "../domains/a2a/thread-context.ts";
-import { A2AToolService } from "../domains/a2a/tool-service.ts";
-import { InvokeSingleAgent } from "../domains/agent/invoke-single-agent.ts";
-import type { AgentRegistry } from "../domains/agent/registry.ts";
-import { AgentRouter, createContextAssembler } from "../domains/agent/route.ts";
-import { RunAgentTurn } from "../domains/agent/turn.ts";
-import { InvocationCredentialStore } from "../domains/auth/store.ts";
-import { HistoryAssembler } from "../domains/history/assembler.ts";
+import { MultiMentionOrchestrator } from "../domains/a2a/multi-mention/orchestrator.ts";
+import { MultiMentionStore } from "../domains/a2a/multi-mention/store.ts";
+import { AgentRouter, createContextAssembler } from "../domains/a2a/routing/route.ts";
+import { A2AControlServer } from "../domains/a2a/tools/control.ts";
+import { ThreadContextService } from "../domains/a2a/tools/thread-context.ts";
+import { A2AToolService } from "../domains/a2a/tools/tool-service.ts";
+import type { AgentRegistry } from "../domains/agents/registry.ts";
+import { HistoryAssembler } from "../domains/context/assembler.ts";
+import { InvocationCredentialStore } from "../domains/credentials/store.ts";
+import { InvokeSingleAgent } from "../domains/execution/invoke-single-agent.ts";
+import { RunAgentTurn } from "../domains/execution/turn.ts";
+import { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "../domains/invocation/index.ts";
 import {
 	InvocationOwnerReaper,
 	type RecoveryDeps,
 	TurnExecutionStartupReconciler,
-} from "../domains/invocation/recovery.ts";
-import { ResponseRecoveryService, RouteResponseCommitter } from "../domains/invocation/settlement.ts";
-import { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "../domains/invocation/store.ts";
-import { AgentReadStateStore, MessageStore } from "../domains/message/store.ts";
-import { MultiMentionOrchestrator } from "../domains/multi-mention/orchestrator.ts";
-import { MultiMentionStore } from "../domains/multi-mention/store.ts";
-import { QueueProcessor } from "../domains/queue/processor.ts";
-import { QueueLedgerStore } from "../domains/queue/store.ts";
-import { InvocationTracker } from "../domains/queue/tracker.ts";
-import { ResponseDraftStore } from "../domains/response/store.ts";
-import { RichBlockService } from "../domains/rich-block/service.ts";
-import { AgentSessionStore } from "../domains/session/store.ts";
-import { ThreadStore } from "../domains/thread/store.ts";
-import { WorkerPool, type WorkerSpawnPort } from "../domains/worker/pool.ts";
-import { WorkerBindingStore, WorkerStore } from "../domains/worker/store.ts";
+} from "../domains/invocation/recovery/index.ts";
+import { ResponseRecoveryService, RouteResponseCommitter } from "../domains/invocation/settlement/index.ts";
+import { AgentReadStateStore, MessageStore } from "../domains/messages/store.ts";
+import { QueueLedgerStore } from "../domains/queue/ledger/store.ts";
+import { QueueProcessor } from "../domains/queue/processor/index.ts";
+import { InvocationTracker } from "../domains/queue/tracker/index.ts";
+import { RichBlockService } from "../domains/rich-blocks/service.ts";
+import { AgentSessionStore } from "../domains/sessions/store.ts";
+import { ResponseDraftStore } from "../domains/streaming/store.ts";
+import { ThreadStore } from "../domains/threads/store.ts";
+import { WorkerPool, type WorkerSpawnPort } from "../domains/workers/pool.ts";
+import { WorkerBindingStore, WorkerStore } from "../domains/workers/store.ts";
 import type { ChangeBus } from "../infrastructure/events/bus.ts";
+import type { A2ALog } from "../shared/a2a-log.ts";
 
 // F018 R2-d composition root: one wiring point for the daemon (and the E2E
 // suite) — ingress, processor, runAgentTurn, pool, reaper, startup

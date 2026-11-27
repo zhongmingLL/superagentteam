@@ -35,8 +35,8 @@
 			"!**/test-sessions.ts",
 			"!**/models.generated.ts",
 			"!**/*.models.ts",
-			"!packages/superagentteam-daemon/src/domains/account/provider-catalog.generated.ts",
-			"!packages/superagentteam-daemon/src/control/sop-definition.generated.ts",
+			"!packages/superagentteam-daemon/src/domains/accounts/provider-catalog.generated.ts",
+			"!packages/superagentteam-daemon/src/shared/control/sop-definition.generated.ts",
 			"!packages/mom/data/**/*",
 			"!!**/node_modules",
 			"!!apps"

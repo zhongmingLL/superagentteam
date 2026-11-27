@@ -6,9 +6,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { requireOperator } from "../src/cli/context.ts";
 import { runCli } from "../src/cli/index.ts";
 import { initOperatorCredential } from "../src/domains/access/operator.ts";
-import { MessageStore } from "../src/domains/message/store.ts";
-import { QueueLedgerStore } from "../src/domains/queue/store.ts";
-import { ThreadStore } from "../src/domains/thread/store.ts";
+import { MessageStore } from "../src/domains/messages/store.ts";
+import { QueueLedgerStore } from "../src/domains/queue/ledger/store.ts";
+import { ThreadStore } from "../src/domains/threads/store.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
 
 const dirs: string[] = [];

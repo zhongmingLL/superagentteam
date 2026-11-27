@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ACCOUNT_PROVIDERS, findAccountProvider } from "../src/domains/account/providers.ts";
+import { ACCOUNT_PROVIDERS, findAccountProvider } from "../src/domains/accounts/providers.ts";
 
 describe("generated account provider catalog", () => {
 	it("is derived from the full pi API-key provider set", () => {

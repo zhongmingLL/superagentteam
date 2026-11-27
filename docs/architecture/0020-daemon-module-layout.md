@@ -1,7 +1,7 @@
 ---
 title: "Daemon module layout — Clowder-aligned redesign"
 doc_kind: architecture
-status: partially-implemented
+status: implemented
 created: 2026-11-27
 updated: 2026-11-28
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -12,9 +12,10 @@ source_decision: "operator 2026-11-27: packages/superagentteam-daemon/src 目录
 
 # Daemon module layout — Clowder-aligned redesign
 
-> **F051a（2026-11-28）**：顶层同名分裂、`app/` composition roots、
-> `infrastructure/supervisor|process|events`、`pi-worker/`、`shared/control` 已落地；
-> `domains/a2a` 与 `domains/invocation` 的内部子目录拆分仍属 F051b。
+> **F051（2026-11-28）**：F051a 顶层同名分裂/`app/` composition roots/`pi-worker`/
+> `infrastructure` 已落地；F051b 完成 `domains/a2a` ingress/routing/tools、
+> `domains/execution|agents`、`domains/queue` 子目录、`domains/invocation` records/
+> attempts/turns/settlement/aggregate/recovery/read-models 拆分。目标树已落地。
 
 ## 0. 结论
 

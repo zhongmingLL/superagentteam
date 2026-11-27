@@ -6,8 +6,8 @@ import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/s
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { type A2ARuntime, buildA2ARuntime } from "../src/app/a2a-runtime.ts";
-import { buildRegistry } from "../src/domains/agent/registry.ts";
-import type { WorkerRpcConnection, WorkerSpawnPort } from "../src/domains/worker/pool.ts";
+import { buildRegistry } from "../src/domains/agents/registry.ts";
+import type { WorkerRpcConnection, WorkerSpawnPort } from "../src/domains/workers/pool.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
 import superagentteamA2AExtension from "../src/pi-worker/a2a-extension.ts";
 

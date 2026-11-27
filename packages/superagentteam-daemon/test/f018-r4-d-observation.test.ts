@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it } from "vitest";
-
+import { OperatorMessageIngress } from "../src/domains/a2a/ingress/router.ts";
 import {
 	findV1A2AToolCall,
 	hasV1A2AToolCall,
@@ -12,11 +12,10 @@ import {
 	observeMissingA2AToolCall,
 	V1_A2A_TOOL_NAMES,
 } from "../src/domains/a2a/observation.ts";
-import { OperatorMessageIngress } from "../src/domains/a2a/router.ts";
-import { buildRegistry } from "../src/domains/agent/registry.ts";
-import { MessageStore } from "../src/domains/message/store.ts";
-import { QueueLedgerStore } from "../src/domains/queue/store.ts";
-import { ThreadStore } from "../src/domains/thread/store.ts";
+import { buildRegistry } from "../src/domains/agents/registry.ts";
+import { MessageStore } from "../src/domains/messages/store.ts";
+import { QueueLedgerStore } from "../src/domains/queue/ledger/store.ts";
+import { ThreadStore } from "../src/domains/threads/store.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
 
 const dirs: string[] = [];

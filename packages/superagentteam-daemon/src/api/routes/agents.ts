@@ -4,8 +4,8 @@ import { dirname, join } from "node:path";
 
 import type { AccountConfig, AgentConfig } from "@superagentteam/shared/types";
 
-import { ACCOUNT_PROVIDERS, findAccountProvider } from "../../domains/account/providers.ts";
-import { AccountError, AccountStore, type AccountView } from "../../domains/account/store.ts";
+import { ACCOUNT_PROVIDERS, findAccountProvider } from "../../domains/accounts/providers.ts";
+import { AccountError, AccountStore, type AccountView } from "../../domains/accounts/store.ts";
 import {
 	appendAgent,
 	type CreateAgentInput,
@@ -15,9 +15,9 @@ import {
 	updateAgent,
 	validateCandidate,
 	writeCatalogAtomic,
-} from "../../domains/agent/catalog-store.ts";
-import { type AgentRegistry, CatalogError, type CatalogPaths, reloadRegistry } from "../../domains/agent/registry.ts";
-import type { InvocationTracker } from "../../domains/queue/tracker.ts";
+} from "../../domains/agents/catalog-store.ts";
+import { type AgentRegistry, CatalogError, type CatalogPaths, reloadRegistry } from "../../domains/agents/registry.ts";
+import type { InvocationTracker } from "../../domains/queue/tracker/index.ts";
 import { HttpError, readJsonBody, sendError, sendJson } from "../http.ts";
 import { requireCsrf } from "../session.ts";
 import type { ApiRouteContext } from "./context.ts";

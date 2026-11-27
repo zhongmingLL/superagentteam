@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F051]
 related_features: [superagentteam/F044, superagentteam/F045, superagentteam/F046, superagentteam/F047, superagentteam/F048, superagentteam/F050]
 title: "F051: Daemon module layout refactor"
-status: in-progress
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [砚砚 (GLM 5.3 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -60,7 +60,7 @@ operator 2026-11-27：当前 `packages/superagentteam-daemon/src` 目录设计�
 ## 验收
 
 - [x] AC-1：target tree 落地；顶层不再有 `auth/`/`runtime/`/`workers/`/`control/` 的同名分裂。
-- [ ] AC-2：`domains/a2a` 只保留 ingress/routing/tools/multi-mention/loop-guard/observation；
+- [x] AC-2：`domains/a2a` 只保留 ingress/routing/tools/multi-mention/loop-guard/observation；
   `domains/invocation` 按 records/attempts/turns/settlement/aggregate/recovery/read-models 拆。
 - [x] AC-3：composition roots 只在 `app/`；domain 不 import app；api/cli 不直接写 store。
 - [x] AC-4：daemon full tests、typecheck、doc-index、layout guard 绿；无行为变化。
@@ -88,9 +88,22 @@ operator 2026-11-27：当前 `packages/superagentteam-daemon/src` 目录设计�
   禁止 domain→app import；已加入 `npm run check`。
 - 验证：daemon **559 passed / 5 skipped**、tsc、`check:ts-imports`、`check:entry-graphs`、
   doc-index、layout guard 绿；移动前后同一 fullstack/daemon 套件结果一致。
-- **F051b 未完成**：`domains/a2a` 内部 ingress/routing/tools 子目录、
-  `domains/invocation` 的 records/attempts/turns/settlement/aggregate/recovery/read-models
-  文件拆分仍未做；AC-2 保持未勾选。
+### F051b 落地（2026-11-28）
+
+- `domains/a2a`：`router.ts`→`ingress/router.ts`；`tool-service/thread-context/control/
+  tool-surface`→`tools/`；`agent/route.ts`→`a2a/routing/route.ts`；
+  `multi-mention/`→`a2a/multi-mention/`；`log.ts`→`shared/a2a-log.ts`。
+- `domains/agent` 拆成 `agents/`（catalog/registry/mentions）+`execution/`（turn/invoke-single-agent）。
+- domain 复数化：`history→context`、`message→messages`、`thread→threads`、`session→sessions`、
+  `auth→credentials`、`account→accounts`、`worker→workers`、`response→streaming`、
+  `rich-block→rich-blocks`。
+- `domains/queue`：`store.ts→ledger/store.ts`、`processor.ts→processor/index.ts`、
+  `tracker.ts→tracker/index.ts`。
+- `domains/invocation`：`store.ts` 拆成 `records/`+`turns/`+`attempts/`+`canonical.ts`；
+  `settlement/`、`aggregate/`、`recovery/`、`read-models/` 子目录。
+- layout guard 扩展到 F051b：禁止旧 domain 名、禁止 `invocation/store.ts`、要求新锚点文件。
+- 验证：daemon **559/5**、tsc、ts-imports、entry-graphs、doc-index、layout guard 绿；
+  与 F051a 前同一套件结果一致（无行为变化）。
 
 - **Clowder 参考目录/文件**（相对参考仓根目录）：
   - `packages/api/src/domains/cats/services/agents/{routing,invocation,registry}`（domain-first）

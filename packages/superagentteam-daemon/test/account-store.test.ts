@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { AccountError, AccountStore } from "../src/domains/account/store.ts";
+import { AccountError, AccountStore } from "../src/domains/accounts/store.ts";
 
 function tempStore(): { store: AccountStore; accountsPath: string; credentialsPath: string } {
 	const dir = mkdtempSync(join(tmpdir(), "sat-account-"));

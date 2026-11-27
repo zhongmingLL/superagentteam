@@ -3,11 +3,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { StoredMessage } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it } from "vitest";
-import { buildThreadPrompt, HistoryAssembler } from "../src/domains/history/assembler.ts";
-import { AgentReadStateStore, MessageStore } from "../src/domains/message/store.ts";
-import { AgentSessionStore } from "../src/domains/session/store.ts";
-import { ThreadStore } from "../src/domains/thread/store.ts";
-import { WorkerStore } from "../src/domains/worker/store.ts";
+import { buildThreadPrompt, HistoryAssembler } from "../src/domains/context/assembler.ts";
+import { AgentReadStateStore, MessageStore } from "../src/domains/messages/store.ts";
+import { AgentSessionStore } from "../src/domains/sessions/store.ts";
+import { ThreadStore } from "../src/domains/threads/store.ts";
+import { WorkerStore } from "../src/domains/workers/store.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
 
 const dirs: string[] = [];

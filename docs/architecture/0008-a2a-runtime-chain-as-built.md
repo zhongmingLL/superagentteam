@@ -1,0 +1,413 @@
+---
+title: "SuperAgentTeam A2A runtime chain — as-built"
+doc_kind: architecture
+status: as-built
+created: 2026-11-27
+updated: 2026-11-27
+owner: "宪宪 (Ragdoll/DeepSeek Flash)"
+doc_role: "current implementation truth; 0007 remains the target-design/history document"
+evidence_baseline: "code f51d9f3c7; docs 23298eeab; live 3005/3014 f51d9f3c7"
+---
+
+# SuperAgentTeam A2A runtime chain — as-built
+
+## 0. 读法
+
+- **0007** = 2026-11-06 的 Clowder-aligned **target contract** + 决策历史；不再作为
+  “当前实现了什么”的真相源。
+- **0008（本文）** = 当前实现的 as-built 真相。所有“当前 owner / 实际调用 / 实际 API /
+  实际 DDL”以本文为准。
+- 逐项偏移证据见 `docs/reports/2026-11-27-0007-as-built-audit.md`。
+- 本文不是把 0007 的设计目标判死：每个偏离点在 §8 标明 **ratified / implementation
+  decision / unratified deviation / code gap**，并在 §9 给出整改选项。
+
+## 1. As-built 链路
+
+```text
+OperatorMessageIngress（domains/a2a/router.ts）
+  → invocation_queue（QueueLedgerStore）
+  → QueueProcessor.processEntry（domains/queue/processor.ts）
+      Phase A 单事务：parent InvocationRecord + 每个 target attempt starting
+      InvocationTracker.startAll(thread, claimed targets)
+      Phase B 每 target：TurnExecution.createRunning + processing R +
+        credential + draft + retireTargets
+      已 dispatch target 并发 fan-out（F043：Promise.allSettled）
+  → RunAgentTurn.dispatch（domains/agent/turn.ts）
+      loadHistory（queue source 作为 upToSeq；显式包含源消息）
+      workerPool.ensure + bindWorker + buildThreadPrompt + promptAndWait
+      stream → ResponseEventSink → onStreamEvent
+      T1 TurnExecutionLifecycle.invokeTerminal
+      T2 RouteResponseCommitter.commit
+  → QueueProcessor finally：aggregateParent（collectTerminalDispositions +
+      applyTerminalAggregate）；tracker.complete；releaseClaim
+  → ResponseRecoveryService（T4）
+```
+
+没有 `AgentRouter` / `routeAgents` / `routeParallel` / `routeSerial` / `priorResponses` /
+`mergeStreams` / `invoke-single-agent` 这些运行时组件；上面的 `QueueProcessor` +
+`RunAgentTurn` 是实际的调度与 per-agent 执行边界。
+
+## 2. As-built ownership
+
+| 面 | 实际 owner |
+|---|---|
+| `@` 解析 / target resolution | `OperatorMessageIngress` |
+| queue admission / cap / claim | `QueueLedgerStore` + `QueueProcessor` |
+| parent / Phase A | `QueueProcessor.processEntry` |
+| Phase B（R + TurnExecution + credential + draft + retire） | `QueueProcessor.processEntry` |
+| `tracker.startAll` | `QueueProcessor` |
+| 多 target fan-out | `QueueProcessor.processEntry`（F043 并发） |
+| per-target history / worker / prompt / T1 | `RunAgentTurn.dispatch` |
+| T2 response commit | `RunAgentTurn.dispatch`（`RouteResponseCommitter`） |
+| T3 collector + parent aggregate | `QueueProcessor`（`aggregateParent`；`collectTerminalDispositions` + `applyTerminalAggregate`） |
+| T4 recovery | `ResponseRecoveryService` |
+| live/queue 读模型 | `domains/invocation/live.ts` + `api/routes/{queue,live}.ts` |
+
+## 3. 组件 as-built
+
+### 3.1 OperatorMessageIngress
+
+- `domains/a2a/router.ts`：operator 显式 `@` 解析、隐式 5 步 fallback、message + queue
+  同事务 admission；`StoredMessage.targetAgentIds` 只用于 user message。
+- 没有独立的 `AgentRouter` 类；target 解析/校验在 ingress 完成。
+
+### 3.2 QueueProcessor
+
+- 实际构造依赖（`QueueProcessorDeps`）：`db`、`registry`、`queue`、`records`、`turns`、
+  `attempts`、`sessions`、`credentials`、`drafts`、`messages`、`threads`、`tracker`、
+  `dispatchTarget`、`multiMention`、`multiMentionOrchestrator`、`capacity`、`clock`、`owner`。
+- 公开方法：`drain(threadId, userId, {maxEntries})`、`drainAll(maxEntries)`、
+  `processEntry(entry, claimId, userId)`、`requestRetry(invocationId, targets?)`、
+  `abandon(invocationId)`；`isThreadBusy` / `isAgentBusy` / `hasQueuedForThread`。
+- `processEntry` 顺序：claim 校验 → preflight（`agent_not_found` / `agent_disabled` /
+  `account_not_found`；`worker_capacity` defer）→ Phase A 单事务 → `tracker.startAll`
+  → Phase B 每 target 事务 → 并发 dispatch → `finally` 释放 tracker/claim + T3 aggregate。
+- F043：`dispatchOne` 对同一 entry 的 target 用 `Promise.allSettled` 并发；单 target
+  provider-phase 错误在 `dispatchOne` 内收敛。`DaemonA2A.tick` 允许最多 8 个并发 drain。
+
+### 3.3 RunAgentTurn
+
+- `domains/agent/turn.ts`，实现 `DispatchTargetPort`：
+  `dispatch(prepared: PreparedDispatch): Promise<void>`。
+- `dispatch` 内：校验 session/attempt → `loadHistory`（F043 `upToSeq` +
+  `includeSourceMessageId`）→ `pool.ensure` → `bindWorker` → `buildThreadPrompt` →
+  `promptAndWait` → sink → T1 `TurnExecutionLifecycle.invokeTerminal` →
+  T2 `RouteResponseCommitter.commit`。
+- 不是 async generator，不返回 `AgentTurnResult`；T1/T2 都在这个 dispatch 内完成。
+
+### 3.4 Stores / recovery
+
+- `InvocationRecordStore`：`create`、`get`、`byThreadSource`、`markRunning`、
+  `addSuccessfulAgents`、`setTerminal`、`applyTerminalAggregate`、`abandon`、`admitRetry`。
+- `TurnExecutionStore`：`createRunning`、`get`、`listByInvocation`、`listRunning`、
+  `transitionTerminal`、`interruptRunningBefore`、`listResponsePending`、
+  `clearResponsePending`。
+- `InvocationAttemptStore`：append-only attempt 台账（`appendQueued`、`markStarting`、
+  `bindAppended`、`bindWorker`、`markPromptDelivered`、`setSettlement`、
+  `projectChildTerminal`、`markPrestartTerminal`、`recordUsage`）。
+- `InvocationCredentialStore`（不是 `InvocationRegistry`）：token hash/salt、
+  `allowedTools`、`toolCallClaims`、`state/disposition`。
+- `ResponseDraftStore`：content/toolEvents/thinking/**richBlocks** 全量 snapshot。
+- `InvocationTracker`：per-(thread, agent) in-process 槽；`startAll` 返回
+  `Map | { error: "slot_busy"; agentId }`（all-or-nothing）。
+- `TurnExecutionStartupReconciler` / `InvocationOwnerReaper` / `ResponseRecoveryService`：
+  startup/运行期/T4 三条恢复路径；无 `TrajectoryProjector`（v1 不做）。
+
+### 3.5 A2A tools / multi-mention
+
+- `A2A_V1_TOOL_NAMES`：`post_message`、`cross_post_message`、`multi_mention`、
+  `thread_context`；另有独立 rich-block producer tool
+  `superagentteam_create_rich_block`（F031，同一 control socket）。
+- `A2AToolService.postMessage`：targets=1 时 message + `message_wake`；targets=0 仅 message。
+- `MultiMentionOrchestrator`：request + source message + queue entry（同一事务）；
+  callback aggregate 通过 `multi_mention_callbacks` 交付。
+- F043：multi-mention 提问追加“回答自动汇总，不需要 post_message”；target 向 initiator
+  的重复 post_message 在创建 message/queue 前返回 `multi_mention_auto_delivery`。
+
+## 4. 数据模型 as-built
+
+- 迁移源：`packages/superagentteam-daemon/src/infrastructure/db/migrations/`；
+  live DB 的 `sqlite_master` 与 0008 基线 `f51d9f3c7` 一致。
+- 核心表：`invocation_queue`、`invocation_records`、`turn_executions`、
+  `invocation_attempts`、`response_drafts`、`invocation_credentials`、
+  `agent_read_state`、`workers`、`worker_bindings`、`messages`、`threads`、
+  `agent_sessions`。
+- multi-mention：`multi_mention_requests`、`multi_mention_responses`、
+  `multi_mention_callbacks`。
+- 与 0007 的 DDL 差异（已修正 0007 的两处明确错误）：
+  - `invocation_records` 的唯一性是 `UNIQUE(thread_id, source_record_id)`，不是列级
+    `source_record_id UNIQUE`（0018 R-01 / DP-F018）。
+  - `response_drafts` 有 `rich_blocks_json TEXT NOT NULL DEFAULT '[]'`（F031）。
+  - `invocation_queue.owner_json` / `from_json` 的 CHECK 还要求 `json_type='object'`。
+- `messages` 的物理映射保持 0007 §3.1.1：`author_kind/author_id` ← `from`，
+  `body_md` ← `content`，`content_json` ← `contentBlocks`，`tool_events_json`，
+  `lifecycle_json`，`extra_json`，`mentions_user`；legacy `rich_blocks_json` 不再存在，
+  rich blocks 在 `extra.rich`。
+
+## 5. 状态机 / T1-T4 as-built
+
+### 5.1 Parent / attempt / turn
+
+- `invocation_records.status`：`queued → running → completed | partial_failed | failed | canceled`；
+  `failed/partial_failed → queued`（retry admitted），`failed/partial_failed → canceled`
+  （abandon）。
+- `invocation_attempts.delivery_state`：`queued → starting → appended → handled | failed |
+  interrupted | canceled`；prestart 可直接 `queued/starting → failed | canceled`。
+- `invocation_attempts.settlement`：`NULL → streaming → response_pending → settled`。
+- `turn_executions.status`：`running → completed | failed | interrupted | canceled`；
+  一个 child 一次 terminal。
+- `invocation_credentials.state`：`active → terminal`，terminal 带 disposition。
+
+### 5.2 T1-T4
+
+| 层 | 实际 owner | 实际动作 |
+|---|---|---|
+| T1 | `TurnExecutionLifecycle`（`RunAgentTurn.dispatch` 调用） | child terminal + attempt projection + `response_pending` + credential terminalize + recordCompletedTurn + cursor ack（promptDelivered gated） |
+| T2 | `RouteResponseCommitter`（`RunAgentTurn.dispatch` 调用） | R terminal（draft content/thinking/toolEvents/richBlocks）+ input refs settle + draft delete + `clearResponsePending` + multi-mention response terminal |
+| T3 | `QueueProcessor.aggregateParent` | `collectTerminalDispositions` + `applyTerminalAggregate` + queue/tracker/slot |
+| T4 | `ResponseRecoveryService` | `response_pending` / `response_missing` 恢复；不改 child/credential，不重跑 T3 |
+
+### 5.3 Phase A / Phase B
+
+- Phase A（QueueProcessor 单事务）：parent create/reuse + markRunning + 每个 target
+  `appendQueued → markStarting`。任一 deferred → releaseClaim + defer；invalid target
+  在同事务终态化并写 `delivery_failure`。
+- Phase B（QueueProcessor 每 target 事务）：processing R + `TurnExecution.createRunning`
+  + `bindAppended` + credential + empty draft + input dispatchRef + `retireTargets`。
+- 这是 as-built；0007/0016 把 Phase B/T2 放在 `runAgentTurn`/route 是 target design。
+
+## 6. 端到端 as-built
+
+- **operator 多 target**：ingress → 1 queue entry（多 target）→ Phase A → tracker.startAll
+  → Phase B per target → 并发 dispatch → 各 child T1/T2 → T3 聚合。F043 起 target
+  并发；context 固定在 queue source（F043 `upToSeq`）。
+- **A2A hop**：`post_message` → 新 message + 新 queue entry（targets 非空）→ 新 parent
+  → 新 child；`a2aDepth + 1`，上限 15。
+- **multi_mention**：1 source message + 1 queue entry + 1 parent + N child；目标回答
+  自动汇总；terminal 后 aggregate system message + callback delivery 给 initiator。
+- **retry**：同 parent / 同 queue entry，`invocation_attempts` 追加 `attempt+1`；
+  `requestRetry` 在 QueueProcessor，store `admitRetry`。
+- **cancel**：`POST /api/threads/:threadId/agents/:agentId/cancel` → tracker controller
+  abort → child canceled；T3 按 target 聚合。
+- **recovery**：startup reconciler 处理 crash-prestart/running；reaper 处理运行期僵尸；
+  T4 处理 `response_pending` / `response_missing`。
+- **读模型**：`/api/threads/:id/queue`（QueueView）、`/api/threads/:id/live`
+  （LiveInvocationView）、messages lifecycle；没有 `MessageDispatchSummary` endpoint
+  （F016c S0 freeze 已记录 deferred）。
+
+## 7. Deviation register（0007 → as-built）
+
+分类：
+
+- **ratified**：有 feature/decision/plan/PR 记录批准；
+- **implementation decision**：R2 实现时在 commit/plan 里明确选择，但未回写 0007/0016；
+- **unratified deviation**：与 0001/0002/0004/0005/0016/0024 的硬规则冲突，未找到批准记录；
+- **code gap**：文档/契约要求，但代码没有完整实现（属于要修的实现缺口）。
+
+> 逐行细节（doc 位置 / as-built / 类型）见
+> `docs/reports/2026-11-27-0007-as-built-audit.md` 的 A–F 表。
+
+### R1 · 调度层：route 层 vs QueueProcessor
+
+- **0007/硬规则**：`A2A ingress → Queue Entry → QueueProcessor → AgentRouter →
+  routeSerial/routeParallel → invokeSingleAgent`；复用 1–6/8–10，只替换
+  `invokeSingleCat → invokeSingleAgent`（0001 §4、0002 §pi runtime、0004/0005、
+  0016 §5.6、0021/0024）。
+- **as-built**：没有 AgentRouter/routeAgents/routeParallel/routeSerial；QueueProcessor
+  是 scheduler，RunAgentTurn 是 DispatchTargetPort。
+- **classification**：**unratified deviation**。R2-a commit `30af728fc` 明确引入
+  OperatorMessageIngress + QueueProcessor + dispatch port；R2-b `9624eba0b` 明确
+  “execution layer behind the R2-a dispatch port”；没有找到“drop AgentRouter”的决策包/
+  review/operator signoff。
+- **disposition**：需要 operator 决策 A（ratify 现状）或 B（补 route 层）。
+
+### R2 · Phase B / T2 ownership
+
+- **0007/0016**：Phase B 在 `invoke-single-agent`/runAgentTurn；T2 在 route/
+  `RouteResponseCommitter` 外层；`runAgentTurn` 只 T1。
+- **as-built**：Phase B 在 QueueProcessor；T2 在 RunAgentTurn.dispatch；T1 在
+  TurnExecutionLifecycle。
+- **classification**：**implementation decision**（R2-a commit `30af728fc` 明确 Phase A/B
+  在 QueueProcessor；R2-c commit `d933afa2a` 明确 “RunAgentTurn: T1 … T2 best-effort”），
+  但与 0007/0016/0024 冲突，未回写。属于“有实现证据、无架构批准”的偏离。
+- **disposition**：与 R1 绑定；若 ratify 现状则更新 0016/0024；若补 route 层则把 T2
+  移到 route（Phase B 是否移动按 0007 或 0024 再定）。
+
+### R3 · runAgentTurn / RouteResponseCommitter 接口
+
+- **0007**：`runAgentTurn` async generator，返回 `AgentTurnResult`；committer
+  `commit(result)`；`invoke-single-agent` 独立组件。
+- **as-built**：`RunAgentTurn.dispatch(prepared): Promise<void>`；committer
+  `commit({ turnExecutionId, content, thinking? })`；T1 在 `TurnExecutionLifecycle`。
+- **classification**：**implementation decision**（R2-b `9624eba0b` 把 RunAgentTurn 定为
+  DispatchTargetPort；R2-c 把 T1/T2 放进 dispatch）。
+- **disposition**：若 ratify 现状，0007 target 保留接口历史，0008 作为实际 API；
+  若补 route 层，恢复 generator/result 或引入明确的 route result 类型。
+
+### R4 · routeSerial / priorResponses
+
+- **0007/0016/0024**：保留 serial 薄循环，`priorResponses` 供后一个 agent 看前一个
+  response；v1 不默认启用。
+- **as-built**：没有 serial mode/priorResponses；F043 前是 `processEntry` 的
+  `for ... await` 隐式串行（无 priorResponses），F043 起同一 entry 并发 +
+  queue source 快照。
+- **classification**：**unratified deviation**（没有实现，也没有找到“v1 不做 serial”
+  的决策记录；0024 仍写 serial）。
+- **disposition**：operator 决定 retire（无 serial 产品路径；多 target 恒 parallel）
+  或 implement（显式 mode + priorResponses）。
+
+### R5 · 组件 API / deps / 方法
+
+- **0007**：QueueProcessorDeps/methods、InvocationRecordStore methods、
+  InvocationTracker signatures 见 0007 §3.2-§3.4。
+- **as-built**：见 0008 §3；差异包括 `dispatchTarget`/`capacity`/`multiMention*` deps、
+  `drain(threadId,userId,{maxEntries})`/`drainAll`/`requestRetry`/`abandon`、
+  `InvocationRecordStore.create/byThreadSource/admitRetry`、`startAll` 的 slot_busy 返回等。
+- **classification**：**implementation drift**；无行为 bug，但 target API 没有实现。
+- **disposition**：0008 是实际 API；若需要 0007 的接口，补实现或在 0007 标 target-only。
+
+### R6 · 数据模型差异
+
+- **as-built**：`response_drafts.rich_blocks_json`（F031）；`invocation_records`
+  `UNIQUE(thread_id, source_record_id)`（0018 R-01）；`owner_json/from_json`
+  `json_type='object'` 收紧。
+- **classification**：**ratified / minor implementation tightening**。F031 有 feature +
+  plan + PR；R-01 有 0018 + decision packet；json_type 是校验收紧，无行为偏离。
+- **disposition**：已写入 0008；0007 的 SQL 已修正 rich_blocks_json 与 unique。
+
+### R7 · 工具 / F031 / F043
+
+- **as-built**：4 个 A2A tool + 独立 `superagentteam_create_rich_block`（F031）；
+  F043 的 multi-mention 并发、trigger snapshot、`multi_mention_auto_delivery`、
+  提问“自动汇总”提示。
+- **classification**：**ratified addition**。F031 有 feature/plan/PR；F043 有 operator
+  指令、PR #235、daemon 520 tests、live 3005/3014 证据（multi-mention 并发
+  +2.82/+3.00/+3.66s；C probe 在 D 60s turn 内完成）。
+- **disposition**：保留在 0008；需要时把 F043 行为补进 0007 target 或新的 target 版本。
+
+### R8 · 读模型 / preflight / 验收
+
+- **MessageDispatchSummary**：**ratified deferred**（F016c S0 freeze：F018 未落地，
+  改由 F016c S0 交付；M1 用 queue+live，summary 路由留 M2/后续）。0008 记录为 deferred。
+- **preflight invalid reasons**：0007/0010 要求 `session_workspace_changed` /
+  `workspace_unavailable`；实际 preflight 只分类 `agent_not_found`/`agent_disabled`/
+  `account_not_found`；`sessions.ensureActive` 抛 `session_workspace_changed` 时
+  preflight 没有 typed 分类。**classification: code gap**。
+- **§9.1 routeAgents 验收**：target-only；实际验收应按 0008 §3.2 的 QueueProcessor
+  行为重写。**disposition: doc rewrite**。
+
+### R9 · 命名
+
+- `InvocationRegistry` → `InvocationCredentialStore`；
+- `PerAgentTerminalDispositionCollector` → `collectTerminalDispositions` 函数；
+- `runAgentTurn` → `RunAgentTurn`；
+- `RouteInput`/`PreparedTarget`/`AgentTurnResult` → `PreparedDispatch`/
+  `DispatchTargetPort`/void；
+- `MessageDispatchSummary` → deferred（R8）。
+- **classification**：naming；doc-only。
+
+## 8. 整改计划 / 决策点
+
+### D1（必须先决定）· route 层：ratify 还是补实现
+
+**Option A · ratify 当前调度（推荐用于 v1）**
+
+- 保留 `QueueProcessor` 作为 scheduler，`RunAgentTurn` 作为 `DispatchTargetPort`；
+  明确 retire `AgentRouter`/`routeAgents`/`routeParallel`/`routeSerial`/
+  `priorResponses` 的 v1 运行时角色。
+- 理由/证据：R2-a `30af728fc` 已把 Phase A/B + dispatch port 放进 QueueProcessor；
+  R2-b `9624eba0b` 把 RunAgentTurn 定为 dispatch port；R2-c `d933afa2a` 把 T2 放进
+  RunAgentTurn；F043 PR #235 的并发 fan-out / trigger snapshot / auto-delivery 已在
+  live 3005/3014 验证（multi-mention 三个 turn +2.82/+3.00/+3.66s；C probe 在 D 60s
+  turn 内完成）。再套 route 层会重复 claim/Phase A/B/T3 ownership，增加第二套
+  settlement 路径和 live 风险。
+- 代价：与 0001/0002/0004/0005 的“复用 Clowder 1-6/8-10，只替换 invokeSingleCat”
+  硬规则不一致；需要 operator 明确 signoff，并更新这些文档与 0007/0016/0024。
+- 风险：未来要做 `routeSerial`/worklist 或 Clowder 的结构对齐时，需要重新引入
+  route 层；届时应作为独立 feature，不是 live hotfix。
+
+**Option B · 补薄 route 层**
+
+- 在 `DispatchTargetPort` 外包一层 `routeAgents(mode)`：`routeParallel` = 并发
+  dispatch + per-target 错误隔离；`routeSerial` = 顺序 dispatch + `priorResponses`；
+  T2 移到 route wrapper；Phase B 按 0024 保持 QueueProcessor（或按 0007 移到
+  runAgentTurn）。
+- 理由：恢复 0001/0002/0004/0005/0016 的硬规则；为未来 serial/worklist 留结构位。
+- 代价/风险：中等重构；要重跑 T1/T2/T3 全矩阵、F043 并发/快照、live 重部署；
+  当前 F043 的 queue-processor fan-out 要迁移/复用，不能出现双 scheduler。
+- 证据基线：0001 §4、0002（pi runtime 段）、0016 §5.6、0024 R2-a/R2-c。
+
+**建议**：v1 选 A（行为已验证、风险最低），把 B 作为结构对齐的独立后续；
+如果 operator 认为“route 层复用”是 v1 硬门槛，则选 B，并按上述范围重做。
+
+### D2 · T2 / Phase B ownership
+
+- 若选 A：T2 留在 `RunAgentTurn.dispatch`，Phase B 留在 QueueProcessor；更新
+  0016/0024 的 owner 表，0008 作为实际 API。
+- 若选 B：T2 移到 route wrapper；Phase B 按 0007 或 0024 二选一并写死，不再两处矛盾。
+
+### D3 · routeSerial / priorResponses
+
+- 推荐 v1 retire：没有 serial 产品路径；multi-target 恒 parallel；F043 已按
+  Clowder `route_parallel` 行为验证。若保留，必须定义真实 consumer 和测试。
+
+### D4 · 独立代码整改（不依赖 D1）
+
+**preflight workspace/session typed invalid**：`QueueProcessor.preflight` 调
+`sessions.ensureActive` 时没有捕获 `session_workspace_changed`（`session/store.ts`
+会抛）；应把它和 `workspace_unavailable` 归类为 invalid target，终态化 + typed
+`delivery_failure`，不能让它逃出 `processEntry` 变成 loop error。补回归测试。
+
+### D5 · 文档 / 验收
+
+- 0007 标 `target-design` + banner；0008 为当前真相。
+- §9.1 的 routeAgents 验收按 0008 的 QueueProcessor 行为重写；§9.2 的唯一性措辞改为
+  `(threadId, sourceRecordId)`；§9.3.1 去掉 T2 “A2A successor”，改为 post_message
+  tool-time successor + T2 settling tail。
+- `MessageDispatchSummary` 保持 deferred（F016c S0）；需要时再立 feature。
+
+### D6 · 流程防复发
+
+- Phase 收口 / quality-gate 增加 “architecture as-built delta”：本次触及的组件必须在
+  架构文档有 as-built 描述或明确 target-only 标记；PR 模板加 checkbox。
+- 架构文档加 status legend：`target-design` / `as-built` / `deferred`；禁止 `accepted`
+  同时承载未实现的 target 和已实现行为。
+- 每个 phase close 记录“设计 vs as-built”差异，不能只在 commit body 里写。
+
+## 9. 证据索引
+
+### 文档
+
+- 硬规则：`0001-codeteam-architecture-v1.md` §4；`0002-pi-runtime-integration.md`；
+  `0004-w5-w8-scale-product.md`；`0005-plan-review-resolutions.md`；
+  `0016-turn-terminal-and-settlement-design.md` §5.6；`0021`/`0024`。
+- `MessageDispatchSummary` deferred：`docs/reports/2026-11-21-f016c-m1-s0-freeze.md` §1.5。
+- R-01 unique：`docs/architecture/0018-v1-global-design-review.md` §4；
+  `docs/architecture/decision-packets/2026-11-14-dp-f018-global-review.md`。
+- F031：`docs/features/F031-rich-block-producer.md`、`docs/plans/0036-f031-rich-block-producer.md`。
+- F043：`docs/features/F043-a2a-parallel-dispatch.md`、`docs/reports/2026-11-27-a2a-parallel-investigation.md`、
+  PR #235（merged `f51d9f3c7`）；live 3005/3014。
+- 逐项偏移：`docs/reports/2026-11-27-0007-as-built-audit.md`。
+
+### 关键 commit
+
+- `30af728fc` R2-a：OperatorMessageIngress + QueueProcessor + Phase A/B + dispatch port。
+- `9624eba0b` R2-b：RunAgentTurn 作为 DispatchTargetPort。
+- `d933afa2a` R2-c：T1/T2/T3/T4；RunAgentTurn 内 T1/T2。
+- `f3b0e567f` / `c6cacb2d2` F043：并发 fan-out、trigger snapshot、auto-delivery。
+- `23298eeab`：0007 full audit / DDL 修正。
+
+### 测试 / live
+
+- daemon 520 passed / 1 skipped @ `c6cacb2d2`；F043 新增 history snapshot、
+  concurrent fan-out、concurrent drain、auto-delivery rejection、deleted trigger 五类用例。
+- F043 live：multi-mention A/B/C 同起点，结束 +2.82/+3.00/+3.66s；D 60s turn 期间
+  C probe invocation 169ms 后启动并在 D 结束前完成（`1795759696697 < 1795759748270`）。
+
+## 10. 待 operator 决策
+
+1. **D1**：A（ratify QueueProcessor/DispatchTargetPort）还是 B（补薄 route 层）。
+2. **D3**：serial/priorResponses retire 还是 implement。
+3. **D4**：preflight workspace/session 修复是否现在做（建议做，小改）。
+
+在 D1/D3 决定前，0008 只声明 as-built 真相，不把未批准的 route 缺失写成“已批准设计”。

@@ -219,6 +219,7 @@ function makeWorld(agents: AgentConfig[] = [agentConfig("a1"), agentConfig("a2")
 		readState,
 		messages,
 		drafts,
+		queue,
 		threads,
 		clock,
 	};

@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F046]
 related_features: [superagentteam/F018, superagentteam/F031, superagentteam/F043, superagentteam/F044, superagentteam/F045, superagentteam/F050]
 title: "F046: A2A tools & multi-mention parity"
-status: in-progress
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [砚砚 (GLM 5.3 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -76,8 +76,8 @@ F043 又加了 auto-delivery 拒绝和 prompt 提示。F046 把这些工具面/�
 - [x] AC-3（D1）：0007 工具面记录 rich block producer tool；不改变四工具输入/输出。
 - [x] AC-4（D6/F5）：`MessageDispatchSummary` 有实现或明确 deferred 决策 + 证据。
 - [x] AC-5：F043 Q1 auto-delivery 回归；tests/typecheck/review 绿。
-- [ ] AC-6（A6 / F044 AC-3）：A2A successor 只在 response durable commit 后 admission；
-  当前仍是 tool-time `post_message`，作为 F046b 单独切片处理，不声明 pass。
+- [x] AC-6（A6 / F044 AC-3）：A2A successor 只在 response durable commit 后 admission；
+  F046b 已把 post/cross 的 queue admission 移入 T2/T4，tool 时只写 pending successor。
 
 - [x] AC-E2E（operator 2026-11-27，强制，F046a）：必须在**当前测试 worktree**的隔离 test runtime
   跑真实端到端链路；**Clowder 是 golden**，先按其 multi-mention/tool 参考实现/测试
@@ -104,8 +104,18 @@ F043 又加了 auto-delivery 拒绝和 prompt 提示。F046 把这些工具面/�
 - **文档**：0007 §3.8 补 rich block producer tool、prompt template、auto-delivery；
   §3.10.5 明确 `MessageDispatchSummary` deferred（F016c S0/0019 R8）；0019 R9 补
   F8 `statusView` 映射与 callback `queueEntryId` ON DELETE SET NULL 语义。
-- **已知缺口**：A2A successor 仍是 tool-time `post_message`（AC-6 / R8），F046b 处理；
-  因此本 feature 保持 `in-progress`，不声明完成。
+### F046b successor admission（2026-11-28）
+
+- `post_message`/`cross_post_message` targets 非空时，tool handler 只写 message +
+  caller credential 的 `pendingSuccessor`；`queueEntryId=null`，不建 queue/parent。
+- `RouteResponseCommitter` 在 T2 事务内 flush pending successor（enqueue + claim
+  回写 `queueEntryId`）；T4 已 terminal R 的 settling tail 执行同一 flush；T2 失败
+  时 R 保持 processing，由 T4 重试。
+- fullstack F046b：A 的 tool message 已落库、A 仍 running 时，B 的 queue entry
+  不存在；B provider 请求到达时 A 的 R 已 completed；claim `queueEntryId` 回写、
+  `pendingSuccessor` 清空。
+- 旧的 tool-time queue 断言已改为 pending 契约；cross_post R4/fullstack 继续通过，
+  证明 flush 后链路不变。
 
 - **Clowder 参考路径**（相对参考仓根目录）：
   - `packages/mcp-server/src/tools/callback-tools.ts`（post/cross_post/multi_mention tool schemas/handlers）

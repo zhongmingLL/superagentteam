@@ -102,7 +102,8 @@ single-target serial / priorResponses / T2 failure 留给 T4）；daemon full su
 
 仍属后续 feature（F044 本切片不声称全部完成）：
 
-- AC-3：A2A successor admission 仍由 tool-time `post_message` 完成；F046 把它统一到
+- AC-3：A2A successor admission 已由 F046b 统一到 response durable commit 后；
+  历史记录：tool-time `post_message` 曾提前 admission，F046 已收口。
   durable commit 之后。
 - 0019 as-built 已更新到 F044b 状态；F047 继续统一 API/DDL/命名表述。
 
@@ -158,7 +159,7 @@ target，也保留 worklist、context、T2、A2A successor、cleanup。
 - [x] AC-2（A2/A3/A4）：Phase B/T1 在 `runAgentTurn`/`invokeSingleAgent`；T2 只由
   route/`RouteResponseCommitter` 写；`runAgentTurn` 不再写 R terminal/draft delete。
   F044a 完成 T2 owner + result 契约；F044b 完成 Phase B 搬迁与 invoke-single-agent。
-- [ ] AC-3（A6/B8）：A2A successor 只在 response durable commit 后 admission；
+- [x] AC-3（A6/B8）：A2A successor 只在 response durable commit 后 admission（F046b）；
   `RouteResponseCommitter.commit({turnExecutionId, responseText?})` 契约已对齐；
   successor admission 由 F046 接线。
 - [x] AC-4（A5/E3/E4）：`invoke-single-agent` 已实现（Phase B owner），余下差异

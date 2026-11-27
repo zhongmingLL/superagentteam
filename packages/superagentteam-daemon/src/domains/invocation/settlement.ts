@@ -4,6 +4,7 @@ import { runInTransaction } from "../../infrastructure/db/database.ts";
 import type { InvocationCredentialStore } from "../auth/store.ts";
 import type { AgentReadStateStore, MessageStore } from "../message/store.ts";
 import type { MultiMentionStore } from "../multi-mention/store.ts";
+import type { QueueLedgerStore } from "../queue/store.ts";
 import type { ResponseDraftStore } from "../response/store.ts";
 import type { AgentSessionStore } from "../session/store.ts";
 import type { ThreadStore } from "../thread/store.ts";
@@ -46,6 +47,8 @@ export interface SettlementDeps {
 	readState: AgentReadStateStore;
 	messages: MessageStore;
 	drafts: ResponseDraftStore;
+	/** F046b: required when pending successors exist; optional for T1-only tests. */
+	queue?: QueueLedgerStore;
 	threads: ThreadStore;
 	multiMention?: MultiMentionStore;
 	clock?: () => number;
@@ -224,9 +227,49 @@ export class RouteResponseCommitter {
 		this.settleInputDispatchRefs(attempt, now);
 		this.deps.drafts.delete(attempt.turnExecutionId!);
 		this.deps.turns.clearResponsePending(attempt.turnExecutionId!);
+		if (attempt.turnExecutionId) this.flushPendingSuccessors(attempt.turnExecutionId, now);
 		if (attempt.responseMessageId) {
 			this.deps.multiMention?.markResponseTerminalByMessage(attempt.responseMessageId);
 		}
+	}
+
+	/**
+	 * F046b: admit post/cross_post successors only after the caller's response
+	 * is durable (this T2 transaction). Enqueue and claim update are retried
+	 * idempotently by T4; a failure rolls back T2 so the R stays recoverable.
+	 */
+	private flushPendingSuccessors(turnExecutionId: string, now: number): void {
+		for (const { key, claim } of this.deps.credentials.listToolCallClaims(turnExecutionId)) {
+			const pending = claim.pendingSuccessor;
+			if (!pending || claim.queueEntryId) continue;
+			if (!this.deps.queue) throw new Error("successor_queue_missing");
+			const enqueued = this.deps.queue.enqueue(
+				{
+					threadId: pending.threadId,
+					sourceRecordId: claim.messageId,
+					messageId: claim.messageId,
+					attempt: 1,
+					owner: pending.owner,
+					kind: "message_wake",
+					from: pending.from,
+					content: pending.content,
+					targets: pending.targets,
+					priority: "normal",
+					execution: pending.execution,
+					piExtToolCallId: pending.piExtToolCallId,
+				},
+				now,
+			);
+			if (enqueued.outcome === "conflict") throw new Error("successor_admission_conflict");
+			const queueEntryId = enqueued.entry?.queueEntryId ?? null;
+			const updated = this.deps.credentials.updateToolCallSuccessor(turnExecutionId, key, queueEntryId, now);
+			if (updated.outcome === "conflict") throw new Error("successor_claim_conflict");
+		}
+	}
+
+	/** T4 already-terminal path shares the successor flush. */
+	flushPendingSuccessorsPublic(turnExecutionId: string, now: number): void {
+		this.flushPendingSuccessors(turnExecutionId, now);
 	}
 
 	/** Public tail access for T4's already-terminal branch. */
@@ -365,6 +408,7 @@ export class ResponseRecoveryService {
 						this.deps.drafts.delete(turn.turnExecutionId);
 						this.committer.settleInputDispatchRefsPublic(attempt, this.clock());
 						this.deps.turns.clearResponsePending(turn.turnExecutionId);
+						this.committer.flushPendingSuccessorsPublic(turn.turnExecutionId, this.clock());
 					});
 					result.settled += 1;
 				}

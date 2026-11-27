@@ -357,7 +357,7 @@ export class A2AToolService {
 
 		const messageId = `msg:${targetThreadId}:${now}:${randomUUID().slice(0, 8)}`;
 		let message: StoredMessage | null = null;
-		let queueEntryId: string | null = null;
+		const queueEntryId: string | null = null;
 		try {
 			runInTransaction(this.deps.db, () => {
 				message = this.deps.messages.append({
@@ -380,21 +380,17 @@ export class A2AToolService {
 							: undefined,
 					now,
 				});
-				if (targets.length > 0) {
-					let enqueued: ReturnType<QueueLedgerStore["enqueue"]>;
-					try {
-						enqueued = this.deps.queue.enqueue(
-							{
+				// F046b: a post/cross_post successor is NOT admitted at tool time.
+				// The claim carries the pending successor; T2 (or T4) flushes it
+				// after the caller's response is durable.
+				const pendingSuccessor =
+					targets.length > 0
+						? {
 								threadId: targetThreadId,
-								sourceRecordId: messageId,
-								messageId,
-								attempt: 1,
-								owner: { kind: "system", service: crossPost ? "cross_post" : "a2a" },
-								kind: "message_wake",
-								from: { kind: "agent", agentId: ctx.callerAgentId },
-								content: input.bodyMd,
 								targets,
-								priority: "normal",
+								owner: { kind: "system" as const, service: crossPost ? "cross_post" : "a2a" },
+								from: { kind: "agent" as const, agentId: ctx.callerAgentId },
+								content: input.bodyMd,
 								execution: {
 									a2aParentTurnExecutionId: ctx.callerTurnExecutionId,
 									a2aTriggerMessageId: messageId,
@@ -403,24 +399,16 @@ export class A2AToolService {
 									multiMentionCallbackDepth: ctx.multiMentionCallbackDepth ?? null,
 								},
 								piExtToolCallId: ctx.piExtToolCallId,
-							},
-							now,
-						);
-					} catch (error) {
-						if (error instanceof Error && error.message === "queue_full") fail("queue_full");
-						throw error;
-					}
-					// Random message ids make replayed unreachable; kept as a safety net.
-					if (enqueued.outcome !== "enqueued") fail("queue_admission_conflict");
-					queueEntryId = enqueued.entry!.queueEntryId;
-				}
+							}
+						: undefined;
 				const reserved = this.deps.credentials.reserveToolCallClaim(
 					ctx.callerTurnExecutionId,
 					{
 						piExtToolCallId: ctx.piExtToolCallId,
 						intentHash,
 						messageId,
-						queueEntryId,
+						queueEntryId: null,
+						...(pendingSuccessor ? { pendingSuccessor } : {}),
 					},
 					now,
 				);

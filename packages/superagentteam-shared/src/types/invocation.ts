@@ -266,6 +266,18 @@ export interface ToolCallClaim {
 	intentHash: string;
 	messageId: string;
 	queueEntryId: string | null;
+	/** F046b: a post/cross_post successor waits for the caller's T2 commit. */
+	pendingSuccessor?: PendingSuccessor;
+}
+
+export interface PendingSuccessor {
+	threadId: string;
+	targets: QueueTarget[];
+	owner: QueueOwner;
+	from: MessageSender;
+	content: string;
+	execution: QueueExecution;
+	piExtToolCallId: string;
 }
 
 /** 0007 §4.4: child TurnExecution capability. */

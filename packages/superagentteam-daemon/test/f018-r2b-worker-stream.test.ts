@@ -193,6 +193,7 @@ function makeWorld() {
 			readState,
 			messages,
 			drafts,
+			queue,
 			threads,
 			clock,
 		}),

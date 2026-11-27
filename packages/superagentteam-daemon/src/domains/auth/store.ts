@@ -181,13 +181,64 @@ export class InvocationCredentialStore {
 		return claims[piExtToolCallId] ?? null;
 	}
 
+	/** F046b: all claims for a turn, used by T2/T4 to flush pending successors. */
+	listToolCallClaims(turnExecutionId: string): Array<{ key: string; claim: ToolCallClaim }> {
+		const row = this.db
+			.prepare("SELECT tool_call_claims_json FROM invocation_credentials WHERE turn_execution_id = ?")
+			.get(turnExecutionId) as { tool_call_claims_json: string } | undefined;
+		if (!row) return [];
+		const claims = JSON.parse(row.tool_call_claims_json) as Record<string, ToolCallClaim>;
+		return Object.entries(claims).map(([key, claim]) => ({ key, claim }));
+	}
+
+	/**
+	 * F046b: atomically record the flushed successor and clear its pending intent.
+	 * Works after T1 terminalized the credential (T2 runs post-T1).
+	 */
+	updateToolCallSuccessor(
+		turnExecutionId: string,
+		piExtToolCallId: string,
+		queueEntryId: string | null,
+		now = Date.now(),
+	): { outcome: "updated" | "already" | "not_found" | "conflict" } {
+		const row = this.db
+			.prepare("SELECT tool_call_claims_json FROM invocation_credentials WHERE turn_execution_id = ?")
+			.get(turnExecutionId) as { tool_call_claims_json: string } | undefined;
+		if (!row) return { outcome: "not_found" };
+		const claims = JSON.parse(row.tool_call_claims_json) as Record<string, ToolCallClaim>;
+		const claim = claims[piExtToolCallId];
+		if (!claim) return { outcome: "not_found" };
+		if (!claim.pendingSuccessor) {
+			return claim.queueEntryId === queueEntryId ? { outcome: "already" } : { outcome: "conflict" };
+		}
+		claims[piExtToolCallId] = {
+			...claim,
+			queueEntryId,
+			pendingSuccessor: undefined,
+		};
+		// JSON.stringify drops undefined keys; keep the map compact.
+		const serialized = JSON.stringify(claims);
+		const changes = this.db
+			.prepare(
+				"UPDATE invocation_credentials SET tool_call_claims_json = ?, updated_at = ? WHERE turn_execution_id = ? AND tool_call_claims_json = ?",
+			)
+			.run(serialized, now, turnExecutionId, row.tool_call_claims_json).changes;
+		return changes === 0 ? { outcome: "conflict" } : { outcome: "updated" };
+	}
+
 	/**
 	 * Same transaction as message/queue creation: same key + same intentHash →
 	 * replayed; different intentHash → conflict; map over limit → fail closed.
 	 */
 	reserveToolCallClaim(
 		turnExecutionId: string,
-		input: { piExtToolCallId: string; intentHash: string; messageId: string; queueEntryId: string | null },
+		input: {
+			piExtToolCallId: string;
+			intentHash: string;
+			messageId: string;
+			queueEntryId: string | null;
+			pendingSuccessor?: ToolCallClaim["pendingSuccessor"];
+		},
 		now = Date.now(),
 	): { outcome: "reserved" | "replayed" | "conflict" } {
 		const row = this.db
@@ -207,6 +258,7 @@ export class InvocationCredentialStore {
 			intentHash: input.intentHash,
 			messageId: input.messageId,
 			queueEntryId: input.queueEntryId,
+			...(input.pendingSuccessor ? { pendingSuccessor: input.pendingSuccessor } : {}),
 		};
 		// R2-b strong CAS (R1 handover): optimistic compare-and-set on the
 		// exact previous JSON bytes — a concurrent writer that replaced the

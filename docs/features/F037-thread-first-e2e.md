@@ -172,6 +172,8 @@ test runtime 跑真实端到端链路；**Clowder 是 golden**，按 Clowder 参
 - F046a R5 multi_mention（2026-11-28）：B 层 fullstack（aggregate 一次 + callback
   一次 + auto-delivery 拒绝）+ P 层 hybrid（B/C 真实 Kimi 回复 4）；F046b successor
   admission 仍待补。
+- F046b successor admission（2026-11-28）：post/cross 的 queue entry 延迟到 caller T2；
+  fullstack 证明 tool message 先落库、T2 前无 B queue entry、B 请求时 A R=completed。
 - 剩余：operator 验收；F034/F035/F036 的正式栈签收项不变。
 
 [宪宪/deepseek-flash🐾]

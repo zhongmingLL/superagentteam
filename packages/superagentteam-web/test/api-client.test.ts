@@ -60,4 +60,62 @@ describe("api client", () => {
 		expect(error).toBeInstanceOf(ApiError);
 		expect(error).toMatchObject({ status: 500, code: "http_500", body: "<html>oops</html>" });
 	});
+
+	it("refreshes the CSRF token and retries a csrf_failed write once", async () => {
+		let token = "csrf-old";
+		const fetchImpl = vi.fn(async (_url: string, init?: RequestInit) => {
+			const csrf = new Headers(init?.headers).get("x-csrf-token");
+			if (csrf === "csrf-old") return jsonResponse({ error: "csrf_failed", message: "invalid CSRF token" }, 403);
+			return jsonResponse({ id: "thread:1" });
+		});
+		const refreshCsrfToken = vi.fn(async () => {
+			token = "csrf-new";
+			return true;
+		});
+		const client = createApiClient({
+			fetchImpl: fetchImpl as unknown as typeof fetch,
+			getCsrfToken: () => token,
+			refreshCsrfToken,
+		});
+
+		await expect(client.post("/api/threads", { projectPath: "/tmp/p" })).resolves.toEqual({ id: "thread:1" });
+		expect(refreshCsrfToken).toHaveBeenCalledTimes(1);
+		expect(fetchImpl).toHaveBeenCalledTimes(2);
+		const retryInit = (fetchImpl.mock.calls[1] as unknown as [string, RequestInit])[1];
+		expect(new Headers(retryInit.headers).get("x-csrf-token")).toBe("csrf-new");
+	});
+
+	it("surfaces the original csrf_failed error when the refresh fails", async () => {
+		const fetchImpl = vi.fn(async () => jsonResponse({ error: "csrf_failed", message: "invalid CSRF token" }, 403));
+		const refreshCsrfToken = vi.fn(async () => false);
+		const client = createApiClient({
+			fetchImpl: fetchImpl as unknown as typeof fetch,
+			getCsrfToken: () => "csrf-old",
+			refreshCsrfToken,
+		});
+
+		await expect(client.post("/api/threads", { projectPath: "/tmp/p" })).rejects.toMatchObject({
+			status: 403,
+			code: "csrf_failed",
+		});
+		expect(refreshCsrfToken).toHaveBeenCalledTimes(1);
+		expect(fetchImpl).toHaveBeenCalledTimes(1);
+	});
+
+	it("retries at most once when the session remains stale", async () => {
+		const fetchImpl = vi.fn(async () => jsonResponse({ error: "csrf_failed", message: "invalid CSRF token" }, 403));
+		const refreshCsrfToken = vi.fn(async () => true);
+		const client = createApiClient({
+			fetchImpl: fetchImpl as unknown as typeof fetch,
+			getCsrfToken: () => "csrf-old",
+			refreshCsrfToken,
+		});
+
+		await expect(client.post("/api/threads", { projectPath: "/tmp/p" })).rejects.toMatchObject({
+			status: 403,
+			code: "csrf_failed",
+		});
+		expect(refreshCsrfToken).toHaveBeenCalledTimes(1);
+		expect(fetchImpl).toHaveBeenCalledTimes(2);
+	});
 });

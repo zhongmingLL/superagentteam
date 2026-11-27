@@ -292,7 +292,11 @@ OperatorMessageIngress（domains/a2a/router.ts）
 - **preflight invalid reasons**：0007/0010 要求 `session_workspace_changed` /
   `workspace_unavailable`；实际 preflight 只分类 `agent_not_found`/`agent_disabled`/
   `account_not_found`；`sessions.ensureActive` 抛 `session_workspace_changed` 时
-  preflight 没有 typed 分类。**classification: code gap**。
+  preflight 没有 typed 分类。**classification: code gap → fixed**（`743a94237`）：
+  preflight 现在把这两个 reason 归为 invalid target，走 Phase A 的
+  `failed(target_invalid)` + typed `delivery_failure` + retire；回归见
+  `packages/superagentteam-daemon/test/f018-r2a-dispatch.test.ts`
+  “session workspace drift is a terminal target_invalid, not an endless defer”。
 - **§9.1 routeAgents 验收**：target-only；实际验收应按 0008 §3.2 的 QueueProcessor
   行为重写。**disposition: doc rewrite**。
 
@@ -351,12 +355,17 @@ OperatorMessageIngress（domains/a2a/router.ts）
 - 推荐 v1 retire：没有 serial 产品路径；multi-target 恒 parallel；F043 已按
   Clowder `route_parallel` 行为验证。若保留，必须定义真实 consumer 和测试。
 
-### D4 · 独立代码整改（不依赖 D1）
+### D4 · 独立代码整改（不依赖 D1）· done
 
 **preflight workspace/session typed invalid**：`QueueProcessor.preflight` 调
 `sessions.ensureActive` 时没有捕获 `session_workspace_changed`（`session/store.ts`
 会抛）；应把它和 `workspace_unavailable` 归类为 invalid target，终态化 + typed
 `delivery_failure`，不能让它逃出 `processEntry` 变成 loop error。补回归测试。
+
+**已修复 `743a94237`**：`preflight` 捕获这两个 reason 并归为 invalid target；
+Phase A 写 attempt `failed(target_invalid)`、`delivery_failure` 并 retire target。
+回归用例在 `packages/superagentteam-daemon/test/f018-r2a-dispatch.test.ts`，
+daemon 521 passed / 1 skipped。
 
 ### D5 · 文档 / 验收
 

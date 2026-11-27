@@ -218,7 +218,7 @@ export class MultiMentionOrchestrator {
 		const callerName = this.deps.registry.agents.get(ctx.callerAgentId)?.displayName ?? ctx.callerAgentId;
 		const body = `[Multi-Mention from ${callerName}]\n\n${input.question}${
 			input.context ? `\n\n${input.context}` : ""
-		}`;
+		}\n\n你的回答会自动汇总并投递给发起者；不需要再调用 post_message。`;
 		let message: StoredMessage | null = null;
 		let queueEntryId: string | null = null;
 		try {

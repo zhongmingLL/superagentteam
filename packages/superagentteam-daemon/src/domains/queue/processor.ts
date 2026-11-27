@@ -693,8 +693,11 @@ export class QueueProcessor {
 			}
 
 			// Post-Phase-B port (§3.2 step 7 / R2-b: worker spawn + prompt +
-			// stream + T1) — only for targets whose Phase B committed.
-			for (const agentId of dispatched) {
+			// stream + T1) — only for targets whose Phase B committed. All
+			// targets in one multi-target entry fan out concurrently (Clowder
+			// route_parallel semantics); per-(thread, agent) tracker slots keep
+			// same-agent starts exclusive.
+			const dispatchOne = async (agentId: string): Promise<void> => {
 				const prepared = phaseA.find((p) => p.agentId === agentId)!;
 				const target = startable.find((t) => t.agentId === prepared.agentId)!;
 				const session = this.deps.sessions.getActive(entry.threadId, prepared.agentId)!;
@@ -808,7 +811,13 @@ export class QueueProcessor {
 						if (!canceled && !retryExhausted) this.deferrals.defer(entry.threadId, prepared.agentId, nowP);
 					}
 				}
-			}
+			};
+			// dispatchOne contains provider-phase errors itself; allSettled only
+			// protects a future prelude throw from rejecting early and releasing a
+			// sibling slot that is still running.
+			const settled = await Promise.allSettled(dispatched.map((agentId) => dispatchOne(agentId)));
+			const rejected = settled.find((result): result is PromiseRejectedResult => result.status === "rejected");
+			if (rejected) throw rejected.reason;
 		} finally {
 			// T3 slot release (§3.2 step 8): per-target ownership-fenced complete
 			// so a stale finally cannot release a replacement slot. The claim is

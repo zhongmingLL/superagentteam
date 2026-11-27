@@ -131,6 +131,25 @@ A 作为展开后的详情态。三者可组合，不互斥。
 6. 按选定方案实现 A2A 消息表面；先做 C（汇总卡）+ B（回执行），A 作为展开态。
 7. UI 需要区分 `origin=callback` / `visibility=private` / `crossPost`，并保留来源跳转。
 
+## 适配实现（2026-11-27，按 operator A+C / route_parallel）
+
+Clowder 深研后的映射：
+
+| Clowder 机制 | 本仓适配 |
+|---|---|
+| `routeParallel` 对 targetCats 做 `Promise.all` | `QueueProcessor.processEntry` 对同一 entry 的全部 target 并发 `dispatch` |
+| 共享触发视图 / `exactA2ATriggerMessageId` | `HistoryAssembler.loadHistory` 增加 `upToSeq` + `includeSourceMessageId`；`RunAgentTurn` 用 queue source 作为上界并显式包含源消息 |
+| `runDrain` 不等 provider 完成 | `DaemonA2A.tick` 改为有界并发 drain（8）；per-(thread, agent) tracker 保证同 agent 单槽 |
+| 多 target 完成事件自动聚合给 callbackTo | 已有 aggregate 保持不变；multi-mention target 的重复 post_message 被 `multi_mention_auto_delivery` 拒绝 |
+| callback / private / whisper 消息表面 | 设计选定 A（无头像私有气泡）+ C（multi-mention 汇总卡）；前端待实现 |
+
+有意差异：Clowder 的 drain 在 durable handoff 后释放，我们对每条 entry 仍 await 完整 turn，
+但允许最多 8 条 drain 并行，因此长 turn 不会挡住其他 agent；这保留了现有失败收敛路径，
+避免一次性重写 T3/aggregation。若未来并发规模需要，再演进为 handoff 回调。
+
+验证：daemon 519 passed / 1 skipped；新增 history 快照、并发 fan-out、并发 drain、
+auto-delivery 拒绝用例；typecheck 绿。
+
 ## 未验证边界
 
 - Clowder 的 Smart Window / context projection 细节未逐行复刻；本报告只采用其

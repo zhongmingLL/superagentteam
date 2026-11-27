@@ -271,6 +271,7 @@ export class A2AControlServer {
 			triggerMessageId: turn.causal.triggerMessageId,
 			a2aDepth: turn.causal.a2aDepth ?? 0,
 			multiMentionCallbackDepth: turn.causal.multiMentionCallbackDepth ?? null,
+			multiMentionRequestId: turn.causal.multiMentionRequestId ?? null,
 			now: this.clock(),
 		};
 		switch (toolName) {

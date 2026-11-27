@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/shared/types";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { startDaemon } from "../src/daemon.ts";
 import { A2ADaemonControlPlane } from "../src/daemon-a2a.ts";
 import { buildRegistry } from "../src/domains/agent/registry.ts";
@@ -35,6 +35,7 @@ function agentConfig(id: string): AgentConfig {
 class ScriptedConnection implements WorkerRpcConnection {
 	private readonly listeners: Array<(event: RpcEvent) => void> = [];
 	script: RpcEvent[] = [];
+	gate?: Promise<void>;
 
 	onEvent(listener: (event: RpcEvent) => void): () => void {
 		this.listeners.push(listener);
@@ -48,6 +49,7 @@ class ScriptedConnection implements WorkerRpcConnection {
 		_message: string,
 		options: { timeoutMs: number; signal?: AbortSignal; onAccepted?: () => void },
 	): Promise<{ aborted: boolean }> {
+		if (this.gate) await this.gate;
 		options.onAccepted?.();
 		for (const event of this.script) {
 			for (const listener of [...this.listeners]) listener(event);
@@ -62,6 +64,7 @@ class MockSpawnPort implements WorkerSpawnPort {
 	scripts: RpcEvent[][] = [];
 	spawns = 0;
 	tokens: string[] = [];
+	firstGate?: Promise<void>;
 
 	async spawn(input: {
 		workerId: string;
@@ -80,6 +83,7 @@ class MockSpawnPort implements WorkerSpawnPort {
 		this.tokens.push(input.credentialToken);
 		const connection = new ScriptedConnection();
 		connection.script = this.scripts.shift() ?? happyScript(`reply ${this.spawns}`);
+		if (this.spawns === 1 && this.firstGate) connection.gate = this.firstGate;
 		return {
 			connection,
 			pid: this.spawns,
@@ -150,6 +154,42 @@ describe("F018 R5-b A2A daemon control plane", () => {
 			expect(t1Messages.some((message) => message.content === "reply 1")).toBe(true);
 			expect(t2Messages.some((message) => message.content === "reply 2")).toBe(true);
 			expect(w.control.runtime.queue.countQueuedAll()).toBe(0);
+		} finally {
+			await w.control.close();
+			w.fd.close();
+		}
+	});
+
+	it("starts another agent's entry while one drain is parked on a provider turn", async () => {
+		let release!: () => void;
+		const gate = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		const w = makeWorld();
+		w.spawn.firstGate = gate;
+		await w.control.start();
+		try {
+			w.control.runtime.threads.create({ id: "t1", projectPath: "/p", createdBy: "u1", now: 1 });
+			w.control.runtime.threads.create({ id: "t2", projectPath: "/p", createdBy: "u1", now: 1 });
+			w.control.runtime.ingress.submit({ threadId: "t1", userId: "u1", body: "go t1", now: 10 });
+			w.control.runtime.ingress.submit({ threadId: "t2", userId: "u1", body: "go t2", now: 11 });
+
+			const first = w.control.drainNow(10);
+			const second = w.control.drainNow(10);
+			await vi.waitFor(
+				() => {
+					expect(
+						w.control.runtime.messages.getByThread("t2", 20).some((message) => message.content === "reply 2"),
+					).toBe(true);
+				},
+				{ timeout: 1_000 },
+			);
+			expect(w.spawn.spawns).toBe(2);
+			release();
+			await Promise.all([first, second]);
+			expect(w.control.runtime.messages.getByThread("t1", 20).some((message) => message.content === "reply 1")).toBe(
+				true,
+			);
 		} finally {
 			await w.control.close();
 			w.fd.close();

@@ -53,9 +53,10 @@ operator 在 `a2a-测试` thread 做 multi-mention / post_message / 排队测试
   multi-mention 的 target 并发 fan-out，tracker 继续按 (thread, agent) 保护同 agent 槽。
 - 上下文：为每个 queue entry 固定触发消息快照（上界为触发 seq），并显式包含触发消息本身；
   不依赖目标 agent 的 delivery cursor 是否已越过它。
-- `post_message`：把源消息作为目标的 exact input 投递；评估对 multi-mention 后续
-  post_message 使用 no-wake/私有投递，避免重复唤醒。
-- UI：A2A 私有消息的收敛设计（气泡/回执行/汇总卡），Pencil 稿见 `docs/design/F043/`。
+- `post_message`：把源消息作为目标的 exact input 投递；multi-mention target 向发起者
+  重复 post_message 时直接拒绝（回答会自动汇总投递），不再额外唤醒。
+- UI：A2A 私有消息的收敛设计（A：无头像私有气泡；C：multi-mention 汇总卡），
+  Pencil 稿见 `docs/design/F043/`。
 
 ## 非目标
 
@@ -65,11 +66,12 @@ operator 在 `a2a-测试` thread 做 multi-mention / post_message / 排队测试
 
 ## 验收
 
-- [ ] AC-1：multi-mention 三个 target 的 turn 实际并发启动；任一 target 的 prompt 不包含本轮
+- [x] AC-1：multi-mention 三个 target 的 turn 实际并发启动；任一 target 的 prompt 不包含本轮
   其他 target 的 response（按触发 seq 快照）。
-- [ ] AC-2：agent A 长跑期间 @agent B，B 在 A 结束前开始执行；队列面板只在 B 真正等待时显示。
-- [ ] AC-3：post_message 唤醒的目标能在 prompt 中读到源消息；不再出现"无新消息"的空转回复。
+- [x] AC-2：agent A 长跑期间 @agent B，B 在 A 结束前开始执行；队列面板只在 B 真正等待时显示。
+- [x] AC-3：post_message 唤醒的目标能在 prompt 中读到源消息；不再出现"无新消息"的空转回复。
 - [ ] AC-4：A2A 私有消息按选定设计渲染，不再与公开回复混淆；multi-mention burst 不散落成多个气泡。
+  （设计已选定 A + C；前端实现待做。）
 - [ ] AC-5：daemon/web tests、typecheck、doc-index 绿；非作者 review。
 
 ## 风险
@@ -83,5 +85,18 @@ operator 在 `a2a-测试` thread 做 multi-mention / post_message / 排队测试
 
 - 完成 live 取证与 Clowder 对照，根因报告：
   `docs/reports/2026-11-27-a2a-parallel-investigation.md`。
-- 完成 A2A 消息表面 Pencil 设计稿：`docs/design/F043/a2a-message-1440.png`（三个候选方向）。
-- 待 operator 选择设计方向并确认修复优先级后进入实现。
+- Clowder 深研后按 `route_parallel` / per-cat slot / trigger snapshot 适配：
+  - `QueueProcessor.processEntry` 对同一 entry 的全部 target 并发 dispatch（`Promise.all`），
+    不再 `for ... await` 串行；失败收敛仍按 target 独立处理。
+  - `HistoryAssembler.loadHistory` 新增 `upToSeq` 触发快照与 `includeSourceMessageId`；
+    `RunAgentTurn` 用 queue source message 作为本轮上下文上界，并显式包含源消息
+    （post_message 目标不再读到空窗口）。
+  - `DaemonA2A.tick` 从全局 single-flight 改为有界并发 drain（最多 8 个），
+    per-(thread, agent) tracker 继续保证同 agent 不双启；长 turn 不再挡住其他 agent。
+  - multi-mention 提问追加"回答自动汇总投递，不需要 post_message"；daemon 侧对
+    target→发起者的重复 post_message 返回 `multi_mention_auto_delivery`，不创建消息/唤醒。
+  - 测试：daemon 519 passed / 1 skipped（新增 history 快照、并发 fan-out、并发 drain、
+    auto-delivery 拒绝 4 条用例）。
+- 设计：operator 选定 A（无头像）+ C；B 删除，C 的附注改为"自动汇总 → agentD"。
+  Pencil 稿 `docs/design/F043/a2a-message-1440.png`。
+- 剩余：非作者 review；live 验证；前端 A/C 实现。

@@ -292,9 +292,14 @@ describe("F037 full-stack thread-first E2E", () => {
 
 		const db = new F018Database({ path: join(dataDir, "f018.db") });
 		try {
-			const parent = db.db
-				.prepare("SELECT target_agent_ids_json, status FROM invocation_records ORDER BY created_at DESC LIMIT 1")
-				.get() as { target_agent_ids_json: string; status: string };
+			// T3 parent aggregate settles just after the two replies become
+			// visible; wait for the terminal status instead of racing a bare read.
+			const parent = await waitFor(async () => {
+				const row = db.db
+					.prepare("SELECT target_agent_ids_json, status FROM invocation_records ORDER BY created_at DESC LIMIT 1")
+					.get() as { target_agent_ids_json: string; status: string } | undefined;
+				return row?.status === "completed" ? row : null;
+			});
 			expect(JSON.parse(parent.target_agent_ids_json)).toEqual(["a1", "b1"]);
 			expect(parent.status).toBe("completed");
 		} finally {

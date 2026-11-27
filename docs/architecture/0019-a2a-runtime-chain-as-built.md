@@ -352,8 +352,8 @@ OperatorMessageIngress（domains/a2a/router.ts）
   当前 F043 的 queue-processor fan-out 要迁移/复用，不能出现双 scheduler。
 - 证据基线：0001 §4、0002（pi runtime 段）、0016 §5.6、0024 R2-a/R2-c。
 
-**建议**：v1 选 A（行为已验证、风险最低），把 B 作为结构对齐的独立后续；
-如果 operator 认为“route 层复用”是 v1 硬门槛，则选 B，并按上述范围重做。
+**历史建议（已被 2026-11-27 operator 决定取代）**：当时建议 v1 选 A；
+operator 现决定选 B，按 0007 恢复 route 层。
 
 ### D2（已决定 2026-11-27）· T2 / Phase B ownership
 
@@ -371,8 +371,8 @@ RunAgentTurn 的 T2 写路径。
 worklist、context、T2、A2A successor、cleanup 等前后处理；multi-target 的
 `priorResponses` 按 0007 实现。见 F044。
 
-- 推荐 v1 retire：没有 serial 产品路径；multi-target 恒 parallel；F043 已按
-  Clowder `route_parallel` 行为验证。若保留，必须定义真实 consumer 和测试。
+- **历史建议（已被 2026-11-27 operator 决定取代）**：当时建议 v1 retire；
+  operator 现决定实现 routeSerial（单 target 仍保留前后处理）。
 
 ### D4 · 独立代码整改（不依赖 D1）· done
 

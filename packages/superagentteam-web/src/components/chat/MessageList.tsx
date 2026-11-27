@@ -293,7 +293,7 @@ function MessageRow({
 			>
 				<div className="st-message-stack">
 					<div className="st-a2a-private-head">
-						<span className="st-message-sender">{senderName}</span>
+						<span className="st-a2a-private-sender">{senderName}</span>
 						<span className="st-a2a-private-arrow" aria-hidden="true">
 							→
 						</span>

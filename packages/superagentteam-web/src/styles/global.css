@@ -1315,6 +1315,15 @@ svg {
 	color: var(--st-muted);
 }
 
+.st-a2a-private-sender {
+	padding: 1px 7px;
+	border: 1px solid var(--st-hairline);
+	border-radius: 999px;
+	background: var(--st-surface-2);
+	color: var(--st-ink);
+	font-weight: 600;
+}
+
 .st-a2a-private-recipient {
 	padding: 1px 7px;
 	border: 1px solid var(--st-hairline);

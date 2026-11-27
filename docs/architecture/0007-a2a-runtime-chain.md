@@ -1045,6 +1045,8 @@ for entry of entries:
 
 **定位**：消息级生命周期 parent；由 `QueueProcessor` 在 claim 后创建。
 
+> as-built 方法映射见 0019 §7 R9（B3）；本节方法面是 target，live API 以 0019 为准。
+
 **v1 字段**
 
 ```ts
@@ -3274,7 +3276,8 @@ interface InvocationAttemptStore {
 > `turn_executions` → `invocation_attempts` → `response_drafts` →
 > `invocation_credentials` → `multi_mention_requests` → `multi_mention_responses`
 > → `multi_mention_callbacks`。`messages` 沿用现有表，先于引用它的表存在。
-> 下文按逻辑分组展示，实际迁移按上述顺序创建。
+> 下文按逻辑分组展示，实际迁移按上述顺序创建；§4 是 target DDL 清单，
+> live 表的完整 as-built/映射以 0019 §4/§7 R6 为准（C4/F047）。
 
 ### 4.1 `invocation_queue`
 
@@ -3287,9 +3290,9 @@ CREATE TABLE invocation_queue (
   message_id TEXT,
   origin_record_id TEXT,
   attempt INTEGER NOT NULL CHECK (attempt >= 1),
-  owner_json TEXT NOT NULL CHECK (json_valid(owner_json)),
+  owner_json TEXT NOT NULL CHECK (json_valid(owner_json) AND json_type(owner_json) = 'object'),
   kind TEXT NOT NULL CHECK (kind IN ('conversation_input', 'message_wake')),
-  from_json TEXT NOT NULL CHECK (json_valid(from_json)),
+  from_json TEXT NOT NULL CHECK (json_valid(from_json) AND json_type(from_json) = 'object'),
   targets_json TEXT NOT NULL
     CHECK (json_valid(targets_json) AND json_type(targets_json) = 'array'),
   payload_json TEXT NOT NULL CHECK (json_valid(payload_json) AND json_type(payload_json) = 'object'),
@@ -3362,7 +3365,7 @@ CREATE TABLE invocation_records (
   invocation_id TEXT PRIMARY KEY,
   thread_id TEXT NOT NULL,
   user_id TEXT NOT NULL,
-  source_record_id TEXT NOT NULL UNIQUE,
+  source_record_id TEXT NOT NULL,
   user_message_id TEXT,
   target_agent_ids_json TEXT NOT NULL
     CHECK (json_valid(target_agent_ids_json) AND json_type(target_agent_ids_json) = 'array'
@@ -4025,8 +4028,9 @@ parent partial_failed: successful=[A], failed=[B]
 - bounded flush（100ms/4KB）后 draft 可被刷新/重连读取；`message_end` 用最终值覆盖，不重复。
 - T1 child terminal 同事务：TurnExecution terminal + `projectChildTerminal` +
   attempt `settlement='response_pending'` + credential terminalize + ack。
-- T2 settlement：R `processing → terminal`（content/toolEvents/thinking 来自 draft；
-  contentBlocks 由 T2 从最终 text + toolEvents 生成）+ input `dispatchRefs` settle +
+- T2 settlement：R `processing → terminal`（content/thinking/toolEvents/richBlocks 来自
+  draft；message `contentBlocks` 由消息投影从最终 content/toolEvents 派生）+
+  input `dispatchRefs` settle +
   delete draft + attempt `settlement='settled'` +
   `clearResponsePending` + A2A successor；T3 单独聚合 parent。
 - crash 在 child terminal 与 R settlement 之间：重启后 `listResponsePending` 必须把 R 提交为

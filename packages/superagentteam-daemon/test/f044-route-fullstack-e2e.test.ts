@@ -56,6 +56,11 @@ function writeWorkerModels(agentDir: string, baseUrl: string): void {
 	);
 }
 
+function routeLogEvents(handle: DaemonHandle): string[] {
+	const entries = handle.observability.logs?.tail({ limit: 1_000 }).entries ?? [];
+	return entries.map((entry) => entry.event);
+}
+
 async function sleep(ms: number): Promise<void> {
 	await new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -245,6 +250,13 @@ describe("F044 route ownership full-stack E2E v2", () => {
 		await waitFor(() => (runtime.records.get(invocationId)?.status === "completed" ? true : null), 10_000);
 		expect(runtime.queue.listQueued(thread.id)).toHaveLength(0);
 
+		// Route-era structured logs are the mechanical differentiator from the
+		// old folded implementation: these events did not exist before F044.
+		const events = routeLogEvents(daemon!);
+		for (const event of ["phase_b_appended", "turn_worker_bound", "turn_terminal"]) {
+			expect(events.filter((name) => name === event).length).toBeGreaterThanOrEqual(2);
+		}
+
 		// The barrier is about prompt assembly, not provider start order.
 		const bPrompts = provider.requests.filter((request) => request.model === "b-model");
 		expect(bPrompts.length).toBeGreaterThan(0);
@@ -392,5 +404,9 @@ describe("F044 route ownership full-stack E2E v2", () => {
 		);
 		expect(runtime.records.get(sourceInvocationId)?.status).toBe("completed");
 		expect(runtime.records.get(targetInvocationId)?.status).toBe("completed");
+		const events = routeLogEvents(daemon!);
+		for (const event of ["phase_b_appended", "turn_worker_bound", "turn_terminal"]) {
+			expect(events.filter((name) => name === event).length).toBeGreaterThanOrEqual(2);
+		}
 	}, 60_000);
 });

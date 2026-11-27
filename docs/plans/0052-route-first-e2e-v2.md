@@ -15,9 +15,11 @@ F037 的矩阵建立在 F044 之前的 inline fan-out 上：它验证的是“�
 纠正后的 ownership、route barrier、Phase B 事务边界和 T2/T3 时序。2026-11-27 的
 post-F044 revalidation 仍拿旧行号复跑，只换标签不换场景——operator 明确要求重设计。
 
-v2 的原则：每个 case 必须能区分“旧折叠实现”和“0007 route 实现”，或者显式暴露
-尚未实现的 target（例如 A2A successor 的 durable-commit admission，归 F046）。
-不使用 unit/targeted test 代替真实端到端证据。
+v2 的原则：每个 case 对准当前 0007 ownership 的真实场景；R1/R4 额外断言 route 时代
+才有的结构化日志事件（`phase_b_appended` / `turn_worker_bound` / `turn_terminal`），
+作为与旧折叠实现的机械区分器。尚未实现的 target（例如 A2A successor 的
+durable-commit admission，归 F046）显式标 known-gap。不使用 unit/targeted test
+代替真实端到端证据。
 
 ## 来源
 
@@ -35,10 +37,10 @@ v2 的原则：每个 case 必须能区分“旧折叠实现”和“0007 route 
 
 | ID | 层 | 场景 | 0007/F044 约束 | 证据 | 状态 |
 |---|---|---|---|---|---|
-| R1 | B | 多 target 并发，A 慢 B 快；B 先完成时 A 仍在运行 | routeParallel 先装配全部 context；per-target T1/T2 独立；T3 最后 aggregate | `f044-route-fullstack-e2e.test.ts` R1；DB：B handled/completed，A appended/running；B prompt 不含 A 回复 | pass |
+| R1 | B | 多 target 并发，A 慢 B 快；B 先完成时 A 仍在运行 | routeParallel 先装配全部 context；per-target T1/T2 独立；T3 最后 aggregate | `f044-route-fullstack-e2e.test.ts` R1；DB：B handled/completed，A appended/running；B prompt 不含 A 回复；route 日志 events 各 ≥2 | pass |
 | R2 | B/U | provider 在 prompt 接收后 500：T1 failed → UI 失败气泡 → 手动 retry → attempt 2 | delivered failure = T1 failed + ack，不自动 replay；retry 走 requestRetry/新 attempt | R2（mock 500）+ 真实 UI 401 失败/重试；DB attempt 1/2 均 failed，无 `delivery_failure` | pass |
 | R3 | B/U | 运行中取消：真实 worker/provider 在飞时点停止 | cancel → turn/attempt/R canceled，worker retired，queue 不 restore | R3（mock 延迟）+ 真实 UI stop；DB 三态 canceled，worker retired | pass |
-| R4 | B | `cross_post_message` thread1 → thread2，B 回复 | 新 queue entry/parent；source/target 归属正确；T3 各自收敛 | R4；target input 的 dispatchRef、两 parent completed | pass |
+| R4 | B | `cross_post_message` thread1 → thread2，B 回复 | 新 queue entry/parent；source/target 归属正确；T3 各自收敛 | R4；target input 的 dispatchRef、两 parent completed；route 日志 events 各 ≥2 | pass |
 | R5 | B | `multi_mention` B+C + callback A | F046 工具面；one source/parent + N turns；aggregate/callback | 设计已列，尚未自动化（F046） | todo |
 | R6 | B | T2 单写者 / R 生命周期 | R terminal 只由 route/RouteResponseCommitter 写；draft delete、settlement settled | R1/R2 DB 断言（R status、draft null、settlement） | pass |
 | R7 | B | Phase B 失败隔离（draft/credential/retire） | Phase B 失败 = attempt failed + delivery_failure + target pending；不进 provider convergence | 现有 integration：`f044b-phase-b-ownership.test.ts`；fullstack 无 fault injection | partial |

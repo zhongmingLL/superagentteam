@@ -99,6 +99,7 @@ updated: 2026-11-24
 | [`features/F040-thread-actions-divider.md`](features/F040-thread-actions-divider.md) | F040：Thread row actions & header divider（Clowder 式更多操作菜单、重命名移入列表、分隔线下移） |
 | [`features/F041-tunnel-hub-access.md`](features/F041-tunnel-hub-access.md) | F041：Tunnel access for the Hub（Vite allowedHosts + daemon 额外 browser origins） |
 | [`features/F042-session-csrf-recovery.md`](features/F042-session-csrf-recovery.md) | F042：Session/CSRF recovery（daemon 重启后自动刷新 CSRF 并重试） |
+| [`features/F043-a2a-parallel-dispatch.md`](features/F043-a2a-parallel-dispatch.md) | F043：A2A parallel dispatch & post_message surface（multi-mention 并发/快照、气泡设计） |
 | [`plans/0015-w6c-observability-trajectory.md`](plans/0015-w6c-observability-trajectory.md) | W6c observability/trajectory 实施计划与 AC 映射 |
 | [`plans/0018-f016a-a2a-ingress-e2e.md`](plans/0018-f016a-a2a-ingress-e2e.md) | F016a：8 类 ingress × scenario real RPC E2E、P0 工具面、withdraw/parallel/loop guard |
 | [`plans/0020-f018-thread-first-runtime.md`](plans/0020-f018-thread-first-runtime.md) | F018：A2A runtime v1 R0-R5、AgentConfig/Registry、schema/migration、same/cross-thread post、multi_mention fan-out、验收与回滚 |

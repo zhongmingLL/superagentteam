@@ -174,6 +174,10 @@ test runtime 跑真实端到端链路；**Clowder 是 golden**，按 Clowder 参
   admission 仍待补。
 - F046b successor admission（2026-11-28）：post/cross 的 queue entry 延迟到 caller T2；
   fullstack 证明 tool message 先落库、T2 前无 B queue entry、B 请求时 A R=completed。
+- U5–U7 真实 Hub 重跑（2026-11-28 @ `2443b1836`，隔离 3007/3016 + 真实 Kimi）：
+  rich block/toolEvents/thinking、Settings 创建 account+agent（secret 不回显）、
+  390/1440 光暗无横向滚动、键盘发送；截图见 `docs/design/F037/*-2026-11-28.png`。
+  旧截图不再作为 fresh evidence。
 - 剩余：operator 验收；F034/F035/F036 的正式栈签收项不变。
 
 [宪宪/deepseek-flash🐾]

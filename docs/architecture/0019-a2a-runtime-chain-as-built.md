@@ -224,7 +224,8 @@ OperatorMessageIngress（domains/a2a/router.ts）
 - **operator 多 target**：ingress → 1 queue entry（多 target）→ Phase A →
   tracker.startAll → routeParallel（先装配全部 context，再并发 runner）→ 每个
   runner 内 Phase B → provider → T1 → route T2 → T3 聚合。F043 起 target 并发；
-  context 固定在 queue source（`upToSeq`），同批 sibling 不互相看见回答。
+  context 固定在 queue source（`upToSeq`）；A2A hop 用 `includeSourceMessageId`
+  保底源消息（cursor 已越过源 seq 时仍可见，不 rewind ack），同批 sibling 不互相看见回答。
 - **A2A hop**：`post_message` → 新 message + 新 queue entry（targets 非空）→ 新 parent
   → 新 child；`a2aDepth + 1`，上限 15。
 - **multi_mention**：1 source message + 1 queue entry + 1 parent + N child；目标回答
@@ -340,7 +341,9 @@ OperatorMessageIngress（domains/a2a/router.ts）
 - **classification**：**ratified addition**。F031 有 feature/plan/PR；F043 有 operator
   指令、PR #235、daemon 520 tests、live 3005/3014 证据（multi-mention 并发
   +2.82/+3.00/+3.66s；C probe 在 D 60s turn 内完成）。
-- **disposition**：保留在 0019；需要时把 F043 行为补进 0007 target 或新的 target 版本。
+- **disposition**：保留在 0019。F045 已把 context 部分的 trigger snapshot /
+  `upToSeq` / `includeSourceMessageId` 写入 0007 §3.5.1/§6/§9.1 并有 route-first E2E；
+  multi-mention 并发与 auto-delivery 归 F046。
 
 ### R8 · 读模型 / preflight / 验收
 

@@ -153,6 +153,9 @@ test runtime 跑真实端到端链路；**Clowder 是 golden**，按 Clowder 参
   web 120 + typecheck；后端 F037-01–17 与 F043 AC-1 复验通过；Hub 前端未改
   （web 套件当前，截图未重拍）；真实 provider 成功路径因本机 OpenRouter key 无效
   （401）未复跑，F037-31–36 不声明 verified。详见报告。
+- F045 context/history route-first E2E（2026-11-28）：C1 并行触发快照 + 双向
+  sibling 不可见、C2 `post_message` 源消息低于 cursor 仍可见；2/2，且 C2 有
+  `includeSourceMessageId` RED 反证。0007 §3.5.1 trigger snapshot 契约同步。
 - 剩余：operator 验收；F034/F035/F036 的正式栈签收项不变。
 
 [宪宪/deepseek-flash🐾]

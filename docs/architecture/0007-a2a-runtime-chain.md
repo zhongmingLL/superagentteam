@@ -1516,7 +1516,8 @@ async function* routeSerial(input: RouteInput): AsyncIterable<AgentStreamEvent> 
    （`turn_execution_id`/`response_message_id`/`settlement='streaming'`）；
    `InvocationRegistry.create`（credential，绑 child id）+
    `ResponseDraftStore.create`（空 `DraftRecord`）+ `retireTargets`；
-6. `loadHistory`（§3.5.1）→ `deliveryBoundarySeq`；
+6. `loadHistory`（§3.5.1；`upToSeq` = queue source，A2A hop 带
+   `includeSourceMessageId`）→ `deliveryBoundarySeq`；
 7. `workerPool.ensure`（ephemeral；spawn ~0.5s；pi v1 一 worker 一 session）+
    `bindWorker`；
 8. build context（thread/participants/recent messages/priorResponses；delivery cursor
@@ -1621,6 +1622,19 @@ normal:
   boundarySeq = rows 的可见边界（见下方 processing R 规则）
   return { mode: 'incremental', rows, boundarySeq }          // 不 ack
 ```
+
+**Trigger snapshot（F045）**
+
+history 窗口由 queue source 固定，不是每个 target 各自取 thread tail：
+
+- `upToSeq = queue entry 的 source message seq`。`routeParallel` 在批次边界为所有
+  target 装配 context 时使用同一个触发 seq；同批 sibling 的 response 不在窗口内。
+- `includeSourceMessageId = queue entry 的 source message id`。A2A hop 的源消息 seq
+  可能已低于目标 agent 的 delivery cursor（目标先消费了更晚的消息）；此时仍把源消息
+  作为本轮 trigger 注入窗口，而不是返回空窗口。
+- 源消息仍受 visibility / deleted 守卫；注入不是 rewind：`boundarySeq` 不低于当前
+  cursor，ack 仍是单调 CAS。
+- 源消息注入不改变“已消费”含义：窗口里其它高于 cursor 的消息照常由后续 turn 消费。
 
 - **processing R 不推进 cursor 越过它**：`boundarySeq` 只能取 earliest processing response 的前一条；
   否则并行的另一个 agent 可能只看到空 processing R，错过最终 terminal response。
@@ -3947,6 +3961,10 @@ parent partial_failed: successful=[A], failed=[B]
 - v1 不建 `dispatch_events` / `queue_retirement_audit`；trace 由
   `invocation_attempts.queueEntryId` + `queue_admissions` + `lifecycle.dispatchRefs` 承担。
 - `routeAgents("parallel")` 每个 child 独立 signal；`routeAgents("serial")` 是同一 `runAgentTurn` 的薄循环，v1 不默认启用。
+- 并行 route 的所有 target 从同一 `upToSeq` 触发快照装配 context；先完成的 sibling
+  response 不出现在其他 target 的 prompt。
+- `post_message` 的源消息 seq 低于目标 delivery cursor 时，源消息仍进入 prompt；
+  ack 不回退、不跳过后来的消息。
 
 ### 9.2 InvocationRecord
 

@@ -188,7 +188,13 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		clock,
 	};
 	const router = new AgentRouter({
-		assemble: createContextAssembler({ assembler, registry: deps.registry, threads, messages }),
+		assemble: createContextAssembler({
+			assembler,
+			registry: deps.registry,
+			threads,
+			messages,
+			...(deps.log ? { log: deps.log } : {}),
+		}),
 		runner: runAgentTurn,
 		committer: new RouteResponseCommitter(settlementDeps),
 		...(deps.log ? { log: deps.log } : {}),

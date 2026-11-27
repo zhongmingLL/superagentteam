@@ -201,6 +201,7 @@ export interface ContextAssemblerDeps {
 	registry: AgentRegistry;
 	threads: ThreadStore;
 	messages: MessageStore;
+	log?: A2ALog;
 }
 
 /**
@@ -236,6 +237,15 @@ export function createContextAssembler(deps: ContextAssemblerDeps): AssembleCont
 		});
 		const prompt =
 			priorResponses.length === 0 ? basePrompt : `${basePrompt}\n${renderPriorResponses(priorResponses)}`;
+		deps.log?.("info", "route_context_assembled", {
+			thread_id: prepared.threadId,
+			invocation_id: prepared.parentInvocationId,
+			agent_id: prepared.agentId,
+			mode: window.mode,
+			boundary_seq: window.boundarySeq,
+			row_count: window.rows.length,
+			...(prepared.sourceMessageId !== null ? { source_record_id: prepared.sourceMessageId } : {}),
+		});
 		return { window, prompt };
 	};
 }

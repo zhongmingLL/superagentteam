@@ -48,6 +48,8 @@ durable-commit admission，归 F046）显式标 known-gap。不使用 unit/targe
 | P2 | U/P | 真实 Hub 单 agent | 真实 account/agent；`REAL_UI_OK`；DB R completed | `f044-ui-real-kimi-success.png`；DB attempt/turn/R completed | pass |
 | P3 | U/P | 真实 Hub 多 target | agentA+agentB 同时回复；T2/T3 正常 | `f044-ui-real-kimi-multi-target.png`；两 parent completed | pass |
 | R8 | B | A2A successor 只在 A 的 response durable commit 后 admission | 0007 §3.5 step 11 → successor；当前 tool-time `post_message` 仍提前 | 现状记录为 F044 AC-3 / F046 gap；不在 v2 声明 pass | known-gap |
+| C1 | B | 并行 target 共享同一触发快照；sibling 回复互不可见 | 0007 §3.5.1 `upToSeq` = queue source；barrier 在批次边界装配 | `f045-context-history-e2e.test.ts` C1；两 attempt `deliveryBoundarySeq` = trigger seq；双向 prompt 无 sibling reply | pass（F045） |
+| C2 | B | `post_message` 源 seq 低于目标 delivery cursor | 0007 §3.5.1 `includeSourceMessageId`；ack 不回退 | `f045-context-history-e2e.test.ts` C2；prompt 含源、不含已消费 later；ack = later tail | pass（F045） |
 | U1 | U | 真实 Hub：创建 thread、@agentA、看到回复 | 真实前端 + 真实 daemon/worker；Phase B/T1/T2/T3 真跑 | `f044-ui-real-kimi-success.png`；真实 Kimi `REAL_UI_OK` | pass（真实 Kimi） |
 | U2 | U | 真实 Hub：`@agentA @agentB` 多 target fan-out | 同一触发边界、两个回复、thread 成员 2 位 | `f044-ui-real-kimi-multi-target.png`；两个真实 `REAL_MULTI_OK` | pass（真实 Kimi） |
 | U3 | U | 真实 Hub：运行中停止 | LivePill 停止 → “已取消”，queue 不 restore | `docs/design/F044/f044-ui-stop-canceled.png`；DB canceled | pass |
@@ -76,5 +78,9 @@ durable-commit admission，归 F046）显式标 known-gap。不使用 unit/targe
 ## 结果
 
 执行报告：`docs/reports/2026-11-28-f044-route-e2e-v2.md`。
+
+- F045 context/history 续篇：C1/C2 在
+  `packages/superagentteam-daemon/test/f045-context-history-e2e.test.ts`（2/2），
+  同时把 0007 §3.5.1 trigger snapshot 契约补齐。
 
 [宪宪/deepseek-flash🐾]

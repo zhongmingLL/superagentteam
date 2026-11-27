@@ -55,6 +55,11 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
   multi-mention callback；operator 授权后 runtime（3005/3014）。
 - F043 AC-4 实机视觉验收：真实 Hub 框架（topbar/sidebar/composer）+ 真实 thread 的
   私有气泡/汇总卡，1440/390、光暗各一组；没有这组图不把 AC-4 标成 live complete。
+- F043 AC-4 视觉 follow-ups（review 记录）：footer “汇总已交给 X”按
+  `received === rows.length` 分完成/将完成语气；replyTo 锚向被隐藏 response 时的
+  展开定位；question 改为结构化字段后的迁移；multi-mention trigger 公开 nameplate
+  与汇总卡 question 双显示；crossPost 保持公开 badge；被隐藏 response 的
+  `mentionsUser` 是否上浮到卡片。
 - 0019 最终 as-built 更新；F043 superseded 状态收口。
 
 ## 非目标

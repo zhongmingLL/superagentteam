@@ -161,6 +161,7 @@ describe("F018 R3-a post_message", () => {
 		expect(result.message.from).toEqual({ kind: "agent", agentId: "a1" });
 		expect(result.message.threadId).toBe("t1");
 		expect(result.message.content).toBe("hello @a2");
+		expect(result.message.extra?.targetAgentIds).toEqual(["a2"]);
 		expect(result.message.lifecycle).toMatchObject({ kind: "input", dispatchRefs: [] });
 		const entry = w.queue.get("t1", result.queueEntryId!)!;
 		expect(entry.kind).toBe("message_wake");
@@ -183,6 +184,7 @@ describe("F018 R3-a post_message", () => {
 		});
 		expect(result.queueEntryId).toBeNull();
 		expect(result.message.mentionsUser).toBe(true);
+		expect(result.message.extra?.targetAgentIds).toBeUndefined();
 		expect(w.queue.listQueued("t1")).toHaveLength(0);
 		const notLineStart = w.service.postMessage(ctx({ piExtToolCallId: "call-not-mention" }), {
 			bodyMd: "hello @operator",
@@ -301,6 +303,7 @@ describe("F018 R3-a cross_post_message", () => {
 			sourceThreadId: "t1",
 			sourceTriggerMessageId: "m-trigger",
 		});
+		expect(result.message.extra?.targetAgentIds).toBeUndefined();
 		const entry = w.queue.get("t2", result.queueEntryId!)!;
 		expect(entry.kind).toBe("message_wake");
 		expect(entry.owner).toEqual({ kind: "system", service: "cross_post" });

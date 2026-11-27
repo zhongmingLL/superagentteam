@@ -131,6 +131,19 @@ operator 在 `a2a-测试` thread 做 multi-mention / post_message / 排队测试
 - 验证：web 120 tests / 25 files 全绿；`npm run build --workspace @superagentteam/web` 绿。
 - 待 operator 视觉验收。
 
+### 2026-11-27 review P1/P2（砚砚）
+
+- **P1 已修**：daemon `post_message` 在写 agent message 时补 `extra.targetAgentIds`
+  （同线程单 target、非 crossPost）；私有气泡在真实数据流可达，并顺手收窄了
+  append→dispatch 间隙的可见性。回归：
+  - `f018-r3-a-post-cross-post.test.ts` 断言 stored message extra；
+  - `api-messages.test.ts` 断言 GET 序列化含 `extra.targetAgentIds`；
+  - daemon 521 passed / 1 skipped；定向 45/45 + API 8/8。
+- **P2 已披露**：以下截图是 **fixture 渲染验证**（无 topbar/sidebar/composer），
+  不是真实 Hub 数据；真实栈 1440/390 光暗截图由 F050 AC-4b 补拍，当前不标 live complete。
+
+> 截图说明：本组图为 fixture 渲染验证，不是真实 Hub 截图。
+
 ![F043 A2A 私有气泡 + multi-mention 汇总卡 · 1440 light](../reports/2026-11-27-f043-a2c-1440-light.png)
 
 ![F043 A2A 私有气泡 + multi-mention 汇总卡 · 1440 dark](../reports/2026-11-27-f043-a2c-1440-dark.png)

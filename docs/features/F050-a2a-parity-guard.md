@@ -2,12 +2,12 @@
 feature_ids: [superagentteam/F050]
 related_features: [superagentteam/F018, superagentteam/F043, superagentteam/F044, superagentteam/F045, superagentteam/F046, superagentteam/F047, superagentteam/F048]
 title: "F050: A2A parity guard & live acceptance"
-status: planned
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
-reviewers: []
+reviewers: [砚砚 (GLM 5.3 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-27
-updated: 2026-11-27
+updated: 2026-11-28
 source_decision: "operator 2026-11-27: 纠正所有 0007↔当前实现偏移；建 parity guard，feature 必须回链 0007/0019/audit"
 ---
 
@@ -70,10 +70,10 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
 
 ## 验收
 
-- [ ] AC-1：parity suite 覆盖 0007 §3.2/§3.5.1/§3.8/§3.9 + audit A–F 整改项；全绿可重跑。
-- [ ] AC-2：PR 模板/quality-gate 有 architecture delta 检查；feature 文档有强制先读块。
-- [ ] AC-3：audit A–F 每行有 fixed / doc-aligned / no-action 证据。
-- [ ] AC-4：隔离 test runtime 跑通 F043 四场景 + 单 target serial + multi-mention
+- [x] AC-1：parity suite 覆盖 0007 §3.2/§3.5.1/§3.8/§3.9 + audit A–F 整改项；全绿可重跑。
+- [x] AC-2：PR 模板/quality-gate 有 architecture delta 检查；feature 文档有强制先读块。
+- [x] AC-3：audit A–F 每行有 fixed / doc-aligned / no-action 证据。
+- [x] AC-4：隔离 test runtime 跑通 F043 四场景 + 单 target serial + multi-mention
   callback；记录 revision/URL/结果。
 - [ ] AC-4b：F043 AC-4 实机截图（1440/390、光暗、真实 Hub 框架）齐备；否则 AC-4
   只算 implemented，不算 live complete。
@@ -92,6 +92,28 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
   （F044 方法）；F050 是把该标准落到 parity suite + 真实 Hub 验收的收口 feature。
 
 ## 证据
+
+### F050 收口证据（2026-11-28 @ `2443b1836`）
+
+- **Parity guard**：`packages/superagentteam-daemon/test/f050-parity-guard.test.ts`
+  （5/5）——锁定 0007 Trigger snapshot/successor/rich block/auto-delivery、
+  无列级 UNIQUE、json_type checks、0019 final as-built 标记、AGENTS+feature→0021
+  强制引用、audit A–F 每行 disposition、PR 模板 architecture/E2E 段。
+- **Parity 行为证据（已有套件，同 HEAD 重跑）**：
+  - `f044-route-fullstack-e2e.test.ts` **12/12**：R1 parallel barrier、R2 delivered
+    failure/retry、R3 cancel、R4 cross_post、R7 Phase B faults、F048 独立 entry/保序/
+    抢占、F046 multi_mention、F046b successor T2。
+  - `f045-context-history-live.e2e.test.ts` 2/2（真实 Kimi）；`f048-queue-concurrency-live.e2e.test.ts`
+    1/1（真实 Kimi 长 turn + 独立 entry）；`f046-multi-mention-live.e2e.test.ts` 1/1
+    （B/C 真实 Kimi aggregate+callback）；`f047-schema-parity.test.ts` 1/1。
+- **Audit A–F 收口表**：`docs/reports/2026-11-28-a2a-alignment-close.md`，逐行
+  fixed/doc-aligned/no-action；`workspace_unavailable` 标 contract-reserved。
+- **架构 guard**：`.github/pull_request_template.md` 强制 Architecture delta（0007/0019/
+  audit）与 E2E evidence（0021）两段。
+- **0019/F043**：0019 标 final-as-built；F043 标 superseded（前端 AC-4 已交付）。
+- **AC-4b / AC-5 未关闭**：F043 AC-4 的 A2A 私有气泡/汇总卡实机 1440/390 光暗截图与
+  operator 视觉验收仍待；runtime 3005/3014 部署需 operator 显式授权。F037 U5–U7 的
+  fresh Hub 截图覆盖 rich block/Settings/responsive，但不冒充 F043 AC-4b。
 
 - **Clowder 参考测试路径**（相对参考仓根目录）：
   - `packages/api/test/route-parallel-*.test.js` / `route-serial-*.test.js`

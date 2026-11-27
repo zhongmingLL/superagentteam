@@ -2,12 +2,12 @@
 feature_ids: [superagentteam/F043]
 related_features: [superagentteam/F037, superagentteam/F041]
 title: "F043: A2A parallel dispatch & post_message surface"
-status: implemented
+status: superseded
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-27
-updated: 2026-11-27
+updated: 2026-11-28
 source_decision: "operator 2026-11-27: a2a-测试 暴露 multi-mention 串行/串上下文、post_message 额外唤醒、气泡语义不清、单 agent 长跑阻塞其他 agent"
 ---
 
@@ -19,6 +19,10 @@ source_decision: "operator 2026-11-27: a2a-测试 暴露 multi-mention 串行/�
 > **前端 AC-4 按 operator 2026-11-27 指示作为 F043 内容补做完成**：A（私有气泡）+
 > C（multi-mention 汇总卡）。F043 的 live 行为继续作为 F044–F050 的回归要求；
 > 不在后端补丁上继续扩展。
+>
+> **F050 status（2026-11-28）**：F043 后端设计 **superseded**；F044–F048 + F046b 已
+> 承接其行为。前端 AC-4（私有气泡 + 汇总卡）已交付；真实 Hub 1440/390 光暗视觉验收
+> 仍归 F050 AC-4b，不把 AC-4 标成 live complete。
 
 ## Why
 

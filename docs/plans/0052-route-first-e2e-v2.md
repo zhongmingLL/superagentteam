@@ -43,7 +43,7 @@ durable-commit admission，归 F046）显式标 known-gap。不使用 unit/targe
 | R4 | B | `cross_post_message` thread1 → thread2，B 回复 | 新 queue entry/parent；source/target 归属正确；T3 各自收敛 | R4；target input 的 dispatchRef、两 parent completed；route 日志 events 各 ≥2 | pass |
 | R5 | B | `multi_mention` B+C + callback A | F046 工具面；one source/parent + N turns；aggregate/callback | 设计已列，尚未自动化（F046） | todo |
 | R6 | B | T2 单写者 / R 生命周期 | R terminal 只由 route/RouteResponseCommitter 写；draft delete、settlement settled | R1/R2 DB 断言（R status、draft null、settlement） | pass |
-| R7 | B | Phase B 失败隔离（draft/credential/retire） | Phase B 失败 = attempt failed + delivery_failure + target pending；不进 provider convergence | 现有 integration：`f044b-phase-b-ownership.test.ts`；fullstack 无 fault injection | partial |
+| R7 | B | Phase B 失败隔离（draft/credential/retire） | Phase B 失败 = attempt failed + delivery_failure + target pending；不进 provider convergence | `f044-route-fullstack-e2e.test.ts` R7 ×3：draft/credential/retire 各一例；attempt failed/terminal `phase_b_failed`、无 TurnExecution/R、delivery_failure reason 精确、target 仍 pending、provider 0 调用 | pass |
 | P1 | P | live pi RPC 单 agent 真实回合 | 真实 pi worker + 真实 Kimi account；R completed | `f018-r3-live.e2e.test.ts`（runtime.env key 注入，不打印） | pass |
 | P2 | U/P | 真实 Hub 单 agent | 真实 account/agent；`REAL_UI_OK`；DB R completed | `f044-ui-real-kimi-success.png`；DB attempt/turn/R completed | pass |
 | P3 | U/P | 真实 Hub 多 target | agentA+agentB 同时回复；T2/T3 正常 | `f044-ui-real-kimi-multi-target.png`；两 parent completed | pass |
@@ -82,5 +82,7 @@ durable-commit admission，归 F046）显式标 known-gap。不使用 unit/targe
 - F045 context/history 续篇：C1/C2 在
   `packages/superagentteam-daemon/test/f045-context-history-e2e.test.ts`（2/2），
   同时把 0007 §3.5.1 trigger snapshot 契约补齐。
+- R7 Phase B fault injection：`f044-route-fullstack-e2e.test.ts` 增 3 例
+  （draft/credential/retire），fullstack 7/7。
 
 [宪宪/deepseek-flash🐾]

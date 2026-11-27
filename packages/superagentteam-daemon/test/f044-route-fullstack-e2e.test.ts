@@ -2,10 +2,11 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/shared/types";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createConsoleToken } from "../src/api/console-link.ts";
 import { initOperatorCredential } from "../src/auth/operator.ts";
+import type { A2ARuntime } from "../src/domains/a2a/runtime.ts";
 import { type DaemonHandle, startDaemon } from "../src/index.ts";
 import {
 	errorResponse,
@@ -408,5 +409,68 @@ describe("F044 route ownership full-stack E2E v2", () => {
 		for (const event of ["phase_b_appended", "turn_worker_bound", "turn_terminal"]) {
 			expect(events.filter((name) => name === event).length).toBeGreaterThanOrEqual(2);
 		}
+	}, 60_000);
+
+	async function assertPhaseBFault(
+		label: string,
+		reason: "draft_create_failed" | "credential_mint_failed" | "retire_targets_failed",
+		detail: string,
+		inject: (runtime: A2ARuntime) => void,
+	): Promise<void> {
+		provider = await startMockAnthropic((request) => {
+			if (request.model === "a-model") return textResponse("SHOULD_NOT_REACH_PROVIDER");
+			return errorResponse("unexpected model", 400);
+		});
+		const { base, headers, thread } = await startStack();
+		const runtime = daemon!.a2aControlPlane!.runtime;
+		inject(runtime);
+
+		const submitted = await submit(base, headers, thread.id, `phase b fault ${label} @a1`, `fault-${label}`);
+		const invocationId = `inv:${thread.id}:${submitted.userMessageId}`;
+		const failed = await waitFor(() => {
+			const attempt = runtime.attempts.getLatest(invocationId, "a1");
+			return attempt?.deliveryState === "failed" ? attempt : null;
+		}, 15_000);
+
+		// Phase B rolled back: typed prestart failure, no TurnExecution/R chain,
+		// target still pending for the bounded retry, and no provider work.
+		expect(failed.terminalReason).toBe("phase_b_failed");
+		expect(failed.turnExecutionId).toBeNull();
+		expect(runtime.turns.listByInvocation(invocationId)).toHaveLength(0);
+		expect(runtime.records.get(invocationId)?.status).toBe("running");
+		const failures = runtime.messages
+			.getByThread(thread.id, 50)
+			.filter((message) => message.lifecycle?.kind === "delivery_failure");
+		expect(failures).toHaveLength(1);
+		expect(failures[0]!.lifecycle).toMatchObject({ kind: "delivery_failure", reason });
+		expect(failures[0]!.content).toContain(detail);
+		const queued = runtime.queue.listQueued(thread.id);
+		expect(queued).toHaveLength(1);
+		expect(queued[0]!.targets.map((target) => target.id)).toEqual(["a1"]);
+		expect(provider.requests).toHaveLength(0);
+	}
+
+	it("R7: draft-create failure is prestart-isolated and leaves the target pending", async () => {
+		await assertPhaseBFault("draft", "draft_create_failed", "draft boom", (runtime) => {
+			vi.spyOn(runtime.drafts, "create").mockImplementationOnce(() => {
+				throw new Error("draft boom");
+			});
+		});
+	}, 60_000);
+
+	it("R7: credential-mint failure is prestart-isolated and leaves the target pending", async () => {
+		await assertPhaseBFault("credential", "credential_mint_failed", "credential boom", (runtime) => {
+			vi.spyOn(runtime.credentials, "create").mockImplementationOnce(() => {
+				throw new Error("credential boom");
+			});
+		});
+	}, 60_000);
+
+	it("R7: retire-targets failure is prestart-isolated and leaves the target pending", async () => {
+		await assertPhaseBFault("retire", "retire_targets_failed", "retire boom", (runtime) => {
+			vi.spyOn(runtime.queue, "retireTargets").mockImplementationOnce(() => {
+				throw new Error("retire boom");
+			});
+		});
 	}, 60_000);
 });

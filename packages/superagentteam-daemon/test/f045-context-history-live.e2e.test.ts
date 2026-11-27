@@ -5,8 +5,8 @@ import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/s
 import { afterEach, describe, expect, it } from "vitest";
 
 import { buildA2ARuntime } from "../src/app/a2a-runtime.ts";
-import { buildRegistry } from "../src/domains/agent/registry.ts";
-import { PiWorkerSpawnPort } from "../src/domains/worker/pi-spawn.ts";
+import { buildRegistry } from "../src/domains/agents/registry.ts";
+import { PiWorkerSpawnPort } from "../src/domains/workers/pi-spawn.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
 
 // F045 AC-E2E (operator 2026-11-27/28): the F044 method also applies to

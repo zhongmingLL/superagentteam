@@ -1,14 +1,14 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { QueueEntry, RichMessageExtra, StoredMessage } from "@superagentteam/shared/types";
-import { canonicalJson } from "../../infrastructure/canonical-json.ts";
-import { runInTransaction } from "../../infrastructure/db/database.ts";
-import type { ChangeBus } from "../../infrastructure/events/bus.ts";
-import { parseOperatorMentions } from "../agent/mentions.ts";
-import type { AgentRegistry, ResolvedTarget } from "../agent/registry.ts";
-import { resolveExplicitTarget } from "../agent/registry.ts";
-import type { MessageStore } from "../message/store.ts";
-import type { QueueLedgerStore } from "../queue/store.ts";
-import type { ThreadStore } from "../thread/store.ts";
+import { canonicalJson } from "../../../infrastructure/canonical-json.ts";
+import { runInTransaction } from "../../../infrastructure/db/database.ts";
+import type { ChangeBus } from "../../../infrastructure/events/bus.ts";
+import { parseOperatorMentions } from "../../agents/mentions.ts";
+import type { AgentRegistry, ResolvedTarget } from "../../agents/registry.ts";
+import { resolveExplicitTarget } from "../../agents/registry.ts";
+import type { MessageStore } from "../../messages/store.ts";
+import type { QueueLedgerStore } from "../../queue/ledger/store.ts";
+import type { ThreadStore } from "../../threads/store.ts";
 
 // F018 R2-a OperatorMessageIngress (0007 §3.0): operator-side A2A admission.
 // Explicit @ anywhere in the body resolves via the registry mention index;

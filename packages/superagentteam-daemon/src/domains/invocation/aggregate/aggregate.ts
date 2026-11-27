@@ -1,9 +1,9 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { QueueEntry } from "@superagentteam/shared/types";
-import { runInTransaction } from "../../infrastructure/db/database.ts";
-import type { QueueLedgerStore } from "../queue/store.ts";
+import { runInTransaction } from "../../../infrastructure/db/database.ts";
+import type { QueueLedgerStore } from "../../queue/ledger/store.ts";
+import type { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "../index.ts";
 import { type CollectorTargetView, collectTerminalDispositions } from "./collector.ts";
-import type { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "./store.ts";
 
 // F018 R2-d shared T3 aggregator (§3.9): the ONE implementation used by both
 // the QueueProcessor (post-dispatch) and recovery (startup/reaper). Runs in a

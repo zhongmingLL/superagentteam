@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { A2ARuntime } from "../app/a2a-runtime.ts";
 import { operatorCredentialPaths } from "../domains/access/operator.ts";
-import type { AgentRegistry } from "../domains/agent/registry.ts";
+import type { AgentRegistry } from "../domains/agents/registry.ts";
 import type { ChangeBus } from "../infrastructure/events/bus.ts";
 import { verifyConsoleToken } from "./console-link.ts";
 import { sendError, sendJson } from "./http.ts";

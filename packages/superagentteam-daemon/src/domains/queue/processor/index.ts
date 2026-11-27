@@ -1,21 +1,21 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { AgentConfig, AgentSession, QueueEntry, QueueTarget } from "@superagentteam/shared/types";
-import { runInTransaction } from "../../infrastructure/db/database.ts";
-import type { A2ALog } from "../a2a/log.ts";
-import { PhaseBError, type PreparedDispatch, recordPrestartFailure } from "../agent/invoke-single-agent.ts";
-import type { AgentRegistry } from "../agent/registry.ts";
-import type { AgentRouter, RouteError } from "../agent/route.ts";
-import type { InvocationCredentialStore } from "../auth/store.ts";
-import { aggregateParent } from "../invocation/aggregate.ts";
-import type { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "../invocation/store.ts";
-import type { MessageStore } from "../message/store.ts";
-import type { MultiMentionOrchestrator } from "../multi-mention/orchestrator.ts";
-import type { MultiMentionStore } from "../multi-mention/store.ts";
-import type { ResponseDraftStore } from "../response/store.ts";
-import type { AgentSessionStore } from "../session/store.ts";
-import type { ThreadStore } from "../thread/store.ts";
-import type { QueueLedgerStore } from "./store.ts";
-import type { InvocationTracker } from "./tracker.ts";
+import { runInTransaction } from "../../../infrastructure/db/database.ts";
+import type { A2ALog } from "../../../shared/a2a-log.ts";
+import type { AgentRouter, RouteError } from "../../a2a/routing/route.ts";
+import type { AgentRegistry } from "../../agents/registry.ts";
+import type { InvocationCredentialStore } from "../../credentials/store.ts";
+import { PhaseBError, type PreparedDispatch, recordPrestartFailure } from "../../execution/invoke-single-agent.ts";
+import { aggregateParent } from "../../invocation/aggregate/aggregate.ts";
+import type { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "../../invocation/index.ts";
+import type { MessageStore } from "../../messages/store.ts";
+import type { MultiMentionOrchestrator } from "../../multi-mention/orchestrator.ts";
+import type { MultiMentionStore } from "../../multi-mention/store.ts";
+import type { AgentSessionStore } from "../../sessions/store.ts";
+import type { ResponseDraftStore } from "../../streaming/store.ts";
+import type { ThreadStore } from "../../threads/store.ts";
+import type { QueueLedgerStore } from "../ledger/store.ts";
+import type { InvocationTracker } from "../tracker/index.ts";
 
 // F018 R2-a QueueProcessor (0007 §3.2 + 0010 §6.1.1 steps 1-4): candidate
 // selection, dispatch preflight, Phase A single transaction (parent + all
@@ -25,7 +25,7 @@ import type { InvocationTracker } from "./tracker.ts";
 // response commit; invoke-single-agent owns Phase B inside the runner
 // (F044b).
 
-export type { PreparedDispatch } from "../agent/invoke-single-agent.ts";
+export type { PreparedDispatch } from "../../execution/invoke-single-agent.ts";
 
 /** Optional capacity preflight (R2-b: WorkerPool.checkCapacity). */
 export interface CapacityChecker {

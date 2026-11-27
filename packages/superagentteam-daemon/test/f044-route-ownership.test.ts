@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { AgentRouter, type AgentTurnResult, type TurnContext } from "../src/domains/agent/route.ts";
-import type { HistoryWindow } from "../src/domains/history/assembler.ts";
-import type { PreparedDispatch } from "../src/domains/queue/processor.ts";
+import { AgentRouter, type AgentTurnResult, type TurnContext } from "../src/domains/a2a/routing/route.ts";
+import type { HistoryWindow } from "../src/domains/context/assembler.ts";
+import type { PreparedDispatch } from "../src/domains/queue/processor/index.ts";
 
 const EMPTY_WINDOW: HistoryWindow = { mode: "bootstrap", rows: [], boundarySeq: 0 };
 

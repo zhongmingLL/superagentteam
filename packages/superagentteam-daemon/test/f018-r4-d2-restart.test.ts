@@ -5,11 +5,11 @@ import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/s
 import { afterEach, describe, expect, it } from "vitest";
 
 import { type A2ARuntime, buildA2ARuntime } from "../src/app/a2a-runtime.ts";
-import { InvokeSingleAgent } from "../src/domains/agent/invoke-single-agent.ts";
-import { buildRegistry } from "../src/domains/agent/registry.ts";
-import { AgentRouter } from "../src/domains/agent/route.ts";
-import { QueueProcessor } from "../src/domains/queue/processor.ts";
-import type { WorkerRpcConnection, WorkerSpawnPort } from "../src/domains/worker/pool.ts";
+import { AgentRouter } from "../src/domains/a2a/routing/route.ts";
+import { buildRegistry } from "../src/domains/agents/registry.ts";
+import { InvokeSingleAgent } from "../src/domains/execution/invoke-single-agent.ts";
+import { QueueProcessor } from "../src/domains/queue/processor/index.ts";
+import type { WorkerRpcConnection, WorkerSpawnPort } from "../src/domains/workers/pool.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
 
 const dirs: string[] = [];

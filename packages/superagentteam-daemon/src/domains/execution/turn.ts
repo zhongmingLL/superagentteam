@@ -1,19 +1,19 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { AgentStreamEvent } from "@superagentteam/shared/types";
 import { runInTransaction } from "../../infrastructure/db/database.ts";
-import type { A2ALog } from "../a2a/log.ts";
-import type { InvocationCredentialStore } from "../auth/store.ts";
-import { TurnExecutionLifecycle } from "../invocation/settlement.ts";
-import type { InvocationAttemptStore, TurnExecutionStore } from "../invocation/store.ts";
-import type { AgentReadStateStore, MessageStore } from "../message/store.ts";
-import { ResponseEventSink } from "../response/sink.ts";
-import type { ResponseDraftStore } from "../response/store.ts";
-import type { AgentSessionStore } from "../session/store.ts";
-import type { ThreadStore } from "../thread/store.ts";
-import type { WorkerPool } from "../worker/pool.ts";
-import type { WorkerPoolKey } from "../worker/store.ts";
+import type { A2ALog } from "../../shared/a2a-log.ts";
+import type { AgentTurnCompletion, AgentTurnInput, AgentTurnResult, TurnRunner } from "../a2a/routing/route.ts";
+import type { InvocationCredentialStore } from "../credentials/store.ts";
+import type { InvocationAttemptStore, TurnExecutionStore } from "../invocation/index.ts";
+import { TurnExecutionLifecycle } from "../invocation/settlement/index.ts";
+import type { AgentReadStateStore, MessageStore } from "../messages/store.ts";
+import type { AgentSessionStore } from "../sessions/store.ts";
+import { ResponseEventSink } from "../streaming/sink.ts";
+import type { ResponseDraftStore } from "../streaming/store.ts";
+import type { ThreadStore } from "../threads/store.ts";
+import type { WorkerPool } from "../workers/pool.ts";
+import type { WorkerPoolKey } from "../workers/store.ts";
 import type { InvokeSingleAgent } from "./invoke-single-agent.ts";
-import type { AgentTurnCompletion, AgentTurnInput, AgentTurnResult, TurnRunner } from "./route.ts";
 
 // F018 R2-b runAgentTurn (0007 §3.5 / 0010 §6.1.1 steps 2-8): the real
 // TurnRunner. The route owns context assembly (batch-barrier snapshot + prompt)

@@ -2,14 +2,14 @@ import { createHash, randomUUID } from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
 
 import { MAX_A2A_DEPTH, type StoredMessage } from "@superagentteam/shared/types";
-import { runInTransaction } from "../../infrastructure/db/database.ts";
-import type { ChangeBus } from "../../infrastructure/events/bus.ts";
-import type { AgentRegistry } from "../agent/registry.ts";
-import type { InvocationCredentialStore } from "../auth/store.ts";
-import type { MessageStore } from "../message/store.ts";
-import type { QueueLedgerStore } from "../queue/store.ts";
-import type { ThreadStore } from "../thread/store.ts";
-import type { LoopGuardService } from "./loop-guard.ts";
+import { runInTransaction } from "../../../infrastructure/db/database.ts";
+import type { ChangeBus } from "../../../infrastructure/events/bus.ts";
+import type { AgentRegistry } from "../../agents/registry.ts";
+import type { InvocationCredentialStore } from "../../credentials/store.ts";
+import type { MessageStore } from "../../messages/store.ts";
+import type { QueueLedgerStore } from "../../queue/ledger/store.ts";
+import type { ThreadStore } from "../../threads/store.ts";
+import type { LoopGuardService } from "../loop-guard.ts";
 
 // F018 R3-a A2A text tools (0007 §3.8): post_message / cross_post_message.
 // One agent target max; message + queue + dispatchRefs are one transaction.

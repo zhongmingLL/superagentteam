@@ -4,7 +4,7 @@ import {
 	type RichBlock,
 	type RichBlockKind,
 } from "@superagentteam/shared/types";
-import type { ResponseDraftStore } from "../response/store.ts";
+import type { ResponseDraftStore } from "../streaming/store.ts";
 import { RICH_BLOCK_KINDS } from "./tool-surface.ts";
 
 export type RichBlockErrorCode =

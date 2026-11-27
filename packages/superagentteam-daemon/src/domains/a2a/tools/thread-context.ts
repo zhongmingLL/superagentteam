@@ -5,9 +5,9 @@ import type {
 	ThreadContextMessageView,
 	ThreadContextResult,
 } from "@superagentteam/shared/types";
-import { visibleTo } from "../history/assembler.ts";
-import type { MessageStore } from "../message/store.ts";
-import type { ThreadStore } from "../thread/store.ts";
+import { visibleTo } from "../../context/assembler.ts";
+import type { MessageStore } from "../../messages/store.ts";
+import type { ThreadStore } from "../../threads/store.ts";
 import { A2AToolError } from "./tool-service.ts";
 
 // F018 R4-a thread_context (0007 §3.8): bounded, read-only thread window.

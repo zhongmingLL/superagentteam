@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import type { A2ARuntime } from "../../app/a2a-runtime.ts";
-import { getThreadLiveInvocations } from "../../domains/invocation/live.ts";
+import { getThreadLiveInvocations } from "../../domains/invocation/read-models/live.ts";
 import { sendError, sendJson } from "../http.ts";
 import type { ApiRouteContext } from "./context.ts";
 

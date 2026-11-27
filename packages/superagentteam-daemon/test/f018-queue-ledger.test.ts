@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { QUEUE_CAP_PER_KIND, QueueLedgerStore } from "../src/domains/queue/store.ts";
+import { QUEUE_CAP_PER_KIND, QueueLedgerStore } from "../src/domains/queue/ledger/store.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
 
 const dirs: string[] = [];

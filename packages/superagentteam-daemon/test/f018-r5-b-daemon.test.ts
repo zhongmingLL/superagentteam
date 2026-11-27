@@ -5,10 +5,10 @@ import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/s
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { startDaemon } from "../src/app/daemon.ts";
 import { A2ADaemonControlPlane } from "../src/app/daemon-a2a.ts";
-import { buildRegistry } from "../src/domains/agent/registry.ts";
-import { InvocationRecordStore, TurnExecutionStore } from "../src/domains/invocation/store.ts";
-import { ThreadStore } from "../src/domains/thread/store.ts";
-import type { WorkerRpcConnection, WorkerSpawnPort } from "../src/domains/worker/pool.ts";
+import { buildRegistry } from "../src/domains/agents/registry.ts";
+import { InvocationRecordStore, TurnExecutionStore } from "../src/domains/invocation/index.ts";
+import { ThreadStore } from "../src/domains/threads/store.ts";
+import type { WorkerRpcConnection, WorkerSpawnPort } from "../src/domains/workers/pool.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
 import type { RpcEvent } from "../src/pi-worker/rpc-client.ts";
 

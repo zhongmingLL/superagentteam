@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { AccountConfig, AgentSession } from "@superagentteam/shared/types";
 import { RpcConnection } from "../../pi-worker/rpc-client.ts";
-import type { AccountStore } from "../account/store.ts";
+import type { AccountStore } from "../accounts/store.ts";
 import type { SpawnedWorker, WorkerSpawnPort } from "./pool.ts";
 import type { WorkerPoolKey } from "./store.ts";
 

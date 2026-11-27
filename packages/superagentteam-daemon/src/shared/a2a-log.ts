@@ -1,4 +1,4 @@
-import type { LogLevel } from "../../observability/contracts.ts";
+import type { LogLevel } from "../observability/contracts.ts";
 
 // Structured A2A lifecycle log hook. The daemon wires this to the local
 // JsonlLogStore; tests can inject a collector. Events carry identifiers only

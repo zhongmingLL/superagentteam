@@ -2,19 +2,19 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { AgentStreamEvent } from "@superagentteam/shared/types";
-import { defaultA2AControlSocketPath } from "../domains/a2a/control.ts";
-import type { A2ALog } from "../domains/a2a/log.ts";
-import { AccountStore } from "../domains/account/store.ts";
-import type { AgentRegistry } from "../domains/agent/registry.ts";
-import { loadRegistryFromFiles } from "../domains/agent/registry.ts";
+import { defaultA2AControlSocketPath } from "../domains/a2a/tools/control.ts";
+import { AccountStore } from "../domains/accounts/store.ts";
+import type { AgentRegistry } from "../domains/agents/registry.ts";
+import { loadRegistryFromFiles } from "../domains/agents/registry.ts";
 import {
 	PiWorkerSpawnPort,
 	resolveA2AExtensionPath,
 	resolveRichMessagingSkillPath,
-} from "../domains/worker/pi-spawn.ts";
-import type { WorkerSpawnPort } from "../domains/worker/pool.ts";
+} from "../domains/workers/pi-spawn.ts";
+import type { WorkerSpawnPort } from "../domains/workers/pool.ts";
 import { F018Database } from "../infrastructure/db/database.ts";
 import type { ChangeBus } from "../infrastructure/events/bus.ts";
+import type { A2ALog } from "../shared/a2a-log.ts";
 import { envValue } from "../shared/env.ts";
 import { DaemonError } from "../shared/errors.ts";
 import { type A2ARuntime, buildA2ARuntime } from "./a2a-runtime.ts";

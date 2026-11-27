@@ -1,6 +1,6 @@
 import type { StoredMessage, Thread } from "@superagentteam/shared/types";
 
-import type { AgentReadStateStore, MessageStore } from "../message/store.ts";
+import type { AgentReadStateStore, MessageStore } from "../messages/store.ts";
 
 // F018 R2-0 HistoryAssembler + buildThreadPrompt (0007 §3.5.1 / 0020 R2):
 // per-(thread, agent) delivery-cursor windowed history with visibility

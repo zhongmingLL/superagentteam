@@ -3,8 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AgentSession } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it } from "vitest";
-import { AccountStore } from "../src/domains/account/store.ts";
-import { freshPiSessionId, PiWorkerSpawnPort, resolveRichMessagingSkillPath } from "../src/domains/worker/pi-spawn.ts";
+import { AccountStore } from "../src/domains/accounts/store.ts";
+import { freshPiSessionId, PiWorkerSpawnPort, resolveRichMessagingSkillPath } from "../src/domains/workers/pi-spawn.ts";
 
 // F018 R3-d: real child-process spawn contract. This is not a mock spawn port:
 // PiWorkerSpawnPort launches a Node process over stdio and speaks the pi RPC

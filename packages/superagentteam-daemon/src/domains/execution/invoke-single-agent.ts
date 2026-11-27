@@ -1,14 +1,14 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { AgentConfig, MessageLifecycle, QueueExecution } from "@superagentteam/shared/types";
 import { runInTransaction } from "../../infrastructure/db/database.ts";
-import type { A2ALog } from "../a2a/log.ts";
-import { WORKER_CREDENTIAL_TOOL_NAMES } from "../a2a/tool-service.ts";
-import type { InvocationCredentialStore } from "../auth/store.ts";
-import type { InvocationAttemptStore, TurnExecutionStore } from "../invocation/store.ts";
-import type { MessageStore } from "../message/store.ts";
-import type { QueueLedgerStore } from "../queue/store.ts";
-import type { ResponseDraftStore } from "../response/store.ts";
-import type { AgentSessionStore } from "../session/store.ts";
+import type { A2ALog } from "../../shared/a2a-log.ts";
+import { WORKER_CREDENTIAL_TOOL_NAMES } from "../a2a/tools/tool-service.ts";
+import type { InvocationCredentialStore } from "../credentials/store.ts";
+import type { InvocationAttemptStore, TurnExecutionStore } from "../invocation/index.ts";
+import type { MessageStore } from "../messages/store.ts";
+import type { QueueLedgerStore } from "../queue/ledger/store.ts";
+import type { AgentSessionStore } from "../sessions/store.ts";
+import type { ResponseDraftStore } from "../streaming/store.ts";
 
 // F044b invoke-single-agent (0007 §3.6): the Phase B owner. QueueProcessor
 // keeps the Phase A reservation (parent + attempts `starting`) and hands the

@@ -1,10 +1,10 @@
-import type { A2ALog } from "../a2a/log.ts";
-import type { HistoryWindow } from "../history/assembler.ts";
-import { buildThreadPrompt, type HistoryAssembler } from "../history/assembler.ts";
-import type { MessageStore } from "../message/store.ts";
-import type { ThreadStore } from "../thread/store.ts";
-import type { PreparedDispatch } from "./invoke-single-agent.ts";
-import type { AgentRegistry } from "./registry.ts";
+import type { A2ALog } from "../../../shared/a2a-log.ts";
+import type { AgentRegistry } from "../../agents/registry.ts";
+import type { HistoryWindow } from "../../context/assembler.ts";
+import { buildThreadPrompt, type HistoryAssembler } from "../../context/assembler.ts";
+import type { PreparedDispatch } from "../../execution/invoke-single-agent.ts";
+import type { MessageStore } from "../../messages/store.ts";
+import type { ThreadStore } from "../../threads/store.ts";
 
 // F044 route layer (0007 §3.5): QueueProcessor hands the Phase-A prepared
 // targets to AgentRouter. routeParallel MUST assemble every child context at

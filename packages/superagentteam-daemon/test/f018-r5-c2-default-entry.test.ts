@@ -4,7 +4,7 @@ import { join } from "node:path";
 import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { startDaemon } from "../src/daemon.ts";
+import { startDaemon } from "../src/app/daemon.ts";
 
 const dirs: string[] = [];
 const ACCOUNT: AccountConfig = { ref: "main", provider: "pi", apiKeyRef: "KEY", models: ["m1"] };

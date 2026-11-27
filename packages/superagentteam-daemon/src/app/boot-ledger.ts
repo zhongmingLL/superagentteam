@@ -1,5 +1,5 @@
 import { appendFileSync, chmodSync, existsSync, readFileSync } from "node:fs";
-import { DaemonError } from "./errors.ts";
+import { DaemonError } from "../shared/errors.ts";
 
 export type BootEvent = "started" | "ready" | "stopping" | "stopped" | "exited" | "failed" | "fence_reclaimed";
 

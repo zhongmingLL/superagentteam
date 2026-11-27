@@ -2,7 +2,7 @@ import { connect, type Socket } from "node:net";
 import { Type } from "typebox";
 import { A2A_V1_TOOL_SPECS } from "../domains/a2a/tool-surface.ts";
 import { RICH_BLOCK_TOOL_NAME, RICH_BLOCK_TOOL_SPEC } from "../domains/rich-block/tool-surface.ts";
-import { envValue } from "../env.ts";
+import { envValue } from "../shared/env.ts";
 
 // F018 R5-a / F031: v1 pi worker extension. It registers the four canonical
 // A2A tools plus the rich-block producer and forwards each call to the

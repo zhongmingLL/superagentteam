@@ -11,11 +11,11 @@ import {
 	requireCsrf,
 	SessionStore,
 } from "../src/api/session.ts";
-import { initOperatorCredential } from "../src/auth/operator.ts";
+import { resolveDaemonPaths } from "../src/app/paths.ts";
+import { readStateFile } from "../src/app/state.ts";
 import { runCli } from "../src/cli/index.ts";
+import { initOperatorCredential } from "../src/domains/access/operator.ts";
 import { type DaemonHandle, startDaemon } from "../src/index.ts";
-import { resolveDaemonPaths } from "../src/paths.ts";
-import { readStateFile } from "../src/state.ts";
 
 describe("F016c-M1 S1 browser session", () => {
 	let root: string;

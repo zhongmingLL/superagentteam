@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { operatorCredentialPaths, signOperatorPayload } from "../auth/operator.ts";
-import { ControlError } from "../control/errors.ts";
-import { envValue } from "../env.ts";
-import { authorizationPayload, StopOperationService } from "../lifecycle/index.ts";
-import { resolveDaemonPaths } from "../paths.ts";
-import { readStateFile } from "../state.ts";
+import { resolveDaemonPaths } from "../app/paths.ts";
+import { readStateFile } from "../app/state.ts";
+import { operatorCredentialPaths, signOperatorPayload } from "../domains/access/operator.ts";
+import { authorizationPayload, StopOperationService } from "../infrastructure/process/index.ts";
+import { ControlError } from "../shared/control/errors.ts";
+import { envValue } from "../shared/env.ts";
 import { option, type ParsedArgs } from "./args.ts";
 import { type CliCommandContext, requireOperator } from "./context.ts";
 import { writeJson, writeLine } from "./output.ts";

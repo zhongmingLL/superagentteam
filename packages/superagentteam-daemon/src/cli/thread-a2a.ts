@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
 import type { StoredMessage } from "@superagentteam/shared/types";
-import { ControlError } from "../control/errors.ts";
 import { OperatorMessageIngress } from "../domains/a2a/router.ts";
 import type { AgentRegistry } from "../domains/agent/registry.ts";
 import { loadRegistryFromFiles } from "../domains/agent/registry.ts";
@@ -10,6 +9,7 @@ import { MessageStore } from "../domains/message/store.ts";
 import { QueueLedgerStore } from "../domains/queue/store.ts";
 import { ThreadStore } from "../domains/thread/store.ts";
 import { F018Database } from "../infrastructure/db/database.ts";
+import { ControlError } from "../shared/control/errors.ts";
 import { flag, numberOption, option, options, type ParsedArgs } from "./args.ts";
 import { requireOperator } from "./context.ts";
 import { writeJson, writeLine, writeTable } from "./output.ts";

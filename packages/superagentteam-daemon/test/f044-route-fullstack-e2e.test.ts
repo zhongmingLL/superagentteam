@@ -5,8 +5,8 @@ import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/s
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createConsoleToken } from "../src/api/console-link.ts";
-import { initOperatorCredential } from "../src/auth/operator.ts";
-import type { A2ARuntime } from "../src/domains/a2a/runtime.ts";
+import type { A2ARuntime } from "../src/app/a2a-runtime.ts";
+import { initOperatorCredential } from "../src/domains/access/operator.ts";
 import { type DaemonHandle, startDaemon } from "../src/index.ts";
 import {
 	errorResponse,

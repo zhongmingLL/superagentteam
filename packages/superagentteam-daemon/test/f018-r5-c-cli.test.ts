@@ -3,10 +3,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it, vi } from "vitest";
-
-import { initOperatorCredential } from "../src/auth/operator.ts";
 import { requireOperator } from "../src/cli/context.ts";
 import { runCli } from "../src/cli/index.ts";
+import { initOperatorCredential } from "../src/domains/access/operator.ts";
 import { MessageStore } from "../src/domains/message/store.ts";
 import { QueueLedgerStore } from "../src/domains/queue/store.ts";
 import { ThreadStore } from "../src/domains/thread/store.ts";

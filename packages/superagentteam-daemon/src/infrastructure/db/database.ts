@@ -2,7 +2,7 @@ import { chmodSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
-import { resolveDataDir } from "../../env.ts";
+import { resolveDataDir } from "../../shared/env.ts";
 import { assertF018MigrationSet, F018_MIGRATIONS } from "./migrations/index.ts";
 
 /**

@@ -1,7 +1,7 @@
 import { chmodSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { resolveDataDir } from "./env.ts";
-import { DaemonError } from "./errors.ts";
+import { resolveDataDir } from "../shared/env.ts";
+import { DaemonError } from "../shared/errors.ts";
 
 export interface DaemonPaths {
 	dataDir: string;

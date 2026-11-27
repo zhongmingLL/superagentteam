@@ -1,5 +1,5 @@
 import { closeSync, existsSync, openSync, readFileSync, unlinkSync, writeSync } from "node:fs";
-import { DaemonError } from "./errors.ts";
+import { DaemonError } from "../shared/errors.ts";
 
 export interface FenceRecord {
 	schemaVersion: 1;

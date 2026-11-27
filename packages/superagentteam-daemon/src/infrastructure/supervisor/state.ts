@@ -1,6 +1,6 @@
 import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { ControlError } from "../control/errors.ts";
+import { ControlError } from "../../shared/control/errors.ts";
 import type { RuntimeStateFile } from "./types.ts";
 
 export const RUNTIME_STATE_FILE = "runtime-state.json";

@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { parseRuntimeEnvFile, requiredEnvNames, resolveRuntimeEnv } from "../src/runtime/env.ts";
+import { parseRuntimeEnvFile, requiredEnvNames, resolveRuntimeEnv } from "../src/infrastructure/supervisor/env.ts";
 
 const dirs: string[] = [];
 afterEach(() => {

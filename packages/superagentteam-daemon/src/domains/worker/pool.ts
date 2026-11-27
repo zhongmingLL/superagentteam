@@ -1,6 +1,6 @@
 import type { AgentSession } from "@superagentteam/shared/types";
 
-import type { RpcEvent } from "../../workers/rpc-client.ts";
+import type { RpcEvent } from "../../pi-worker/rpc-client.ts";
 import type { WorkerBindingStore, WorkerPoolKey, WorkerStore } from "./store.ts";
 
 // F018 R2-b WorkerPool (0007 §3.5.2): ephemeral execution carriers. One

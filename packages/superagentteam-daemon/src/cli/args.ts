@@ -1,4 +1,4 @@
-import { ControlError } from "../control/errors.ts";
+import { ControlError } from "../shared/control/errors.ts";
 
 export interface ParsedArgs {
 	readonly positionals: string[];

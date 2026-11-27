@@ -206,9 +206,7 @@ describe("F018 R3 multi_mention store", () => {
 	it("rejects oversized question/context and mismatched callbacks", () => {
 		const w = makeWorld();
 		expect(() =>
-			w.store.createRequest(
-				requestInput({ question: "x".repeat(5 * 1024 + 1), sourceRecordId: "src-too-large" }),
-			),
+			w.store.createRequest(requestInput({ question: "x".repeat(5 * 1024 + 1), sourceRecordId: "src-too-large" })),
 		).toThrow("multi_mention_question_too_large");
 		w.store.createRequest(requestInput({ sourceRecordId: "src-cb-check" }));
 		const aggregate = w.messages.append({

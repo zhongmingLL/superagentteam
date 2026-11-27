@@ -1,8 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { operatorCredentialPaths } from "../auth/operator.ts";
-import type { A2ARuntime } from "../domains/a2a/runtime.ts";
+import type { A2ARuntime } from "../app/a2a-runtime.ts";
+import { operatorCredentialPaths } from "../domains/access/operator.ts";
 import type { AgentRegistry } from "../domains/agent/registry.ts";
-import type { ChangeBus } from "../domains/events/bus.ts";
+import type { ChangeBus } from "../infrastructure/events/bus.ts";
 import { verifyConsoleToken } from "./console-link.ts";
 import { sendError, sendJson } from "./http.ts";
 import { type AgentRoutes, createAgentRoutes } from "./routes/agents.ts";

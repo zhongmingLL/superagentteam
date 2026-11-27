@@ -1,5 +1,5 @@
 import { createPublicKey } from "node:crypto";
-import { ControlError } from "../control/errors.ts";
+import { ControlError } from "../../shared/control/errors.ts";
 import { MERGE_SERVICE_ACTOR, type MergeServicePayload } from "./merge-credential.ts";
 import { fingerprintOfPublicKey, verifyOperatorSignature } from "./operator.ts";
 

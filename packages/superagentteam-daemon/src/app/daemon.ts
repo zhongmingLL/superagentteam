@@ -1,22 +1,22 @@
 import { randomUUID } from "node:crypto";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { join } from "node:path";
-import { type BrowserApi, createBrowserApi } from "./api/browser.ts";
-import { isLoopbackOrigin } from "./api/session.ts";
-import { createStaticHandler } from "./api/static.ts";
-import { appendBootRecord, nextBootSequence } from "./boot-ledger.ts";
-import { A2ADaemonControlPlane, type A2ADaemonControlPlaneOptions } from "./daemon-a2a.ts";
-import { ChangeBus } from "./domains/events/bus.ts";
-import { envValue } from "./env.ts";
-import { DaemonError } from "./errors.ts";
-import { acquireFence, releaseFence } from "./fence.ts";
-import { resolveInstallation } from "./installation.ts";
-import type { ReadyStatus } from "./observability/contracts.ts";
+import { type BrowserApi, createBrowserApi } from "../api/browser.ts";
+import { isLoopbackOrigin } from "../api/session.ts";
+import { createStaticHandler } from "../api/static.ts";
+import { ChangeBus } from "../infrastructure/events/bus.ts";
+import type { ReadyStatus } from "../observability/contracts.ts";
 import {
 	createObservabilityRuntime,
 	disabledObservabilityRuntime,
 	type ObservabilityRuntime,
-} from "./observability/runtime.ts";
+} from "../observability/runtime.ts";
+import { envValue } from "../shared/env.ts";
+import { DaemonError } from "../shared/errors.ts";
+import { appendBootRecord, nextBootSequence } from "./boot-ledger.ts";
+import { A2ADaemonControlPlane, type A2ADaemonControlPlaneOptions } from "./daemon-a2a.ts";
+import { acquireFence, releaseFence } from "./fence.ts";
+import { resolveInstallation } from "./installation.ts";
 import { resolveDaemonPaths } from "./paths.ts";
 import { type DaemonState, type DaemonStateFile, writeStateFile } from "./state.ts";
 

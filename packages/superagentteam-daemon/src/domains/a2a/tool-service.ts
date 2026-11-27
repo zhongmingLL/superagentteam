@@ -3,9 +3,9 @@ import type { DatabaseSync } from "node:sqlite";
 
 import { MAX_A2A_DEPTH, type StoredMessage } from "@superagentteam/shared/types";
 import { runInTransaction } from "../../infrastructure/db/database.ts";
+import type { ChangeBus } from "../../infrastructure/events/bus.ts";
 import type { AgentRegistry } from "../agent/registry.ts";
 import type { InvocationCredentialStore } from "../auth/store.ts";
-import type { ChangeBus } from "../events/bus.ts";
 import type { MessageStore } from "../message/store.ts";
 import type { QueueLedgerStore } from "../queue/store.ts";
 import type { ThreadStore } from "../thread/store.ts";

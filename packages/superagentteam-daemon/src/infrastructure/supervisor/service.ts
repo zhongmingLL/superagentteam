@@ -1,5 +1,5 @@
-import { ControlError } from "../control/errors.ts";
-import type { ProcessIdentity } from "../lifecycle/types.ts";
+import { ControlError } from "../../shared/control/errors.ts";
+import type { ProcessIdentity } from "../process/types.ts";
 import { readRuntimeState, resolveRuntimeStatePath, writeRuntimeState } from "./state.ts";
 import type {
 	RuntimeEndResult,

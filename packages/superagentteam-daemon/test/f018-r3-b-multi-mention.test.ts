@@ -4,14 +4,14 @@ import { join } from "node:path";
 import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { type A2ARuntime, buildA2ARuntime } from "../src/domains/a2a/runtime.ts";
+import { type A2ARuntime, buildA2ARuntime } from "../src/app/a2a-runtime.ts";
 import { type A2AToolContext, A2AToolError } from "../src/domains/a2a/tool-service.ts";
 import { buildRegistry } from "../src/domains/agent/registry.ts";
 import { MultiMentionOrchestrator } from "../src/domains/multi-mention/orchestrator.ts";
 import { QUEUE_CAP_PER_KIND } from "../src/domains/queue/store.ts";
 import type { WorkerRpcConnection, WorkerSpawnPort } from "../src/domains/worker/pool.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
-import type { RpcEvent } from "../src/workers/rpc-client.ts";
+import type { RpcEvent } from "../src/pi-worker/rpc-client.ts";
 
 const dirs: string[] = [];
 const ACCOUNT: AccountConfig = { ref: "main", provider: "pi", apiKeyRef: "KEY", models: ["m1"] };

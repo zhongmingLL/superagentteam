@@ -1,6 +1,6 @@
 import { chmodSync, mkdirSync } from "node:fs";
-import { ControlError } from "./control/errors.ts";
-import { resolveDataDir } from "./env.ts";
+import { ControlError } from "../shared/control/errors.ts";
+import { resolveDataDir } from "../shared/env.ts";
 
 /** Resolve and prepare the 0700 data directory shared by v1 surfaces. */
 export function resolveControlDataDir(dataDir?: string): string {

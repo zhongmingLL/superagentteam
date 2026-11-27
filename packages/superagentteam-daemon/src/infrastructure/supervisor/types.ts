@@ -1,6 +1,6 @@
-import type { ProcessIdentityProvider } from "../lifecycle/process.ts";
-import type { ProcessSignalSender } from "../lifecycle/signal.ts";
-import type { ProcessIdentity } from "../lifecycle/types.ts";
+import type { ProcessIdentityProvider } from "../process/process.ts";
+import type { ProcessSignalSender } from "../process/signal.ts";
+import type { ProcessIdentity } from "../process/types.ts";
 
 export type RuntimeLifecycleState = "starting" | "running" | "degraded" | "stopped" | "failed";
 

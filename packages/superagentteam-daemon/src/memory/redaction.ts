@@ -1,7 +1,7 @@
 import { realpathSync } from "node:fs";
 import { homedir } from "node:os";
 import { delimiter, dirname, isAbsolute, join, normalize, relative, resolve, sep } from "node:path";
-import { envValue } from "../env.ts";
+import { envValue } from "../shared/env.ts";
 
 export interface SecretFinding {
 	readonly pattern: string;

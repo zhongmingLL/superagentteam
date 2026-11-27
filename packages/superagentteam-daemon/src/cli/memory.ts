@@ -1,9 +1,9 @@
-import { envValue, resolveDataDir } from "../env.ts";
 import type { Coverage, EvidenceKind, RetrievalTrigger } from "../memory/contract.ts";
 import { type MemoryDatabase, openMemoryDatabase, resolveMemoryDatabasePath } from "../memory/database.ts";
 import { MemoryError } from "../memory/errors.ts";
 import { MemoryIndexer } from "../memory/indexer.ts";
 import { MemoryService } from "../memory/service.ts";
+import { envValue, resolveDataDir } from "../shared/env.ts";
 import { flag, option, options, type ParsedArgs, parseArgs } from "./args.ts";
 import { writeJson, writeLine } from "./output.ts";
 

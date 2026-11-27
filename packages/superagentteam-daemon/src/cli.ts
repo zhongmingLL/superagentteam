@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { runCli } from "./cli/index.ts";
-import { ControlError } from "./control/errors.ts";
 import { MemoryError } from "./memory/errors.ts";
+import { ControlError } from "./shared/control/errors.ts";
 
 async function main(): Promise<number> {
 	try {

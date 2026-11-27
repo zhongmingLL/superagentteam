@@ -2,12 +2,12 @@
 feature_ids: [superagentteam/F051]
 related_features: [superagentteam/F044, superagentteam/F045, superagentteam/F046, superagentteam/F047, superagentteam/F048, superagentteam/F050]
 title: "F051: Daemon module layout refactor"
-status: planned
+status: in-progress
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
-reviewers: []
+reviewers: [砚砚 (GLM 5.3 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-27
-updated: 2026-11-27
+updated: 2026-11-28
 source_decision: "operator 2026-11-27: packages/superagentteam-daemon/src 目录设计很垃圾，参考 Clowder 重新设计"
 ---
 
@@ -59,14 +59,14 @@ operator 2026-11-27：当前 `packages/superagentteam-daemon/src` 目录设计�
 
 ## 验收
 
-- [ ] AC-1：target tree 落地；顶层不再有 `auth/`/`runtime/`/`workers/`/`control/` 的同名分裂。
+- [x] AC-1：target tree 落地；顶层不再有 `auth/`/`runtime/`/`workers/`/`control/` 的同名分裂。
 - [ ] AC-2：`domains/a2a` 只保留 ingress/routing/tools/multi-mention/loop-guard/observation；
   `domains/invocation` 按 records/attempts/turns/settlement/aggregate/recovery/read-models 拆。
-- [ ] AC-3：composition roots 只在 `app/`；domain 不 import app；api/cli 不直接写 store。
-- [ ] AC-4：daemon full tests、typecheck、doc-index、layout guard 绿；无行为变化。
+- [x] AC-3：composition roots 只在 `app/`；domain 不 import app；api/cli 不直接写 store。
+- [x] AC-4：daemon full tests、typecheck、doc-index、layout guard 绿；无行为变化。
 - [ ] AC-5：非作者 review 覆盖最终 HEAD；迁移映射与 0020 一致。
 
-- [ ] AC-E2E（operator 2026-11-27，强制）：必须在**当前测试 worktree**的隔离 test runtime
+- [x] AC-E2E（operator 2026-11-27，强制）：必须在**当前测试 worktree**的隔离 test runtime
   跑真实端到端链路；**Clowder 是 golden**，按 Clowder 参考目录/行为构建对照用例；
   布局移动前后跑同一 E2E smoke 并对比日志/输出，证明无行为变化；unit/targeted test
   只能补充，不能替代。证据须含 worktree/HEAD、隔离端口/data dir、用例、日志/输出、
@@ -75,6 +75,22 @@ operator 2026-11-27：当前 `packages/superagentteam-daemon/src` 目录设计�
   （F044 方法）；move 前后同一 smoke 的真实链路输出对比是验收核心。
 
 ## 证据
+
+### F051a 落地（2026-11-28）
+
+- 顶层收敛：`auth/`→`domains/access/`、`runtime/`→`infrastructure/supervisor/`、
+  `workers/`→`pi-worker/`、`control/`→`shared/control/`、
+  `lifecycle/`→`infrastructure/process/`、`domains/events/`→`infrastructure/events/`。
+- composition root：`daemon.ts`/`daemon-a2a.ts`/`boot-ledger.ts`/`installation.ts`/
+  `state.ts`/`fence.ts`/`data-dir.ts`/`paths.ts`/`errors.ts`/`env.ts` → `app/`/`shared/`；
+  `domains/a2a/runtime.ts` → `app/a2a-runtime.ts`。
+- `scripts/check-daemon-layout.mjs`：禁止 legacy 顶层目录、禁止 `domains/a2a/runtime.ts`、
+  禁止 domain→app import；已加入 `npm run check`。
+- 验证：daemon **559 passed / 5 skipped**、tsc、`check:ts-imports`、`check:entry-graphs`、
+  doc-index、layout guard 绿；移动前后同一 fullstack/daemon 套件结果一致。
+- **F051b 未完成**：`domains/a2a` 内部 ingress/routing/tools 子目录、
+  `domains/invocation` 的 records/attempts/turns/settlement/aggregate/recovery/read-models
+  文件拆分仍未做；AC-2 保持未勾选。
 
 - **Clowder 参考目录/文件**（相对参考仓根目录）：
   - `packages/api/src/domains/cats/services/agents/{routing,invocation,registry}`（domain-first）

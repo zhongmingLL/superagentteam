@@ -1,6 +1,6 @@
 import type { AgentStreamEvent, StoredToolEvent } from "@superagentteam/shared/types";
 
-import type { RpcEvent } from "../../workers/rpc-client.ts";
+import type { RpcEvent } from "../../pi-worker/rpc-client.ts";
 import type { ResponseDraftStore } from "./store.ts";
 
 // F018 R2-b ResponseEventSink (0007 §3.6.1 / 0017): streams provider events

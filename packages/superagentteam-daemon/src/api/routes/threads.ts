@@ -4,8 +4,8 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { isAbsolute } from "node:path";
 import type { Thread, ThreadTitleSource } from "@superagentteam/shared/types";
 
-import type { A2ARuntime } from "../../domains/a2a/runtime.ts";
-import type { ChangeBus } from "../../domains/events/bus.ts";
+import type { A2ARuntime } from "../../app/a2a-runtime.ts";
+import type { ChangeBus } from "../../infrastructure/events/bus.ts";
 import { HttpError, readJsonBody, sendError, sendJson } from "../http.ts";
 import { requireCsrf } from "../session.ts";
 import type { ApiRouteContext } from "./context.ts";

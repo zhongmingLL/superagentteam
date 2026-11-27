@@ -46,6 +46,8 @@ localhost 访问必须保持原样，不能为了穿透把 daemon 改成只认�
   外部 origin 下 auto-login 默认关闭/显式 opt-in、console-link 重定向选择。
 - 部署：runtime env 增加 `SUPERAGENTTEAM_ALLOWED_HOSTS` 与
   `SUPERAGENTTEAM_HUB_ORIGINS`，重启 3005/3014 后实测。
+- 部署决策（operator 2026-11-27）：穿透域名仅 operator 本人访问，为免登录摩擦，
+  runtime env 显式 `SUPERAGENTTEAM_DEV_AUTO_LOGIN=1`；代码默认收紧不变。
 
 ## 非目标
 
@@ -98,8 +100,9 @@ localhost 访问必须保持原样，不能为了穿透把 daemon 改成只认�
   - console exchange 302 到 `https://agentteam.hn.takin.cc`，cookie 建立后
     `/api/session` 200；带 cookie+CSRF 的写请求返回 400 invalid_input（origin/session/CSRF
     门禁全部通过，不是 403）。
+- Operator 决策后（`SUPERAGENTTEAM_DEV_AUTO_LOGIN=1`，2026-11-27）：重启后公共
+  `/api/session` 无凭据 200（免登录恢复）；写请求仍 400 invalid_input（门禁通过）。
 - runtime env（本机 0600）：`SUPERAGENTTEAM_ALLOWED_HOSTS=agentteam.hn.takin.cc`、
   `SUPERAGENTTEAM_HUB_ORIGINS=https://agentteam.hn.takin.cc`、
-  `SUPERAGENTTEAM_DEV_AUTO_LOGIN=0`。
-- 剩余：operator 用穿透地址完成一次登录/写入验收。
-- 待办：PR review、合入、runtime env 配置与 3005/3014 重启实测。
+  `SUPERAGENTTEAM_DEV_AUTO_LOGIN=1`（operator 私有穿透决策）。
+- 剩余：operator 直接用穿透地址验收（免登录）。

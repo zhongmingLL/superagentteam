@@ -4,579 +4,752 @@ import type { AccountProvider } from "./provider-types.ts";
 
 export const GENERATED_ACCOUNT_PROVIDERS: readonly AccountProvider[] = [
 	{
-		id: "amazon-bedrock",
-		label: "Amazon Bedrock",
-		envName: "",
-		envNames: [],
-		supportsBaseUrl: false,
-		suggestedModels: [
+		"id": "amazon-bedrock",
+		"label": "Amazon Bedrock",
+		"envName": "",
+		"envNames": [],
+		"supportsBaseUrl": false,
+		"suggestedModels": [
 			"amazon.nova-2-lite-v1:0",
 			"amazon.nova-lite-v1:0",
 			"amazon.nova-micro-v1:0",
 			"amazon.nova-pro-v1:0",
-			"anthropic.claude-fable-5",
+			"anthropic.claude-fable-5"
 		],
-		authKind: "composite",
-		selectable: false,
-		api: "bedrock-converse-stream",
+		"authKind": "composite",
+		"selectable": false,
+		"api": "bedrock-converse-stream"
 	},
 	{
-		id: "ant-ling",
-		label: "Ant Ling",
-		envName: "ANT_LING_API_KEY",
-		envNames: ["ANT_LING_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["Ling-2.6-1T", "Ling-2.6-flash", "Ring-2.6-1T"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"id": "ant-ling",
+		"label": "Ant Ling",
+		"envName": "ANT_LING_API_KEY",
+		"envNames": [
+			"ANT_LING_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"Ling-2.6-1T",
+			"Ling-2.6-flash",
+			"Ring-2.6-1T"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "anthropic",
-		label: "Anthropic",
-		envName: "ANTHROPIC_API_KEY",
-		envNames: ["ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_OAUTH_TOKEN", "ANTHROPIC_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "anthropic",
+		"label": "Anthropic",
+		"envName": "ANTHROPIC_API_KEY",
+		"envNames": [
+			"ANTHROPIC_AUTH_TOKEN",
+			"ANTHROPIC_OAUTH_TOKEN",
+			"ANTHROPIC_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"claude-fable-5",
 			"claude-fable-5-1",
 			"claude-haiku-4-5",
 			"claude-haiku-4-5-20251001",
-			"claude-haiku-5-5",
+			"claude-haiku-5-5"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "anthropic-messages",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "anthropic-messages"
 	},
 	{
-		id: "azure",
-		label: "Azure",
-		envName: "AZURE_OPENAI_API_KEY",
-		envNames: ["AZURE_OPENAI_API_KEY"],
-		supportsBaseUrl: false,
-		suggestedModels: ["gpt-4", "gpt-4-turbo", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano"],
-		authKind: "composite",
-		selectable: false,
-		api: "azure-openai-responses",
+		"id": "azure",
+		"label": "Azure",
+		"envName": "AZURE_OPENAI_API_KEY",
+		"envNames": [
+			"AZURE_OPENAI_API_KEY"
+		],
+		"supportsBaseUrl": false,
+		"suggestedModels": [
+			"gpt-4",
+			"gpt-4-turbo",
+			"gpt-4.1",
+			"gpt-4.1-mini",
+			"gpt-4.1-nano"
+		],
+		"authKind": "composite",
+		"selectable": false,
+		"api": "azure-openai-responses"
 	},
 	{
-		id: "baseten",
-		label: "Baseten",
-		envName: "BASETEN_API_KEY",
-		envNames: ["BASETEN_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "baseten",
+		"label": "Baseten",
+		"envName": "BASETEN_API_KEY",
+		"envNames": [
+			"BASETEN_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"deepseek-ai/DeepSeek-V4-Flash-0731",
 			"deepseek-ai/DeepSeek-V4-Pro-0813",
 			"deepseek-ai/DeepSeek-V4.1-Flash",
 			"deepseek-ai/DeepSeek-V4.1-Flash-1017",
-			"deepseek-ai/DeepSeek-V4.1-Flash-1017-Fast",
+			"deepseek-ai/DeepSeek-V4.1-Flash-1017-Fast"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "cerebras",
-		label: "Cerebras",
-		envName: "CEREBRAS_API_KEY",
-		envNames: ["CEREBRAS_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["gpt-oss-120b", "qwen-3.8-27b"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"id": "cerebras",
+		"label": "Cerebras",
+		"envName": "CEREBRAS_API_KEY",
+		"envNames": [
+			"CEREBRAS_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"gpt-oss-120b",
+			"qwen-3.8-27b"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "cloudflare-ai-gateway",
-		label: "Cloudflare AI Gateway",
-		envName: "CLOUDFLARE_API_KEY",
-		envNames: ["CLOUDFLARE_API_KEY"],
-		supportsBaseUrl: false,
-		suggestedModels: [
+		"id": "cloudflare-ai-gateway",
+		"label": "Cloudflare AI Gateway",
+		"envName": "CLOUDFLARE_API_KEY",
+		"envNames": [
+			"CLOUDFLARE_API_KEY"
+		],
+		"supportsBaseUrl": false,
+		"suggestedModels": [
 			"claude-fable-5",
 			"claude-fable-5-1",
 			"claude-haiku-4-5",
 			"claude-haiku-5-5",
-			"claude-opus-4-5",
+			"claude-opus-4-5"
 		],
-		authKind: "composite",
-		selectable: false,
-		api: "anthropic-messages",
+		"authKind": "composite",
+		"selectable": false,
+		"api": "anthropic-messages"
 	},
 	{
-		id: "cloudflare-workers-ai",
-		label: "Cloudflare Workers AI",
-		envName: "CLOUDFLARE_API_KEY",
-		envNames: ["CLOUDFLARE_API_KEY"],
-		supportsBaseUrl: false,
-		suggestedModels: [
+		"id": "cloudflare-workers-ai",
+		"label": "Cloudflare Workers AI",
+		"envName": "CLOUDFLARE_API_KEY",
+		"envNames": [
+			"CLOUDFLARE_API_KEY"
+		],
+		"supportsBaseUrl": false,
+		"suggestedModels": [
 			"@cf/deepseek-ai/deepseek-v4-flash-0731",
 			"@cf/deepseek-ai/deepseek-v4-pro-0813",
 			"@cf/deepseek-ai/deepseek-v4.1-flash-1017",
 			"@cf/google/gemma-4-26b-a4b-it",
-			"@cf/ibm-granite/granite-4.0-h-micro",
+			"@cf/ibm-granite/granite-4.0-h-micro"
 		],
-		authKind: "composite",
-		selectable: false,
-		api: "openai-completions",
+		"authKind": "composite",
+		"selectable": false,
+		"api": "openai-completions"
 	},
 	{
-		id: "deepseek",
-		label: "DeepSeek",
-		envName: "DEEPSEEK_API_KEY",
-		envNames: ["DEEPSEEK_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["deepseek-flash", "deepseek-v4-pro"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"id": "deepseek",
+		"label": "DeepSeek",
+		"envName": "DEEPSEEK_API_KEY",
+		"envNames": [
+			"DEEPSEEK_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"deepseek-flash",
+			"deepseek-v4-pro"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "fireworks",
-		label: "Fireworks",
-		envName: "FIREWORKS_API_KEY",
-		envNames: ["FIREWORKS_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "fireworks",
+		"label": "Fireworks",
+		"envName": "FIREWORKS_API_KEY",
+		"envNames": [
+			"FIREWORKS_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"accounts/fireworks/models/deepseek-v4p1-flash",
 			"accounts/fireworks/models/deepseek-v4p1-flash-1017",
 			"accounts/fireworks/models/ember-1",
 			"accounts/fireworks/models/gpt-oss-120b",
-			"accounts/fireworks/models/inkling",
+			"accounts/fireworks/models/inkling"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "anthropic-messages",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "anthropic-messages"
 	},
 	{
-		id: "github-copilot",
-		label: "GitHub Copilot",
-		envName: "COPILOT_GITHUB_TOKEN",
-		envNames: ["COPILOT_GITHUB_TOKEN"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "github-copilot",
+		"label": "GitHub Copilot",
+		"envName": "COPILOT_GITHUB_TOKEN",
+		"envNames": [
+			"COPILOT_GITHUB_TOKEN"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"claude-fable-5",
 			"claude-fable-5.1",
 			"claude-haiku-4.5",
 			"claude-haiku-5.5",
-			"claude-opus-4.8",
+			"claude-opus-4.8"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "anthropic-messages",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "anthropic-messages"
 	},
 	{
-		id: "google",
-		label: "Google",
-		envName: "GEMINI_API_KEY",
-		envNames: ["GEMINI_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "google",
+		"label": "Google",
+		"envName": "GEMINI_API_KEY",
+		"envNames": [
+			"GEMINI_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"deep-research-max-preview-04-2026",
 			"deep-research-preview-04-2026",
 			"gemini-2.5-computer-use-preview-10-2025",
 			"gemini-2.5-flash",
-			"gemini-2.5-flash-lite",
+			"gemini-2.5-flash-lite"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "google-generative-ai",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "google-generative-ai"
 	},
 	{
-		id: "google-vertex",
-		label: "Google Vertex AI",
-		envName: "GOOGLE_CLOUD_API_KEY",
-		envNames: ["GOOGLE_CLOUD_API_KEY"],
-		supportsBaseUrl: false,
-		suggestedModels: [
+		"id": "google-vertex",
+		"label": "Google Vertex AI",
+		"envName": "GOOGLE_CLOUD_API_KEY",
+		"envNames": [
+			"GOOGLE_CLOUD_API_KEY"
+		],
+		"supportsBaseUrl": false,
+		"suggestedModels": [
 			"gemini-2.5-flash",
 			"gemini-2.5-flash-lite",
 			"gemini-2.5-pro",
 			"gemini-3-flash-preview",
-			"gemini-3.1-flash-lite",
+			"gemini-3.1-flash-lite"
 		],
-		authKind: "composite",
-		selectable: false,
-		api: "google-vertex",
+		"authKind": "composite",
+		"selectable": false,
+		"api": "google-vertex"
 	},
 	{
-		id: "groq",
-		label: "Groq",
-		envName: "GROQ_API_KEY",
-		envNames: ["GROQ_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "groq",
+		"label": "Groq",
+		"envName": "GROQ_API_KEY",
+		"envNames": [
+			"GROQ_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"llama-3.1-8b-instant",
 			"llama-3.3-70b-versatile",
 			"openai/gpt-oss-120b",
 			"openai/gpt-oss-20b",
-			"openai/gpt-oss-safeguard-20b",
+			"openai/gpt-oss-safeguard-20b"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "huggingface",
-		label: "Hugging Face",
-		envName: "HF_TOKEN",
-		envNames: ["HF_TOKEN"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "huggingface",
+		"label": "Hugging Face",
+		"envName": "HF_TOKEN",
+		"envNames": [
+			"HF_TOKEN"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"deepseek-ai/DeepSeek-R1",
 			"deepseek-ai/DeepSeek-R1-0528",
 			"deepseek-ai/DeepSeek-V3",
 			"deepseek-ai/DeepSeek-V3-0324",
-			"deepseek-ai/DeepSeek-V3.1",
+			"deepseek-ai/DeepSeek-V3.1"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "kimi-coding",
-		label: "Kimi For Coding",
-		envName: "KIMI_API_KEY",
-		envNames: ["KIMI_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["k3", "k3-256k", "k3.1-pro", "k3.1-pro-highspeed", "kimi-for-coding"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"id": "kimi-coding",
+		"label": "Kimi For Coding",
+		"envName": "KIMI_API_KEY",
+		"envNames": [
+			"KIMI_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"k3",
+			"k3-256k",
+			"k3.1-pro",
+			"k3.1-pro-highspeed",
+			"kimi-for-coding"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "meta",
-		label: "Meta",
-		envName: "META_API_KEY",
-		envNames: ["META_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "meta",
+		"label": "Meta",
+		"envName": "META_API_KEY",
+		"envNames": [
+			"META_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"muse-spark-1.1",
 			"muse-spark-1.2",
 			"muse-spark-1.2-contributor",
 			"muse-spark-1.3",
-			"muse-spark-1.3-contributor",
+			"muse-spark-1.3-contributor"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-responses",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-responses"
 	},
 	{
-		id: "minimax",
-		label: "MiniMax",
-		envName: "MINIMAX_API_KEY",
-		envNames: ["MINIMAX_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["MiniMax-M2.7", "MiniMax-M2.7-highspeed", "MiniMax-M3", "MiniMax-M3.1-Flash"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "anthropic-messages",
+		"id": "minimax",
+		"label": "MiniMax",
+		"envName": "MINIMAX_API_KEY",
+		"envNames": [
+			"MINIMAX_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"MiniMax-M2.7",
+			"MiniMax-M2.7-highspeed",
+			"MiniMax-M3",
+			"MiniMax-M3.1-Flash"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "anthropic-messages"
 	},
 	{
-		id: "minimax-cn",
-		label: "MiniMax CN",
-		envName: "MINIMAX_CN_API_KEY",
-		envNames: ["MINIMAX_CN_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["MiniMax-M2.7", "MiniMax-M2.7-highspeed", "MiniMax-M3", "MiniMax-M3.1-Flash"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "anthropic-messages",
+		"id": "minimax-cn",
+		"label": "MiniMax CN",
+		"envName": "MINIMAX_CN_API_KEY",
+		"envNames": [
+			"MINIMAX_CN_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"MiniMax-M2.7",
+			"MiniMax-M2.7-highspeed",
+			"MiniMax-M3",
+			"MiniMax-M3.1-Flash"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "anthropic-messages"
 	},
 	{
-		id: "mistral",
-		label: "Mistral",
-		envName: "MISTRAL_API_KEY",
-		envNames: ["MISTRAL_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "mistral",
+		"label": "Mistral",
+		"envName": "MISTRAL_API_KEY",
+		"envNames": [
+			"MISTRAL_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"codestral-2508",
 			"codestral-latest",
 			"devstral-2512",
 			"devstral-latest",
-			"devstral-medium-latest",
+			"devstral-medium-latest"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "mistral-conversations",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "mistral-conversations"
 	},
 	{
-		id: "moonshotai",
-		label: "Moonshot AI",
-		envName: "MOONSHOT_API_KEY",
-		envNames: ["MOONSHOT_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["kimi-k2.6", "kimi-k2.7-code", "kimi-k2.7-code-highspeed", "kimi-k3", "kimi-k3.1-pro"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"id": "moonshotai",
+		"label": "Moonshot AI",
+		"envName": "MOONSHOT_API_KEY",
+		"envNames": [
+			"MOONSHOT_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"kimi-k2.6",
+			"kimi-k2.7-code",
+			"kimi-k2.7-code-highspeed",
+			"kimi-k3",
+			"kimi-k3.1-pro"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "moonshotai-cn",
-		label: "Moonshot AI CN",
-		envName: "MOONSHOT_API_KEY",
-		envNames: ["MOONSHOT_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["kimi-k2.6", "kimi-k2.7-code", "kimi-k2.7-code-highspeed", "kimi-k3", "kimi-k3.1-pro"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"id": "moonshotai-cn",
+		"label": "Moonshot AI CN",
+		"envName": "MOONSHOT_API_KEY",
+		"envNames": [
+			"MOONSHOT_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"kimi-k2.6",
+			"kimi-k2.7-code",
+			"kimi-k2.7-code-highspeed",
+			"kimi-k3",
+			"kimi-k3.1-pro"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "nvidia",
-		label: "NVIDIA",
-		envName: "NVIDIA_API_KEY",
-		envNames: ["NVIDIA_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "nvidia",
+		"label": "NVIDIA",
+		"envName": "NVIDIA_API_KEY",
+		"envNames": [
+			"NVIDIA_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"deepseek-ai/deepseek-v4.1-flash",
 			"google/diffusiongemma-26b-a4b-it",
 			"google/gemma-3-12b-it",
 			"google/gemma-3-4b-it",
-			"meta/llama-3.2-11b-vision-instruct",
+			"meta/llama-3.2-11b-vision-instruct"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "openai",
-		label: "OpenAI",
-		envName: "OPENAI_API_KEY",
-		envNames: ["OPENAI_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["gpt-4", "gpt-4-turbo", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-responses",
+		"id": "openai",
+		"label": "OpenAI",
+		"envName": "OPENAI_API_KEY",
+		"envNames": [
+			"OPENAI_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"gpt-4",
+			"gpt-4-turbo",
+			"gpt-4.1",
+			"gpt-4.1-mini",
+			"gpt-4.1-nano"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-responses"
 	},
 	{
-		id: "opencode",
-		label: "OpenCode Zen",
-		envName: "OPENCODE_API_KEY",
-		envNames: ["OPENCODE_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "opencode",
+		"label": "OpenCode Zen",
+		"envName": "OPENCODE_API_KEY",
+		"envNames": [
+			"OPENCODE_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"claude-fable-5",
 			"claude-fable-5-1",
 			"claude-haiku-4-5",
 			"claude-haiku-5-5",
-			"claude-opus-4-5",
+			"claude-opus-4-5"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "anthropic-messages",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "anthropic-messages"
 	},
 	{
-		id: "opencode-go",
-		label: "OpenCode Go",
-		envName: "OPENCODE_API_KEY",
-		envNames: ["OPENCODE_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["claude-haiku-5-5", "minimax-m3", "qwen3.7-plus", "qwen3.8-flash", "qwen3.8-max"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "anthropic-messages",
+		"id": "opencode-go",
+		"label": "OpenCode Go",
+		"envName": "OPENCODE_API_KEY",
+		"envNames": [
+			"OPENCODE_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"claude-haiku-5-5",
+			"minimax-m3",
+			"qwen3.7-plus",
+			"qwen3.8-flash",
+			"qwen3.8-max"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "anthropic-messages"
 	},
 	{
-		id: "openrouter",
-		label: "OpenRouter",
-		envName: "OPENROUTER_API_KEY",
-		envNames: ["OPENROUTER_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "openrouter",
+		"label": "OpenRouter",
+		"envName": "OPENROUTER_API_KEY",
+		"envNames": [
+			"OPENROUTER_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"anthropic/claude-fable-5",
 			"anthropic/claude-fable-5.1",
 			"anthropic/claude-haiku-4.5",
 			"anthropic/claude-haiku-5.5",
-			"anthropic/claude-opus-4.1",
+			"anthropic/claude-opus-4.1"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "anthropic-messages",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "anthropic-messages"
 	},
 	{
-		id: "qwen-token-plan",
-		label: "Qwen Token Plan",
-		envName: "QWEN_TOKEN_PLAN_API_KEY",
-		envNames: ["QWEN_TOKEN_PLAN_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "qwen-token-plan",
+		"label": "Qwen Token Plan",
+		"envName": "QWEN_TOKEN_PLAN_API_KEY",
+		"envNames": [
+			"QWEN_TOKEN_PLAN_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"deepseek-v3.2",
 			"deepseek-v4-flash",
 			"deepseek-v4-flash-0731",
 			"deepseek-v4-pro",
-			"deepseek-v4-pro-0813",
+			"deepseek-v4-pro-0813"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "qwen-token-plan-cn",
-		label: "Qwen Token Plan CN",
-		envName: "QWEN_TOKEN_PLAN_CN_API_KEY",
-		envNames: ["QWEN_TOKEN_PLAN_CN_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "qwen-token-plan-cn",
+		"label": "Qwen Token Plan CN",
+		"envName": "QWEN_TOKEN_PLAN_CN_API_KEY",
+		"envNames": [
+			"QWEN_TOKEN_PLAN_CN_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"deepseek-v3.2",
 			"deepseek-v4-flash",
 			"deepseek-v4-flash-0731",
 			"deepseek-v4-pro",
-			"deepseek-v4-pro-0813",
+			"deepseek-v4-pro-0813"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "qwen-token-plan-individual",
-		label: "Qwen Token Plan Individual",
-		envName: "QWEN_TOKEN_PLAN_API_KEY",
-		envNames: ["QWEN_TOKEN_PLAN_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "qwen-token-plan-individual",
+		"label": "Qwen Token Plan Individual",
+		"envName": "QWEN_TOKEN_PLAN_API_KEY",
+		"envNames": [
+			"QWEN_TOKEN_PLAN_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"deepseek-v4-flash-0731",
 			"deepseek-v4-pro",
 			"deepseek-v4-pro-0813",
 			"glm-5.2",
-			"qwen3.6-flash",
+			"qwen3.6-flash"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "radius",
-		label: "Radius",
-		envName: "RADIUS_API_KEY",
-		envNames: ["RADIUS_API_KEY"],
-		supportsBaseUrl: false,
-		suggestedModels: ["balanced", "cheap", "claude-fable-5", "claude-fable-5-1", "claude-haiku-4-5"],
-		authKind: "dynamic",
-		selectable: false,
-		api: "pi-messages",
+		"id": "radius",
+		"label": "Radius",
+		"envName": "RADIUS_API_KEY",
+		"envNames": [
+			"RADIUS_API_KEY"
+		],
+		"supportsBaseUrl": false,
+		"suggestedModels": [
+			"balanced",
+			"cheap",
+			"claude-fable-5",
+			"claude-fable-5-1",
+			"claude-haiku-4-5"
+		],
+		"authKind": "dynamic",
+		"selectable": false,
+		"api": "pi-messages"
 	},
 	{
-		id: "together",
-		label: "Together",
-		envName: "TOGETHER_API_KEY",
-		envNames: ["TOGETHER_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "together",
+		"label": "Together",
+		"envName": "TOGETHER_API_KEY",
+		"envNames": [
+			"TOGETHER_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"deepseek-ai/DeepSeek-V4-Pro-0813",
 			"deepseek-ai/DeepSeek-V4.1-Flash",
 			"meta-models/Muse-Spark-Open-816B-A42B",
 			"MiniMaxAI/MiniMax-M3",
-			"moonshotai/Kimi-K3",
+			"moonshotai/Kimi-K3"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "typesafe",
-		label: "TypeSafe",
-		envName: "TYPESAFE_API_KEY",
-		envNames: ["TYPESAFE_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [],
-		authKind: "simple-env",
-		selectable: true,
+		"id": "typesafe",
+		"label": "TypeSafe",
+		"envName": "TYPESAFE_API_KEY",
+		"envNames": [
+			"TYPESAFE_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [],
+		"authKind": "simple-env",
+		"selectable": true
 	},
 	{
-		id: "vercel-ai-gateway",
-		label: "Vercel AI Gateway",
-		envName: "AI_GATEWAY_API_KEY",
-		envNames: ["AI_GATEWAY_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: [
+		"id": "vercel-ai-gateway",
+		"label": "Vercel AI Gateway",
+		"envName": "AI_GATEWAY_API_KEY",
+		"envNames": [
+			"AI_GATEWAY_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
 			"alibaba/qwen-3-14b",
 			"alibaba/qwen-3-235b",
 			"alibaba/qwen-3-30b",
 			"alibaba/qwen-3-32b",
-			"alibaba/qwen3-coder",
+			"alibaba/qwen3-coder"
 		],
-		authKind: "simple-env",
-		selectable: true,
-		api: "anthropic-messages",
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "anthropic-messages"
 	},
 	{
-		id: "xai",
-		label: "xAI",
-		envName: "XAI_API_KEY",
-		envNames: ["XAI_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["grok-4.3", "grok-4.5", "grok-4.6", "grok-4.7"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-responses",
+		"id": "xai",
+		"label": "xAI",
+		"envName": "XAI_API_KEY",
+		"envNames": [
+			"XAI_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"grok-4.3",
+			"grok-4.5",
+			"grok-4.6",
+			"grok-4.7"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-responses"
 	},
 	{
-		id: "xiaomi",
-		label: "Xiaomi",
-		envName: "XIAOMI_API_KEY",
-		envNames: ["XIAOMI_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["mimo-v2.6-flash", "mimo-v2.6-pro", "mimo-v2.6-pro-ultraspeed"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"id": "xiaomi",
+		"label": "Xiaomi",
+		"envName": "XIAOMI_API_KEY",
+		"envNames": [
+			"XIAOMI_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"mimo-v2.6-flash",
+			"mimo-v2.6-pro",
+			"mimo-v2.6-pro-ultraspeed"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "xiaomi-token-plan-ams",
-		label: "Xiaomi Token Plan AMS",
-		envName: "XIAOMI_TOKEN_PLAN_AMS_API_KEY",
-		envNames: ["XIAOMI_TOKEN_PLAN_AMS_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["mimo-v2.6-flash", "mimo-v2.6-pro"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"id": "xiaomi-token-plan-ams",
+		"label": "Xiaomi Token Plan AMS",
+		"envName": "XIAOMI_TOKEN_PLAN_AMS_API_KEY",
+		"envNames": [
+			"XIAOMI_TOKEN_PLAN_AMS_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"mimo-v2.6-flash",
+			"mimo-v2.6-pro"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "xiaomi-token-plan-cn",
-		label: "Xiaomi Token Plan CN",
-		envName: "XIAOMI_TOKEN_PLAN_CN_API_KEY",
-		envNames: ["XIAOMI_TOKEN_PLAN_CN_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["mimo-v2.6-flash", "mimo-v2.6-pro"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"id": "xiaomi-token-plan-cn",
+		"label": "Xiaomi Token Plan CN",
+		"envName": "XIAOMI_TOKEN_PLAN_CN_API_KEY",
+		"envNames": [
+			"XIAOMI_TOKEN_PLAN_CN_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"mimo-v2.6-flash",
+			"mimo-v2.6-pro"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "xiaomi-token-plan-sgp",
-		label: "Xiaomi Token Plan SGP",
-		envName: "XIAOMI_TOKEN_PLAN_SGP_API_KEY",
-		envNames: ["XIAOMI_TOKEN_PLAN_SGP_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["mimo-v2.6-flash", "mimo-v2.6-pro"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"id": "xiaomi-token-plan-sgp",
+		"label": "Xiaomi Token Plan SGP",
+		"envName": "XIAOMI_TOKEN_PLAN_SGP_API_KEY",
+		"envNames": [
+			"XIAOMI_TOKEN_PLAN_SGP_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"mimo-v2.6-flash",
+			"mimo-v2.6-pro"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "zai",
-		label: "Z.AI / 智谱 GLM",
-		envName: "ZAI_API_KEY",
-		envNames: ["ZAI_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["glm-4.7", "glm-5-turbo", "glm-5.2", "glm-5.2-highspeed", "glm-5.3"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
+		"id": "zai",
+		"label": "Z.AI / 智谱 GLM",
+		"envName": "ZAI_API_KEY",
+		"envNames": [
+			"ZAI_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"glm-4.7",
+			"glm-5-turbo",
+			"glm-5.2",
+			"glm-5.2-highspeed",
+			"glm-5.3"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
 	},
 	{
-		id: "zai-coding-cn",
-		label: "Z.AI Coding CN",
-		envName: "ZAI_CODING_CN_API_KEY",
-		envNames: ["ZAI_CODING_CN_API_KEY"],
-		supportsBaseUrl: true,
-		suggestedModels: ["glm-4.6v", "glm-5.3", "glm-5.3-flash", "glm-5.3-highspeed"],
-		authKind: "simple-env",
-		selectable: true,
-		api: "openai-completions",
-	},
+		"id": "zai-coding-cn",
+		"label": "Z.AI Coding CN",
+		"envName": "ZAI_CODING_CN_API_KEY",
+		"envNames": [
+			"ZAI_CODING_CN_API_KEY"
+		],
+		"supportsBaseUrl": true,
+		"suggestedModels": [
+			"glm-4.6v",
+			"glm-5.3",
+			"glm-5.3-flash",
+			"glm-5.3-highspeed"
+		],
+		"authKind": "simple-env",
+		"selectable": true,
+		"api": "openai-completions"
+	}
 ];

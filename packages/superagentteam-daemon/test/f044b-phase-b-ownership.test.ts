@@ -230,6 +230,32 @@ describe("F044b Phase B ownership", () => {
 		expect(w.turns.get(attempt.turnExecutionId!)?.status).toBe("running");
 	});
 
+	it("keeps the bounded backoff after a provider-phase failure (no hot retry)", async () => {
+		const w = makeWorld();
+		const submitted = w.ingress.submit({ threadId: "t1", userId: "u1", body: "go @a1", now: 10 });
+		const processor = w.makeProcessor(async (input) => {
+			w.invoker.begin(input.prepared);
+			throw new Error("provider boom");
+		});
+
+		const first = await processor.drain("t1", "u1");
+		expect(first.processed).toBe(1);
+		const invocationId = `inv:t1:${submitted.message.id}`;
+		const failed = w.attempts.getLatest(invocationId, "a1")!;
+		expect(failed.attempt).toBe(1);
+		expect(failed.deliveryState).toBe("failed");
+		expect(failed.terminalReason).toBe("provider_phase_failed");
+
+		// Provider failure still has its own attempt budget; the reset on Phase B
+		// success must not erase the backoff set by convergence.
+		await processor.drain("t1", "u1");
+		expect(w.attempts.getLatest(invocationId, "a1")?.attempt).toBe(1);
+
+		w.advance(20_000);
+		await processor.drain("t1", "u1");
+		expect(w.attempts.getLatest(invocationId, "a1")?.attempt).toBe(2);
+	});
+
 	it("route assembly failure fails the target prestart and leaves the healthy sibling in Phase B", async () => {
 		const w = makeWorld();
 		const submitted = w.ingress.submit({ threadId: "t1", userId: "u1", body: "both @a1 @a2", now: 10 });

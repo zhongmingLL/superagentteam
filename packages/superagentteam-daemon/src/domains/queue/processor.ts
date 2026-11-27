@@ -563,6 +563,15 @@ export class QueueProcessor {
 				// their Phase A reservations.
 				routeErrors = routedTargets.map((prepared) => ({ agentId: prepared.agentId, error, stage: "run" }));
 			}
+			// Reset on Phase B success BEFORE processing route errors: provider-phase
+			// convergence sets its own backoff, and a later reset would erase it and
+			// hot-retry a failing provider.
+			for (const prepared of phaseA) {
+				if (this.deps.attempts.get(prepared.attemptId)?.turnExecutionId) {
+					dispatched.push(prepared.agentId);
+					this.deferrals.reset(entry.threadId, prepared.agentId);
+				}
+			}
 			for (const failure of routeErrors) {
 				const prepared = phaseA.find((p) => p.agentId === failure.agentId);
 				if (!prepared) continue;
@@ -594,14 +603,6 @@ export class QueueProcessor {
 					continue;
 				}
 				this.convergeProviderFailure(entry, claimId, invocationId, prepared, convergenceFailed);
-			}
-			// Phase B success is the only path that binds a TurnExecution; derive
-			// the dispatched set from store truth instead of guessing from results.
-			for (const prepared of phaseA) {
-				if (this.deps.attempts.get(prepared.attemptId)?.turnExecutionId) {
-					dispatched.push(prepared.agentId);
-					this.deferrals.reset(entry.threadId, prepared.agentId);
-				}
 			}
 		} finally {
 			// T3 slot release (§3.2 step 8): per-target ownership-fenced complete

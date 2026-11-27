@@ -90,9 +90,10 @@ single-target serial / priorResponses / T2 failure 留给 T4）；daemon full su
   `turn_worker_bound`、`turn_terminal`），带 worktree/cwd、隔离 dataDir、实际端口；
   `turn_worker_bound` 携带真实 pi session id + spawn duration，证明真实 worker。
 - **测试**：新增 `f044b-phase-b-ownership.test.ts`（Phase B 全链、Phase B 失败不
-  二次收敛、route 装配失败、Phase B 失败重试 attempt 2、P3-a、P3-c）；
+  二次收敛、route 装配失败、Phase B 失败重试 attempt 2、provider 失败保持 bounded
+  backoff 不热重试、carrier release 失败隔离、P3-a、P3-c）；
   `f018-r2c-settlement.test.ts` 增加 P3-b fallback 用例。daemon full suite
-  535 passed / 1 skipped；daemon build 通过；full-stack E2E 2 passed。
+  537 passed / 1 skipped；daemon build 通过；full-stack E2E 2 passed。
 
 仍属后续 feature（F044 本切片不声称全部完成）：
 

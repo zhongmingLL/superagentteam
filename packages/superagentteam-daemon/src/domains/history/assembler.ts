@@ -111,6 +111,7 @@ export class HistoryAssembler {
 			if (
 				source !== null &&
 				source.threadId === threadId &&
+				(source.deletedAt === null || source.deletedAt === undefined) &&
 				visibleTo(source, agentId) &&
 				!rows.some((message) => message.id === source.id)
 			) {

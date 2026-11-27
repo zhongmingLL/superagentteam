@@ -366,6 +366,16 @@ describe("HistoryAssembler (0007 §3.5.1)", () => {
 		expect(withSource?.boundarySeq).toBe(4);
 	});
 
+	it("does not re-inject a deleted trigger message", () => {
+		const w = makeWorld();
+		const appended: StoredMessage[] = [];
+		for (let i = 0; i < 3; i += 1) appended.push(appendMsg(w.messages));
+		w.readState.ack("t1", "a1", 1, 100);
+		w.messages.softDelete(appended[0]!.id, "u1", 200);
+		const win = w.assembler.loadHistory("t1", "a1", 10, { includeSourceMessageId: appended[0]!.id });
+		expect(win?.rows.map((row) => row.seq)).toEqual([2, 3]);
+	});
+
 	it("targeted input (extra.targetAgentIds) is visible only to listed agents", () => {
 		const w = makeWorld();
 		appendMsg(w.messages); // broadcast

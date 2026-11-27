@@ -812,7 +812,12 @@ export class QueueProcessor {
 					}
 				}
 			};
-			await Promise.all(dispatched.map((agentId) => dispatchOne(agentId)));
+			// dispatchOne contains provider-phase errors itself; allSettled only
+			// protects a future prelude throw from rejecting early and releasing a
+			// sibling slot that is still running.
+			const settled = await Promise.allSettled(dispatched.map((agentId) => dispatchOne(agentId)));
+			const rejected = settled.find((result): result is PromiseRejectedResult => result.status === "rejected");
+			if (rejected) throw rejected.reason;
 		} finally {
 			// T3 slot release (§3.2 step 8): per-target ownership-fenced complete
 			// so a stale finally cannot release a replacement slot. The claim is

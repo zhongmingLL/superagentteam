@@ -256,6 +256,26 @@ describe("F044b Phase B ownership", () => {
 		expect(w.attempts.getLatest(invocationId, "a1")?.attempt).toBe(2);
 	});
 
+	it("permanent prestart failures register bounded backoff instead of hot-retrying (P3-c)", async () => {
+		const w = makeWorld();
+		w.ingress.submit({ threadId: "t1", userId: "u1", body: "go @a1", now: 10 });
+		const markRunning = vi.spyOn(w.records, "markRunning").mockReturnValue(null);
+
+		const first = await w.processor.drain("t1", "u1");
+		expect(first.deferred).toBe(1);
+		expect(markRunning).toHaveBeenCalledTimes(1);
+
+		// Immediate next drain must skip the backed-off target, not re-claim it.
+		const second = await w.processor.drain("t1", "u1");
+		expect(second.processed).toBe(0);
+		expect(second.deferred).toBe(0);
+		expect(markRunning).toHaveBeenCalledTimes(1);
+
+		w.advance(20_000);
+		await w.processor.drain("t1", "u1");
+		expect(markRunning).toHaveBeenCalledTimes(2);
+	});
+
 	it("route assembly failure fails the target prestart and leaves the healthy sibling in Phase B", async () => {
 		const w = makeWorld();
 		const submitted = w.ingress.submit({ threadId: "t1", userId: "u1", body: "both @a1 @a2", now: 10 });

@@ -411,6 +411,126 @@ describe("F044 route ownership full-stack E2E v2", () => {
 		}
 	}, 60_000);
 
+	it("F048: a long turn does not block an independent agent's entry", async () => {
+		provider = await startMockAnthropic(async (request) => {
+			if (request.model === "a-model") {
+				await sleep(3_000);
+				return textResponse("A_LONG_DONE");
+			}
+			if (request.model === "b-model") return textResponse("B_INDEPENDENT_DONE");
+			return errorResponse("unexpected model", 400);
+		});
+		const { base, headers, thread } = await startStack();
+		const runtime = daemon!.a2aControlPlane!.runtime;
+
+		const longEntry = await submit(base, headers, thread.id, "long @a1", "f048-long");
+		const longInvocation = `inv:${thread.id}:${longEntry.userMessageId}`;
+		const running = await waitFor(() => {
+			const attempt = runtime.attempts.getLatest(longInvocation, "a1");
+			return attempt?.deliveryState === "appended" ? attempt : null;
+		}, 15_000);
+
+		const quickEntry = await submit(base, headers, thread.id, "quick @b1", "f048-quick");
+		const quickInvocation = `inv:${thread.id}:${quickEntry.userMessageId}`;
+		const quick = await waitFor(() => {
+			const attempt = runtime.attempts.getLatest(quickInvocation, "b1");
+			return attempt?.deliveryState === "handled" ? attempt : null;
+		}, 15_000);
+
+		// B settled while A's turn was still running.
+		expect(runtime.messages.get(quick.responseMessageId!)?.content).toBe("B_INDEPENDENT_DONE");
+		expect(runtime.turns.get(running.turnExecutionId!)?.status).toBe("running");
+		const queueView = (await fetch(`${base}/api/threads/${encodeURIComponent(thread.id)}/queue`, {
+			headers: { cookie: headers.cookie! },
+		}).then((response) => response.json())) as {
+			queue: Array<{ status: string; targetAgentIds: string[] }>;
+			activeInvocations: Array<{ agentId: string; childStatus: string }>;
+		};
+		expect(queueView.queue.some((entry) => entry.targetAgentIds.includes("b1"))).toBe(false);
+		expect(queueView.activeInvocations.some((slot) => slot.agentId === "a1" && slot.childStatus === "running")).toBe(
+			true,
+		);
+
+		await waitFor(
+			() => (runtime.attempts.getLatest(longInvocation, "a1")?.deliveryState === "handled" ? true : null),
+			15_000,
+		);
+		expect(runtime.queue.listQueued(thread.id)).toHaveLength(0);
+	}, 60_000);
+
+	it("F048: a second entry for the same agent waits for the first turn to finish", async () => {
+		let aCalls = 0;
+		provider = await startMockAnthropic(async (request) => {
+			if (request.model === "a-model") {
+				aCalls += 1;
+				if (aCalls === 1) await sleep(1_500);
+				return textResponse(`A_CALL_${aCalls}`);
+			}
+			return errorResponse("unexpected model", 400);
+		});
+		const { base, headers, thread } = await startStack();
+		const runtime = daemon!.a2aControlPlane!.runtime;
+
+		const first = await submit(base, headers, thread.id, "first @a1", "f048-order-1");
+		const firstInvocation = `inv:${thread.id}:${first.userMessageId}`;
+		const firstRunning = await waitFor(() => {
+			const attempt = runtime.attempts.getLatest(firstInvocation, "a1");
+			return attempt?.deliveryState === "appended" ? attempt : null;
+		}, 15_000);
+		expect(runtime.turns.get(firstRunning.turnExecutionId!)?.status).toBe("running");
+
+		const second = await submit(base, headers, thread.id, "second @a1", "f048-order-2");
+		const secondInvocation = `inv:${thread.id}:${second.userMessageId}`;
+		await sleep(300);
+		expect(runtime.attempts.getLatest(secondInvocation, "a1")).toBeNull();
+		expect(
+			runtime.queue.listQueued(thread.id).some((entry) => entry.targets.some((target) => target.id === "a1")),
+		).toBe(true);
+
+		await waitFor(() => {
+			const attempt = runtime.attempts.getLatest(secondInvocation, "a1");
+			return attempt?.deliveryState === "handled" ? attempt : null;
+		}, 20_000);
+		expect(aCalls).toBe(2);
+		expect(runtime.queue.listQueued(thread.id)).toHaveLength(0);
+	}, 60_000);
+
+	it("F048: tracker preemption aborts the old turn and leaves no zombie (B5)", async () => {
+		provider = await startMockAnthropic(async (request) => {
+			if (request.model === "a-model") {
+				await sleep(5_000);
+				return textResponse("SHOULD_NOT_APPEAR");
+			}
+			return errorResponse("unexpected model", 400);
+		});
+		const { base, headers, thread } = await startStack();
+		const runtime = daemon!.a2aControlPlane!.runtime;
+
+		const submitted = await submit(base, headers, thread.id, "preempt me @a1", "f048-preempt");
+		const invocationId = `inv:${thread.id}:${submitted.userMessageId}`;
+		const running = await waitFor(() => {
+			const attempt = runtime.attempts.getLatest(invocationId, "a1");
+			return attempt?.deliveryState === "appended" ? attempt : null;
+		}, 15_000);
+		const ownerId = runtime.threads.get(thread.id)!.createdBy;
+
+		// Simulate the tracker preemption path; the old runner must still
+		// terminalize its own turn/R instead of leaving a zombie.
+		runtime.tracker.start(thread.id, "a1", ownerId, "te:f048-preempt");
+		const canceled = await waitFor(() => {
+			const attempt = runtime.attempts.getLatest(invocationId, "a1");
+			return attempt?.deliveryState === "canceled" ? attempt : null;
+		}, 15_000);
+		expect(runtime.turns.get(running.turnExecutionId!)?.status).toBe("canceled");
+		expect(runtime.messages.get(canceled.responseMessageId!)?.lifecycle).toMatchObject({
+			kind: "response",
+			status: "canceled",
+		});
+		expect(runtime.tracker.getExecutionId(thread.id, "a1")).toBe("te:f048-preempt");
+		expect(runtime.tracker.complete(thread.id, "a1", "te:f048-preempt")).toBe(true);
+		expect(runtime.tracker.isBusy(thread.id, "a1")).toBe(false);
+	}, 60_000);
+
 	async function assertPhaseBFault(
 		label: string,
 		reason: "draft_create_failed" | "credential_mint_failed" | "retire_targets_failed",

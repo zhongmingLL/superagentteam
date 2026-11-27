@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F043]
 related_features: [superagentteam/F037, superagentteam/F041]
 title: "F043: A2A parallel dispatch & post_message surface"
-status: superseded
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -13,11 +13,12 @@ source_decision: "operator 2026-11-27: a2a-测试 暴露 multi-mention 串行/�
 
 # F043: A2A parallel dispatch & post_message surface
 
-> **Superseded as design (2026-11-27, operator direction).** F043 是在 architecture
-> drift 上做的缝补，不再作为设计基线；holistic 设计与 feature 拆分见
+> **Design status (2026-11-27).** 后端设计不再作为基线（在 architecture drift 上做的
+> 缝补）；holistic 设计与 feature 拆分见
 > [`docs/plans/0050-a2a-runtime-alignment.md`](../plans/0050-a2a-runtime-alignment.md)。
-> F043 的 live 验证行为保留为 F044–F050 的回归要求；AC-4（消息表面）移到 F049。
-> 不在本 feature 上追加新补丁。
+> **前端 AC-4 按 operator 2026-11-27 指示作为 F043 内容补做完成**：A（私有气泡）+
+> C（multi-mention 汇总卡）。F043 的 live 行为继续作为 F044–F050 的回归要求；
+> 不在后端补丁上继续扩展。
 
 ## Why
 
@@ -76,7 +77,9 @@ operator 在 `a2a-测试` thread 做 multi-mention / post_message / 排队测试
   其他 target 的 response（按触发 seq 快照）。
 - [x] AC-2：agent A 长跑期间 @agent B，B 在 A 结束前开始执行；队列面板只在 B 真正等待时显示。
 - [x] AC-3：post_message 唤醒的目标能在 prompt 中读到源消息；不再出现"无新消息"的空转回复。
-- [ ] AC-4（carried to F049）：A2A 私有消息按选定设计渲染，不再与公开回复混淆；multi-mention burst 不散落成多个气泡。
+- [x] AC-4：A2A 私有消息按选定设计渲染（A：无头像私有气泡 + recipient pill + A2A 标记）；
+  multi-mention burst 收进 C 汇总卡，不再散落成多个气泡。实现于
+  `packages/superagentteam-web/src/components/chat/MessageList.tsx`；web 120 tests + build 绿。
   （设计已选定 A + C；前端实现待做。）
 - [x] AC-5：daemon/web tests、typecheck、doc-index 绿；非作者 review。
 
@@ -114,3 +117,20 @@ operator 在 `a2a-测试` thread 做 multi-mention / post_message / 排队测试
   - 长 turn 排队：D 运行 60s（1795759685439 → 1795759748270）；C 的探针在 D 运行中发送
     （1795759693274），invocation 169ms 后启动并于 1795759696697 完成——未等 D 结束。
 - 剩余：前端 A/C 实现；operator 验收。
+
+### 2026-11-27 前端 AC-4 补做（operator 指示）
+
+- A：A2A 私有消息渲染为无头像私有气泡；recipient pill + A2A 标记 + 展开全文；
+  普通公开回复保持 nameplate。
+- C：multi-mention 收进一张汇总卡（question + per-target rows + 状态 + 自动汇总目标），
+  对应 response 行从主时间线隐藏，不再散落。
+- 代码：`packages/superagentteam-web/src/components/chat/MessageList.tsx`、
+  `packages/superagentteam-web/src/domains/chat/api.ts`、`src/styles/global.css`。
+- 验证：web 120 tests / 25 files 全绿；`npm run build --workspace @superagentteam/web` 绿。
+- 待 operator 视觉验收。
+
+![F043 A2A 私有气泡 + multi-mention 汇总卡 · 1440 light](../reports/2026-11-27-f043-a2c-1440-light.png)
+
+![F043 A2A 私有气泡 + multi-mention 汇总卡 · 1440 dark](../reports/2026-11-27-f043-a2c-1440-dark.png)
+
+![F043 A2A 私有气泡 + multi-mention 汇总卡 · 390 light](../reports/2026-11-27-f043-a2c-390-light.png)

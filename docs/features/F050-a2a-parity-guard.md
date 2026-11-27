@@ -1,6 +1,6 @@
 ---
 feature_ids: [superagentteam/F050]
-related_features: [superagentteam/F018, superagentteam/F043, superagentteam/F044, superagentteam/F045, superagentteam/F046, superagentteam/F047, superagentteam/F048, superagentteam/F049]
+related_features: [superagentteam/F018, superagentteam/F043, superagentteam/F044, superagentteam/F045, superagentteam/F046, superagentteam/F047, superagentteam/F048]
 title: "F050: A2A parity guard & live acceptance"
 status: planned
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -32,14 +32,14 @@ source_decision: "operator 2026-11-27: 纠正所有 0007↔当前实现偏移；
 ## Why
 
 0007 target 与 as-built 已经出现过大偏移；上一版拆分只修 F043 暴露的问题，漏了
-A/B/C/D/E/F 的大量偏移。为了避免 F044–F049 再次逐 feature 漂移，需要独立 guard：
+A/B/C/D/E/F 的大量偏移。为了避免 F044–F048 + F043 AC-4 再次逐 feature 漂移，需要独立 guard：
 把 Clowder parity 变成可重跑测试，把“先读 0007/0019/audit + as-built delta”变成
 PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
 
 ## 用户结果
 
 - 触及 A2A runtime 的 PR 必须说明与 0007/0019/audit 的差异和处置；缺说明直接 block。
-- F044–F049 的语义有可重跑的 parity suite 守护，不靠 reviewer 记忆。
+- F044–F048 + F043 AC-4 的语义有可重跑的 parity suite 守护，不靠 reviewer 记忆。
 - audit A–F 每一行都有 fixed / doc-aligned / no-action 证据。
 - 隔离 test runtime 与 runtime 的 live 验收都有记录；operator 可验收。
 
@@ -58,7 +58,7 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
 ## 非目标
 
 - 不新增 route/queue/multi_mention 功能。
-- 不改产品 UI 视觉（F049）。
+- 不改产品 UI 视觉（F043 AC-4）。
 - 不把 live 验收变成“代码写完即完成”；必须有命令/URL/结果。
 
 ## 验收

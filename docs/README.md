@@ -114,7 +114,8 @@ updated: 2026-11-24
 | [`architecture/0005-thread-first-runtime.md`](architecture/0005-thread-first-runtime.md) | **方向/范围（accepted）**：thread-first、纯 A2A 四工具、无 Task/custody/code delivery；详细机制看 0007 |
 | [`architecture/0006-task-first-legacy.md`](architecture/0006-task-first-legacy.md) | `[legacy-reference]` Task-first legacy inventory：识别旧模块/表/工具，防止误导新开发 |
 | [`legacy/task-first/INDEX.md`](legacy/task-first/INDEX.md) | `[legacy]` Task-first code/docs 统一边界：旧代码路径、旧文档移动规则、canonical 替代映射 |
-| [`architecture/0007-a2a-runtime-chain.md`](architecture/0007-a2a-runtime-chain.md) | A2A runtime v1 全链路：InvocationQueue/QueueProcessor/InvocationRecord/InvocationTracker/routeParallel/TurnExecution/InvocationRegistry/terminal+recovery，Clowder 对齐 + v1 轻量化 |
+| [`architecture/0007-a2a-runtime-chain.md`](architecture/0007-a2a-runtime-chain.md) | A2A runtime v1 target design（历史）：Clowder 对齐 + v1 轻量化；as-built 见 0008 |
+| [`architecture/0008-a2a-runtime-chain-as-built.md`](architecture/0008-a2a-runtime-chain-as-built.md) | A2A runtime as-built：QueueProcessor + RunAgentTurn（T1/T2）、F043 并发/快照/auto-delivery、deviation register + 整改决策 |
 | [`architecture/0008-agent-config.md`](architecture/0008-agent-config.md) | AgentConfig v1：config-as-code AgentCatalog/AgentConfig/AgentRegistry/AgentState、AccountConfig、roleId workflow key、迁移与校验 |
 | [`architecture/0009-thread-model.md`](architecture/0009-thread-model.md) | Thread v1：projectPath 必填、active/deleted、lastActiveAt、titleSource、空 thread、迁移 preflight |
 | [`architecture/0010-session-model.md`](architecture/0010-session-model.md) | AgentSession v1：active + lightweight seal、piSessionId/piSessionFile resume、Clowder messageCount、连续失败上限、v2 推迟清单 |

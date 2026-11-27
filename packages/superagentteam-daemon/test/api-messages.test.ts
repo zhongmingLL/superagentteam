@@ -6,7 +6,9 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { createConsoleToken } from "../src/api/console-link.ts";
 import { initOperatorCredential } from "../src/auth/operator.ts";
+import { MessageStore } from "../src/domains/message/store.ts";
 import { type DaemonHandle, startDaemon } from "../src/index.ts";
+import { F018Database } from "../src/infrastructure/db/database.ts";
 
 const HUB_ORIGIN = "http://localhost:3000";
 const ACCOUNT: AccountConfig = { ref: "main", provider: "pi", apiKeyRef: "KEY", models: ["m1"] };
@@ -293,6 +295,33 @@ describe("F016c-M1 S3 message API", () => {
 			replyTo: "msg:missing",
 		});
 		expect(badReply.status).toBe(400);
+	});
+
+	it("serializes targetAgentIds on agent-authored private messages", async () => {
+		const base = await start();
+		const auth = await login(base);
+		const thread = await createThread(base, auth, "thread-a2a-private");
+		const seed = new F018Database({ path: join(dataDir, "f018.db") });
+		try {
+			new MessageStore(seed.db).append({
+				id: "msg:agent-private",
+				threadId: thread.id,
+				from: { kind: "agent", agentId: "a1" },
+				content: "private follow-up",
+				extra: { targetAgentIds: ["a2"] },
+				now: Date.now(),
+			});
+		} finally {
+			seed.close();
+		}
+		const list = await fetch(`${base}/api/messages?threadId=${encodeURIComponent(thread.id)}`, {
+			headers: { cookie: auth.cookie },
+		});
+		const body = (await list.json()) as {
+			messages: Array<{ id: string; extra?: { targetAgentIds?: string[] } }>;
+		};
+		const privateMessage = body.messages.find((message) => message.id === "msg:agent-private");
+		expect(privateMessage?.extra?.targetAgentIds).toEqual(["a2"]);
 	});
 
 	it("enforces targets, CSRF, owner gate, and Hub field aliases", async () => {

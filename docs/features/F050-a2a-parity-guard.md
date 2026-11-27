@@ -1,6 +1,6 @@
 ---
 feature_ids: [superagentteam/F050]
-related_features: [superagentteam/F018, superagentteam/F043, superagentteam/F044, superagentteam/F045, superagentteam/F046, superagentteam/F047, superagentteam/F048, superagentteam/F049]
+related_features: [superagentteam/F018, superagentteam/F043, superagentteam/F044, superagentteam/F045, superagentteam/F046, superagentteam/F047, superagentteam/F048]
 title: "F050: A2A parity guard & live acceptance"
 status: planned
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
@@ -32,14 +32,14 @@ source_decision: "operator 2026-11-27: 纠正所有 0007↔当前实现偏移；
 ## Why
 
 0007 target 与 as-built 已经出现过大偏移；上一版拆分只修 F043 暴露的问题，漏了
-A/B/C/D/E/F 的大量偏移。为了避免 F044–F049 再次逐 feature 漂移，需要独立 guard：
+A/B/C/D/E/F 的大量偏移。为了避免 F044–F048 + F043 AC-4 再次逐 feature 漂移，需要独立 guard：
 把 Clowder parity 变成可重跑测试，把“先读 0007/0019/audit + as-built delta”变成
 PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
 
 ## 用户结果
 
 - 触及 A2A runtime 的 PR 必须说明与 0007/0019/audit 的差异和处置；缺说明直接 block。
-- F044–F049 的语义有可重跑的 parity suite 守护，不靠 reviewer 记忆。
+- F044–F048 + F043 AC-4 的语义有可重跑的 parity suite 守护，不靠 reviewer 记忆。
 - audit A–F 每一行都有 fixed / doc-aligned / no-action 证据。
 - 隔离 test runtime 与 runtime 的 live 验收都有记录；operator 可验收。
 
@@ -53,12 +53,19 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
 - Audit 收口表：A–F 每行状态 + 证据；aligned/no-action 也要写原因。
 - 隔离 live：test runtime（3007/3016）跑 F043 四场景 + 单 target serial +
   multi-mention callback；operator 授权后 runtime（3005/3014）。
+- F043 AC-4 实机视觉验收：真实 Hub 框架（topbar/sidebar/composer）+ 真实 thread 的
+  私有气泡/汇总卡，1440/390、光暗各一组；没有这组图不把 AC-4 标成 live complete。
+- F043 AC-4 视觉 follow-ups（review 记录）：footer “汇总已交给 X”按
+  `received === rows.length` 分完成/将完成语气；replyTo 锚向被隐藏 response 时的
+  展开定位；question 改为结构化字段后的迁移；multi-mention trigger 公开 nameplate
+  与汇总卡 question 双显示；crossPost 保持公开 badge；被隐藏 response 的
+  `mentionsUser` 是否上浮到卡片。
 - 0019 最终 as-built 更新；F043 superseded 状态收口。
 
 ## 非目标
 
 - 不新增 route/queue/multi_mention 功能。
-- 不改产品 UI 视觉（F049）。
+- 不改产品 UI 视觉（F043 AC-4）。
 - 不把 live 验收变成“代码写完即完成”；必须有命令/URL/结果。
 
 ## 验收
@@ -68,6 +75,8 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
 - [ ] AC-3：audit A–F 每行有 fixed / doc-aligned / no-action 证据。
 - [ ] AC-4：隔离 test runtime 跑通 F043 四场景 + 单 target serial + multi-mention
   callback；记录 revision/URL/结果。
+- [ ] AC-4b：F043 AC-4 实机截图（1440/390、光暗、真实 Hub 框架）齐备；否则 AC-4
+  只算 implemented，不算 live complete。
 - [ ] AC-5：runtime 部署需 operator 授权；0019 更新为最终 as-built；F043 标 superseded；
   operator 验收。
 - 注意（P3-b，#240 review）：`workspace_unavailable` 当前是 target-contract 预留名，

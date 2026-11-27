@@ -133,7 +133,8 @@ F6–F7（legacy no-action）。由 F050 在 parity/验收记录中确认。
 6. **每个 audit A–F 行都有处置**：修复、文档对齐、显式映射或 no-action 证据；不能漏。
    owner/API/DDL/naming 不是“只记录”：public contract 漂移改代码，DDL/验收改文档，
    纯命名做显式映射；不做无价值全仓 cosmetic rename。
-7. **F043 的行为是回归要求，不是设计来源**：它的四项行为分别并入 F045/F046/F048/F049。
+7. **F043 的行为是回归要求，不是设计来源**：后端行为并入 F045/F046/F048；AC-4
+   前端按 operator 2026-11-27 指示作为 F043 内容补做（F049 superseded）。
 8. **每个 feature 先读 0007/0019/audit 并回链本计划**；缺这个块视为 review blocker。
 
 ## 5. Feature 拆分
@@ -145,8 +146,8 @@ F6–F7（legacy no-action）。由 F050 在 parity/验收记录中确认。
 | F046 | A9(auto-delivery), D1–D3, D6/F5 | A2A tools & multi-mention：rich block tool 文档、multi_mention aggregate/callback/status、auto-delivery、MessageDispatchSummary 决策 | F044/F045 |
 | F047 | B3, B6/B7, B9, C1–C4, E1, E4(doc), F1–F4 | Data/API/naming parity：public contract 改代码，DDL/验收改文档，纯命名显式映射，B9 记录 decision | 可并行（部分依赖 F044/F048） |
 | F048 | B2(methods), B4/B5, A8(concurrency), E2, E3(concurrency) | Queue/concurrency/recovery：bounded concurrent drain、tracker API/抢占、preflight invalid 验收、长 turn 不阻塞、recovery 边界 | F044 |
-| F049 | F043 AC-4 | Message surface：A2A 私有气泡、multi-mention 汇总卡、桌面/移动/光暗 | F045/F046 |
-| F050 | 全表 + E1/E4 验收 | Parity guard & live：Clowder parity suite、architecture delta guard、隔离 live E2E、0019 收口 | F044–F049 |
+| F049 | F043 AC-4（superseded） | Message surface：按 operator 2026-11-27 指示作为 F043 AC-4 补做，不单独立项；后续 parity/visual guard 并入 F050 | — |
+| F050 | 全表 + E1/E4 验收 | Parity guard & live：Clowder parity suite、architecture delta guard、隔离 live E2E、0019 收口 | F044–F048 + F043 AC-4 |
 | F051 | 目录/组件落点 | Daemon module layout refactor：按 0020 移动/拆分目录，纯 mechanical，不改语义 | F044–F048 |
 
 **共享项归属**：B2 的 `processEntry` 签名/route deps 由 F044，`requestDrain`/
@@ -165,9 +166,9 @@ serial 契约由 F044，daemon 并发验收由 F048；E4 的 T2 实现由 F044�
   不再自相矛盾。
 - **F048**：A 长跑时 B 独立 entry 可启动；同 agent 顺序；queue/live 只显示真实等待；
   tracker 抢占/恢复边界有测试；preflight workspace/session typed invalid 回归。
-- **F049**：A2A 私有气泡/汇总卡；1440/390、光暗；operator 视觉验收。
+- **F049（superseded）**：已由 F043 AC-4 实现 A+C；F049 不再单独实施，视觉验收归 F043。
 - **F050**：parity suite 覆盖 A–F 整改项；PR/quality-gate guard；隔离 live + runtime
-  验收；0019 最终 as-built。
+  验收；F043 AC-4 真实 Hub 截图（1440/390、光暗）；0019 最终 as-built。
 - **F051**：target tree 落地、import 更新、layout guard；daemon full tests/typecheck
   通过；无行为/DDL/API 变化。
 
@@ -182,7 +183,7 @@ P2 F045 context / F047 data-API-naming / F048 queue-concurrency（可并行，�
   ↓
 P3 F046 tools & multi-mention（依赖 F044/F045）
   ↓
-P4 F049 message surface（依赖 F045/F046）
+P4 F043 AC-4 前端已实现（A+C；operator 视觉验收）
   ↓
 P5 F051 daemon module layout（F044–F048 语义稳定后；纯 move/rename）
   ↓
@@ -204,7 +205,7 @@ F043 **作为设计被本计划取代**；它的 live 验证行为只作为全�
 | AC-1 | multi-mention 并发 + target 不看到同批 sibling | F044（barrier）+ F046（multi-mention） |
 | AC-2 | 长 turn 不阻塞独立 entry | F048 |
 | AC-3 | post_message 目标能读源消息 | F045 |
-| AC-4 | A2A 私有气泡/汇总卡 | F049 |
+| AC-4 | A2A 私有气泡/汇总卡 | F043（operator 2026-11-27；F049 superseded） |
 | AC-5 | tests/typecheck/review | 各 feature + F050 |
 
 F043 文档加 superseded banner；不再在其上追加补丁。F043 的代码在 F044 切换时删除，
@@ -238,7 +239,7 @@ F043 文档加 superseded banner；不再在其上追加补丁。F043 的代码�
 ## 10. 待 operator 确认
 
 - Feature owner/reviewer 分工（默认：F044/F045/F046/F048/F050/F051 宪宪；F047 宪宪+砚砚；
-  F049 墨墨；review 按风险找非作者）。
+  F043 AC-4 视觉 review 墨墨；review 按风险找非作者）。
 - F044 完成后是否允许直接切 runtime，还是先在隔离 test runtime 跑一轮再切。
 
 ## 11. Clowder 参考实现索引
@@ -281,12 +282,12 @@ F043 文档加 superseded banner；不再在其上追加补丁。F043 的代码�
 | F048 | `.../invocation/StartupReconciler.ts` + `TurnExecutionStartupReconciler.ts` | startup recovery |
 | F048 | `.../invocation/queue-retry-deferrals.ts` / `queue-routing-recovery-policy.ts` | retry/defer/recovery |
 | F048 | `packages/api/src/index.ts` | QueueProcessor composition root |
-| F049 | `packages/web/src/components/ChatMessage.tsx` | message bubble/direction pill |
-| F049 | `packages/web/src/lib/parse-direction.ts` | whisper/crossPost/mention direction |
-| F049 | `packages/web/src/components/thread-chat/single-cat-conversation-projection.ts` | private reverse link/grouping |
-| F049 | `packages/web/src/components/thread-chat/ThreadChatSurface.tsx` | thread surface |
-| F049 | `packages/web/src/components/thread-chat/SingleCatConversationTimeline.tsx` | timeline |
-| F049 | `packages/web/src/components/QueuePanel.tsx` | queue surface |
+| F043 AC-4 | `packages/web/src/components/ChatMessage.tsx` | message bubble/direction pill |
+| F043 AC-4 | `packages/web/src/lib/parse-direction.ts` | whisper/crossPost/mention direction |
+| F043 AC-4 | `packages/web/src/components/thread-chat/single-cat-conversation-projection.ts` | private reverse link/grouping |
+| F043 AC-4 | `packages/web/src/components/thread-chat/ThreadChatSurface.tsx` | thread surface |
+| F043 AC-4 | `packages/web/src/components/thread-chat/SingleCatConversationTimeline.tsx` | timeline |
+| F043 AC-4 | `packages/web/src/components/QueuePanel.tsx` | queue surface |
 | F050 | `packages/api/test/route-parallel-*.test.js` / `route-serial-*.test.js` | route parity |
 | F050 | `packages/api/test/invocation-queue.test.js` / `invocation-tracker.test.js` | queue/tracker parity |
 | F050 | `packages/api/test/multi-mention-*.test.js` / `route-serial-callback-dedup.test.js` | multi-mention/callback |

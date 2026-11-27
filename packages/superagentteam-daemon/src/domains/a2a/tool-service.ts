@@ -375,7 +375,9 @@ export class A2AToolService {
 									...(ctx.triggerMessageId ? { sourceTriggerMessageId: ctx.triggerMessageId } : {}),
 								},
 							}
-						: undefined,
+						: targets.length > 0
+							? { targetAgentIds: targets.map((target) => target.id) }
+							: undefined,
 					now,
 				});
 				if (targets.length > 0) {

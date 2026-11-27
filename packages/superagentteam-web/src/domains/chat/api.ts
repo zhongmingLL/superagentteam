@@ -30,7 +30,15 @@ export interface MessageView {
 		multiMention?: {
 			requestId?: string;
 			status?: string;
+			callbackTo?: string;
 			targetAgentIds?: string[];
+			responses?: Array<{
+				targetAgentId: string;
+				status: string;
+				responseState?: string;
+				responseMessageId?: string | null;
+				reason?: string | null;
+			}>;
 			allFailed?: boolean;
 		};
 		targetAgentIds?: string[];

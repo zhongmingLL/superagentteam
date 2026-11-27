@@ -409,7 +409,11 @@ describe("message list", () => {
 				}),
 			],
 		});
-		expect(screen.getByText("multi-mention · done · 2 targets")).toBeInTheDocument();
+		expect(screen.getByTestId("multi-mention-card")).toBeInTheDocument();
+		expect(screen.getByText("Multi-Mention")).toBeInTheDocument();
+		expect(screen.getByText("0/2 已回复")).toBeInTheDocument();
+		expect(screen.getByTestId("multi-mention-row-a1")).toBeInTheDocument();
+		expect(screen.getByTestId("multi-mention-row-a2")).toBeInTheDocument();
 		expect(screen.getByText("提到了你")).toBeInTheDocument();
 	});
 
@@ -426,8 +430,8 @@ describe("message list", () => {
 		expect(user?.className).not.toContain("is-nameplate");
 	});
 
-	it("shows A2A recipients and dispatch phase on agent input messages", () => {
-		renderList({
+	it("renders private A2A messages as recipient-labelled private bubbles", () => {
+		const { container } = renderList({
 			messages: [
 				message({
 					id: "msg:a2a",
@@ -451,10 +455,58 @@ describe("message list", () => {
 			],
 			agentLabel: (agentId) => (agentId === "a2" ? "Agent B" : agentId),
 		});
-		const dispatch = screen.getByTestId("message-dispatch-targets");
-		expect(dispatch).toHaveTextContent("发送给");
-		expect(dispatch).toHaveTextContent("Agent B");
-		expect(dispatch).toHaveTextContent("已回复");
+		const a2a = screen.getByTestId("message-a2a-private");
+		expect(a2a).toHaveTextContent("A2A");
+		expect(a2a).toHaveTextContent("Agent B");
+		expect(a2a).toHaveTextContent("私人消息");
+		expect(a2a).toHaveTextContent("已回复");
+		expect(a2a.querySelector(".st-message-avatar")).toBeNull();
+		expect(container.querySelector('[data-testid="message-dispatch-targets"]')).toBeNull();
+	});
+
+	it("renders multi-mention responses inside one card and hides the scattered response rows", () => {
+		const { container } = renderList({
+			messages: [
+				message({
+					id: "msg:multi",
+					type: "system",
+					from: { kind: "system", service: "multi_mention" },
+					content: "## Multi-Mention 结果汇总\n\nQuestion: choose A or B\n- a1 [received]: A\n- a2 [received]: B",
+					extra: {
+						multiMention: {
+							status: "done",
+							callbackTo: "a3",
+							targetAgentIds: ["a1", "a2"],
+							responses: [
+								{ targetAgentId: "a1", status: "received", responseMessageId: "resp:a1" },
+								{ targetAgentId: "a2", status: "received", responseMessageId: "resp:a2" },
+							],
+						},
+					},
+				}),
+				message({
+					id: "resp:a1",
+					type: "assistant",
+					from: { kind: "agent", agentId: "a1" },
+					content: "A",
+				}),
+				message({
+					id: "resp:a2",
+					type: "assistant",
+					from: { kind: "agent", agentId: "a2" },
+					content: "B",
+				}),
+			],
+			agentLabel: (agentId) => (agentId === "a1" ? "Agent A" : agentId === "a2" ? "Agent B" : "Agent C"),
+		});
+		const card = screen.getByTestId("multi-mention-card");
+		expect(card).toHaveTextContent("2/2 已回复");
+		expect(card).toHaveTextContent("choose A or B");
+		expect(card).toHaveTextContent("Agent A");
+		expect(card).toHaveTextContent("Agent B");
+		expect(card).toHaveTextContent("自动汇总 → Agent C");
+		expect(container.querySelector('article[data-message-id="resp:a1"]')).toBeNull();
+		expect(container.querySelector('article[data-message-id="resp:a2"]')).toBeNull();
 	});
 
 	it("renders rich blocks and a visible fallback for unknown kinds", () => {

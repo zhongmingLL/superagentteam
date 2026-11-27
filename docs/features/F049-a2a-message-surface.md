@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F049]
 related_features: [superagentteam/F029, superagentteam/F043, superagentteam/F045, superagentteam/F046, superagentteam/F050]
 title: "F049: A2A message surface parity"
-status: planned
+status: superseded
 owner: "墨墨 (Qwen 3.8 Flash)"
 reviewers: []
 vision_guard: "operator"
@@ -12,6 +12,10 @@ source_decision: "operator 2026-11-27: 全量纠正 0007 偏移；消息表面�
 ---
 
 # F049: A2A message surface parity
+
+> **Superseded by F043 AC-4 (2026-11-27, operator direction).** 消息表面按 operator
+> 指示作为 F043 内容补做完成（A 私有气泡 + C multi-mention 汇总卡），不再单独立项。
+> 本文件保留历史；如后续需要 parity/visual guard，并入 F050。
 
 > **先读（强制）**：
 > - [`0007-a2a-runtime-chain.md`](../architecture/0007-a2a-runtime-chain.md)：target contract。

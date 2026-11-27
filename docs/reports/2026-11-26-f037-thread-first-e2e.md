@@ -95,6 +95,12 @@ reviewed HEAD `e7b27af5b`；墨墨非作者 approve；GitHub CI 5/5 绿。F037 �
 
 ## Post-F044 revalidation（2026-11-27）
 
+> 2026-11-28 更新：本节是**旧 F037 矩阵的复验**，不是按 0007/F044 重新设计的用例。
+> operator 已指出该问题；新的 route-first E2E v2 见
+> [`0052-route-first-e2e-v2.md`](../plans/0052-route-first-e2e-v2.md) 与
+> [`2026-11-28-f044-route-e2e-v2.md`](2026-11-28-f044-route-e2e-v2.md)。本节保留为
+> 历史证据，不再作为 post-F044 的主验证。
+
 背景：F044a（route/T2 ownership）与 F044b（Phase B → `invoke-single-agent`）改动了
 同一条执行链；按 operator 2026-11-27 的强制 E2E 要求，用当前 worktree 对 F037
 矩阵做一次架构后复验。

@@ -531,6 +531,90 @@ describe("F044 route ownership full-stack E2E v2", () => {
 		expect(runtime.tracker.isBusy(thread.id, "a1")).toBe(false);
 	}, 60_000);
 
+	it("F046: multi_mention fans out, aggregates once, and delivers one callback", async () => {
+		provider = await startMockAnthropic((request) => {
+			const body = JSON.stringify(request.body);
+			if (request.model === "a-model") {
+				if (lastMessageHasToolResult(request.body)) return textResponse("A_MM_TOOL_ACK");
+				if (body.includes("MM_CALLBACK_MARKER")) return textResponse("A_MM_FINAL");
+				return toolCallResponse("superagentteam_multi_mention", {
+					targets: [
+						{ kind: "agent", id: "b1" },
+						{ kind: "agent", id: "c1" },
+					],
+					question: "MM_CALLBACK_MARKER: 2+2 等于几？",
+					callbackTo: "a1",
+					triggerType: "info-gap",
+				});
+			}
+			if (request.model === "b-model") {
+				if (lastMessageHasToolResult(request.body)) return textResponse("B_MM_REPLY");
+				if (body.includes("MM_CALLBACK_MARKER")) {
+					return toolCallResponse("superagentteam_post_message", {
+						targets: [{ kind: "agent", id: "a1" }],
+						bodyMd: "B_DUPLICATE_ANSWER",
+					});
+				}
+				return textResponse("B_MM_REPLY");
+			}
+			if (request.model === "c-model") return textResponse("C_MM_REPLY");
+			return errorResponse("unexpected model", 400);
+		});
+		const { base, headers, thread } = await startStack();
+		const runtime = daemon!.a2aControlPlane!.runtime;
+
+		const submitted = await submit(base, headers, thread.id, "please fan out @a1", "f046-mm");
+		await waitFor(async () => {
+			const messages = await listMessages(base, headers, thread.id);
+			return messages.some((message) => message.content === "A_MM_FINAL") &&
+				messages.some((message) => message.content === "B_MM_REPLY") &&
+				messages.some((message) => message.content === "C_MM_REPLY")
+				? true
+				: null;
+		}, 40_000);
+
+		const all = runtime.messages.getByThread(thread.id, 100);
+		const source = all.find((message) => message.content.startsWith("[Multi-Mention from"));
+		expect(source).toBeTruthy();
+		const request = runtime.multiMention.getBySourceRecordId(source!.id)!;
+		expect(request.status).toBe("done");
+		expect(request.targetAgentIds.sort()).toEqual(["b1", "c1"]);
+		expect(request.callbackToAgentId).toBe("a1");
+
+		const view = runtime.multiMention.statusView(request.requestId)!;
+		expect(view.request.status).toBe("done");
+		expect(view.responses).toHaveLength(2);
+		expect(view.responses.every((response) => response.status === "received")).toBe(true);
+		expect(view.allFailed).toBe(false);
+		expect(view.callback?.status).toBe("completed");
+		expect(view.callback?.callbackToAgentId).toBe("a1");
+		if (process.env.SUPERAGENTTEAM_E2E_TRACE === "1") {
+			console.info(`[f046-mm] callback=${JSON.stringify(view.callback)}`);
+		}
+
+		const aggregate = runtime.messages.get(request.aggregateMessageId!)!;
+		expect(aggregate.from).toEqual({ kind: "system", service: "multi_mention" });
+		expect(aggregate.extra?.multiMention).toMatchObject({
+			requestId: request.requestId,
+			status: "done",
+			callbackTo: "a1",
+			allFailed: false,
+		});
+		const aggregates = all.filter(
+			(message) =>
+				message.from.kind === "system" ||
+				(message.extra?.multiMention as { requestId?: string } | undefined)?.requestId === request.requestId,
+		);
+		expect(aggregates.filter((message) => message.id === aggregate.id)).toHaveLength(1);
+
+		// The target's duplicate post_message is rejected before any message/queue
+		// or parent exists; only the orchestrator's aggregate reaches a1.
+		expect(all.some((message) => message.content.includes("B_DUPLICATE_ANSWER"))).toBe(false);
+		expect(runtime.records.get(`inv:${thread.id}:${aggregate.id}`)?.status).toBe("completed");
+		expect(runtime.records.get(`inv:${thread.id}:${submitted.userMessageId}`)?.status).toBe("completed");
+		expect(runtime.queue.listQueued(thread.id)).toHaveLength(0);
+	}, 60_000);
+
 	async function assertPhaseBFault(
 		label: string,
 		reason: "draft_create_failed" | "credential_mint_failed" | "retire_targets_failed",

@@ -41,7 +41,7 @@ durable-commit admission，归 F046）显式标 known-gap。不使用 unit/targe
 | R2 | B/U | provider 在 prompt 接收后 500：T1 failed → UI 失败气泡 → 手动 retry → attempt 2 | delivered failure = T1 failed + ack，不自动 replay；retry 走 requestRetry/新 attempt | R2（mock 500）+ 真实 UI 401 失败/重试；DB attempt 1/2 均 failed，无 `delivery_failure` | pass |
 | R3 | B/U | 运行中取消：真实 worker/provider 在飞时点停止 | cancel → turn/attempt/R canceled，worker retired，queue 不 restore | R3（mock 延迟）+ 真实 UI stop；DB 三态 canceled，worker retired | pass |
 | R4 | B | `cross_post_message` thread1 → thread2，B 回复 | 新 queue entry/parent；source/target 归属正确；T3 各自收敛 | R4；target input 的 dispatchRef、两 parent completed；route 日志 events 各 ≥2 | pass |
-| R5 | B | `multi_mention` B+C + callback A | F046 工具面；one source/parent + N turns；aggregate/callback | 设计已列，尚未自动化（F046） | todo |
+| R5 | B/P | `multi_mention` B+C + callback A | F046 工具面；one source/parent + N turns；aggregate/callback | B：`f044-route-fullstack-e2e.test.ts` F046；P：`f046-multi-mention-live.e2e.test.ts`（B/C 真实 Kimi 回复 4，aggregate+callback completed） | pass（F046a） |
 | R6 | B | T2 单写者 / R 生命周期 | R terminal 只由 route/RouteResponseCommitter 写；draft delete、settlement settled | R1/R2 DB 断言（R status、draft null、settlement） | pass |
 | R7 | B | Phase B 失败隔离（draft/credential/retire） | Phase B 失败 = attempt failed + delivery_failure + target pending；不进 provider convergence | `f044-route-fullstack-e2e.test.ts` R7 ×3：draft/credential/retire 各一例；attempt failed/terminal `phase_b_failed`、无 TurnExecution/R、delivery_failure reason 精确、target 仍 pending、provider 0 调用 | pass |
 | P1 | P | live pi RPC 单 agent 真实回合 | 真实 pi worker + 真实 Kimi account；R completed | `f018-r3-live.e2e.test.ts`（runtime.env key 注入，不打印） | pass |

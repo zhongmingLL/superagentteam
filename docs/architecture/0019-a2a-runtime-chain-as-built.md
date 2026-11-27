@@ -397,6 +397,10 @@ OperatorMessageIngress（domains/a2a/router.ts）
   claim 语义。
 - **F1–F4**：`runAgentTurn`/`RunAgentTurn`、`RouteInput`/`PreparedDispatch`、
   `AgentTurnResult`、collector 函数均为显式映射；没有缺失能力。
+- **F8（F046）**：`MultiMentionStatusReader` → `MultiMentionStore.statusView`
+  （request + responses + allFailed + callback）；aggregate message `extra.multiMention`
+  与 callback row 是同一投影源。callback 的 `queueEntryId` 在 queue row 删除后由
+  `ON DELETE SET NULL` 置空，parent/turn 字段保留投递证据。
 
 ## 8. 整改计划 / 决策点
 

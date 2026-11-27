@@ -2370,6 +2370,8 @@ interface InvocationCredential {
 - `cross_post_message`
 - `multi_mention`（2-3 个 agent；完整 orchestrator：status/timeout/callback child/aggregate）
 - `thread_context`（只读，不入队）
+- `superagentteam_create_rich_block`（F031；presentation-only producer，同一 control
+  socket、同一 child credential fence；不属于四个 A2A 文本工具，不路由/不唤醒）
 
 `post_message` / `cross_post_message` / `multi_mention` 都不带 legacy `kind`；
 消息正文只由 `bodyMd`（`multi_mention` 为 `question` + `context?`）承载。
@@ -2500,6 +2502,11 @@ targets: Array<{ kind: "agent"; id: string }>
 - `searchEvidenceRefs` / `overrideReason`：Clowder MCP 要求二选一（先搜后问）。
   codeteam v1 的 A2A 工具面没有 memory search；v1 把二者作为可选 metadata，
   由 SOP/skill 约束；这是有意的 v1 差异。
+- **prompt template（F043/F046）**：source message 正文固定为
+  `[Multi-Mention from <caller>]\n\n<question>\n\n<context?>\n\n你的回答会自动汇总并投递给发起者；不需要再调用 post_message。`
+- **auto-delivery（F043/F046）**：某个 target 在 active multi_mention 中向 initiator
+  再发 `post_message` → typed `multi_mention_auto_delivery`；在创建 message/queue/
+  parent 前拒绝，不产生额外唤醒。
 
 **result**
 
@@ -3254,6 +3261,9 @@ interface InvocationAttemptStore {
    - 等需要 trajectory drilldown 再加 projector。
 5. **MessageDispatchSummary**
    - parent + child 的 domain read model；字段/分页/降级见下方 `read DTO`。
+   - **F046 decision（2026-11-28）**：v1 **明确 deferred**。F016c S0 已冻结该
+     read model（M1 用 queue+live，summary 路由留后续）；证据见 0019 §7 R8；
+     本版不假装 F018 已实现 endpoint。
 6. **Read DTO contract（DP-F018SURFACE-3=A）**
    - F018 拥有 `QueueView` / `LiveInvocationView` / `MessageDispatchSummary` 三个
      domain DTO；W7a 只做 Hub transport/DTO 映射。

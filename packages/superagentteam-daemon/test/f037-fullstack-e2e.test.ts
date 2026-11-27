@@ -35,6 +35,21 @@ function agentConfig(id: string, model: string): AgentConfig {
 	};
 }
 
+function readKeyLogLines(handle: DaemonHandle): string[] {
+	const entries = handle.observability.logs?.tail({ limit: 1000 }).entries ?? [];
+	const wanted = new Set([
+		"phase_b_appended",
+		"turn_worker_bound",
+		"turn_terminal",
+		"phase_b_failed",
+		"queue_route_setup_failed",
+		"route_t2_commit_failed",
+	]);
+	return entries
+		.filter((entry) => wanted.has(entry.event))
+		.map((entry) => `${entry.ts} ${entry.level} ${entry.event} ${JSON.stringify(entry.fields)}`);
+}
+
 function writeWorkerModels(agentDir: string, baseUrl: string): void {
 	mkdirSync(agentDir, { recursive: true, mode: 0o700 });
 	writeFileSync(
@@ -220,6 +235,12 @@ describe("F037 full-stack thread-first E2E", () => {
 		expect(agentInput?.lifecycle?.kind).toBe("input");
 		expect(agentInput?.lifecycle?.dispatchRefs?.some((ref) => ref.target.id === "b1")).toBe(true);
 
+		const logLines = readKeyLogLines(daemon!);
+		console.log(`[f037-e2e] base=${base} dataDir=${dataDir} cwd=${process.cwd()}\n${logLines.join("\n")}`);
+		expect(logLines.filter((line) => line.includes("phase_b_appended")).length).toBeGreaterThanOrEqual(2);
+		expect(logLines.filter((line) => line.includes("turn_worker_bound")).length).toBeGreaterThanOrEqual(2);
+		expect(logLines.filter((line) => line.includes("turn_terminal")).length).toBeGreaterThanOrEqual(2);
+
 		const db = new F018Database({ path: join(dataDir, "f018.db") });
 		try {
 			const completed = await waitFor(async () => {
@@ -289,6 +310,12 @@ describe("F037 full-stack thread-first E2E", () => {
 		const bPrompts = requests.filter((request) => request.model === "b-model");
 		expect(bPrompts.length).toBeGreaterThan(0);
 		expect(bPrompts.every((request) => !request.body.includes("A_PARALLEL_REPLY"))).toBe(true);
+
+		const logLines = readKeyLogLines(daemon!);
+		console.log(`[f037-e2e] base=${base} dataDir=${dataDir} cwd=${process.cwd()}\n${logLines.join("\n")}`);
+		expect(logLines.filter((line) => line.includes("phase_b_appended")).length).toBeGreaterThanOrEqual(2);
+		expect(logLines.filter((line) => line.includes("turn_worker_bound")).length).toBeGreaterThanOrEqual(2);
+		expect(logLines.filter((line) => line.includes("turn_terminal")).length).toBeGreaterThanOrEqual(2);
 
 		const db = new F018Database({ path: join(dataDir, "f018.db") });
 		try {

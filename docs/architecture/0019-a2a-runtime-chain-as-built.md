@@ -31,23 +31,29 @@ OperatorMessageIngress（domains/a2a/router.ts）
   → QueueProcessor.processEntry（domains/queue/processor.ts）
       Phase A 单事务：parent InvocationRecord + 每个 target attempt starting
       InvocationTracker.startAll(thread, claimed targets)
-      Phase B 每 target：TurnExecution.createRunning + processing R +
-        credential + draft + retireTargets
-      已 dispatch target 并发 fan-out（F043：Promise.allSettled）
-  → RunAgentTurn.dispatch（domains/agent/turn.ts）
-      loadHistory（queue source 作为 upToSeq；显式包含源消息）
-      workerPool.ensure + bindWorker + buildThreadPrompt + promptAndWait
+      AgentRouter.routeAgents(preparedTargets, parallel|serial)
+  → AgentRouter（domains/agent/route.ts）
+      routeParallel：批次 barrier 先装配全部 target context（history snapshot +
+        prompt），再启动任何 runner；单 target 错误隔离
+      routeSerial：单 target operator/A2A hop 的 assemble → run → T2 → release；
+        多 target serial 时后续 target 收到 priorResponses
+  → RunAgentTurn.run（domains/agent/turn.ts）
+      InvokeSingleAgent.begin：Phase B 单事务（processing R +
+        TurnExecution.createRunning + bindAppended + credential + draft +
+        input dispatchRef + retireTargets）
+      workerPool.ensure + bindWorker + promptAndWait
       stream → ResponseEventSink → onStreamEvent
       T1 TurnExecutionLifecycle.invokeTerminal
-      T2 RouteResponseCommitter.commit
+  → route：T2 RouteResponseCommitter.commit → completion.release()
   → QueueProcessor finally：aggregateParent（collectTerminalDispositions +
       applyTerminalAggregate）；tracker.complete；releaseClaim
   → ResponseRecoveryService（T4）
 ```
 
-没有 `AgentRouter` / `routeAgents` / `routeParallel` / `routeSerial` / `priorResponses` /
-`mergeStreams` / `invoke-single-agent` 这些运行时组件；上面的 `QueueProcessor` +
-`RunAgentTurn` 是实际的调度与 per-agent 执行边界。
+`runAgentTurn` 不是 async generator：`TurnRunner.run(input)` 返回
+`AgentTurnCompletion`（`result` + `release()`）。route 用 `Promise.all` 并发启动
+`routeParallel` 的 runner，没有独立 `mergeStreams` 模块；stream 仍经
+`ResponseEventSink` → `onStreamEvent`。
 
 ## 2. As-built ownership
 
@@ -56,11 +62,12 @@ OperatorMessageIngress（domains/a2a/router.ts）
 | `@` 解析 / target resolution | `OperatorMessageIngress` |
 | queue admission / cap / claim | `QueueLedgerStore` + `QueueProcessor` |
 | parent / Phase A | `QueueProcessor.processEntry` |
-| Phase B（R + TurnExecution + credential + draft + retire） | `QueueProcessor.processEntry` |
+| parallel barrier / serial worklist / priorResponses | `AgentRouter`（`route.ts`） |
+| Phase B（R + TurnExecution + credential + draft + retire） | `InvokeSingleAgent.begin`，由 `RunAgentTurn.run` 调用 |
 | `tracker.startAll` | `QueueProcessor` |
-| 多 target fan-out | `QueueProcessor.processEntry`（F043 并发） |
-| per-target history / worker / prompt / T1 | `RunAgentTurn.dispatch` |
-| T2 response commit | `RunAgentTurn.dispatch`（`RouteResponseCommitter`） |
+| per-target worker / prompt / stream / T1 | `RunAgentTurn` + `TurnExecutionLifecycle` |
+| T2 response commit | `AgentRouter` → `RouteResponseCommitter.commit` |
+| provider-phase failure convergence（Phase B 已提交后） | `QueueProcessor.convergeProviderFailure` |
 | T3 collector + parent aggregate | `QueueProcessor`（`aggregateParent`；`collectTerminalDispositions` + `applyTerminalAggregate`） |
 | T4 recovery | `ResponseRecoveryService` |
 | live/queue 读模型 | `domains/invocation/live.ts` + `api/routes/{queue,live}.ts` |
@@ -77,25 +84,53 @@ OperatorMessageIngress（domains/a2a/router.ts）
 
 - 实际构造依赖（`QueueProcessorDeps`）：`db`、`registry`、`queue`、`records`、`turns`、
   `attempts`、`sessions`、`credentials`、`drafts`、`messages`、`threads`、`tracker`、
-  `dispatchTarget`、`multiMention`、`multiMentionOrchestrator`、`capacity`、`clock`、`owner`。
+  `router`、`multiMention`、`multiMentionOrchestrator`、`capacity`、`log`、`clock`、`owner`。
+  `credentials`/`drafts` 只服务 provider-phase failure convergence；Phase B 不再由
+  processor 写。
 - 公开方法：`drain(threadId, userId, {maxEntries})`、`drainAll(maxEntries)`、
   `processEntry(entry, claimId, userId)`、`requestRetry(invocationId, targets?)`、
   `abandon(invocationId)`；`isThreadBusy` / `isAgentBusy` / `hasQueuedForThread`。
 - `processEntry` 顺序：claim 校验 → preflight（`agent_not_found` / `agent_disabled` /
   `account_not_found`；`worker_capacity` defer）→ Phase A 单事务 → `tracker.startAll`
-  → Phase B 每 target 事务 → 并发 dispatch → `finally` 释放 tracker/claim + T3 aggregate。
-- F043：`dispatchOne` 对同一 entry 的 target 用 `Promise.allSettled` 并发；单 target
-  provider-phase 错误在 `dispatchOne` 内收敛。`DaemonA2A.tick` 允许最多 8 个并发 drain。
+  → `AgentRouter.routeAgents`（Phase B 在各 runner 内）→ 错误分类 → `finally` 释放
+  tracker/claim + T3 aggregate。
+- route 错误分类（F044b）：
+  - route 装配失败或 runner 抛出 `PhaseBError`（无 `turn_execution_id`）→ attempt
+    `starting→failed` + `delivery_failure`，target 保持 pending，bounded backoff 重试；
+  - Phase B 已提交后 provider-phase 失败 → `convergeProviderFailure` 收敛 child/R/
+    credential 并恢复 target；
+  - `PhaseBError.failureRecorded=false`（清理事务也失败）→ processor 重试一次共享
+    prestart 记录，仍失败则进入 `convergenceFailed`。
+- F048 仍待处理 bounded concurrent drain 的精确上限；`DaemonA2A.tick` 目前最多 8 个
+  并发 drain。
 
-### 3.3 RunAgentTurn
+### 3.3 AgentRouter + RunAgentTurn + invoke-single-agent
 
-- `domains/agent/turn.ts`，实现 `DispatchTargetPort`：
-  `dispatch(prepared: PreparedDispatch): Promise<void>`。
-- `dispatch` 内：校验 session/attempt → `loadHistory`（F043 `upToSeq` +
-  `includeSourceMessageId`）→ `pool.ensure` → `bindWorker` → `buildThreadPrompt` →
-  `promptAndWait` → sink → T1 `TurnExecutionLifecycle.invokeTerminal` →
-  T2 `RouteResponseCommitter.commit`。
-- 不是 async generator，不返回 `AgentTurnResult`；T1/T2 都在这个 dispatch 内完成。
+- `domains/agent/route.ts`：`AgentRouter` 拥有 parallel barrier、serial worklist、
+  `priorResponses`、per-target 错误隔离、T2 commit 与 carrier release 时机。
+  `routeParallel` 先同步装配所有 target 的 `TurnContext`（history window + prompt），
+  再 `Promise.all` 启动 runner；`routeSerial` 单 target 仍走
+  assemble → run → T2 → release，多 target 时把前序 `responseText` 作为
+  `priorResponses` 加入下一个 prompt。
+- `domains/agent/turn.ts`：`RunAgentTurn` 实现 `TurnRunner.run(input):
+  Promise<AgentTurnCompletion>`。顺序：`invoke-single-agent.begin`（Phase B）→
+  校验 session/attempt → `pool.ensure` → `bindWorker` → `promptAndWait` → sink →
+  T1 `TurnExecutionLifecycle.invokeTerminal` → 返回 `result + release()`。
+  route 在 T2 commit 之后调用 `release()`；T1 仍是 child terminal 的唯一写入点。
+- `domains/agent/invoke-single-agent.ts`：Phase B owner。`begin(prepared)` 在一个事务内
+  写 processing R + `TurnExecutionStore.createRunning` + `bindAppended` +
+  credential + draft + input dispatchRef + `retireTargets`。Phase B 失败抛
+  `PhaseBError`：attempt `starting→failed`（terminalReason `phase_b_failed`）+
+  步骤化 `delivery_failure` reason（`turn_create_failed` / `response_create_failed` /
+  `credential_mint_failed` / `draft_create_failed` / `retire_targets_failed` /
+  `phase_b_failed`），target 保持 pending。attempt 不在 `starting` 时不写任何终态
+  （`failureRecorded=false`）。
+- 生命周期日志：daemon 把 `A2ALog` 接到本地 JSONL，关键事件包括
+  `phase_b_appended`、`turn_worker_bound`、`turn_terminal`、`phase_b_failed`、
+  `queue_route_setup_failed`、`route_t2_commit_failed`。
+- 已知显式映射：`runAgentTurn` 不是 async generator；`RouteResponseCommitter.commit`
+  输入是 `{turnExecutionId, responseText?, thinking?}`（P3-b 对齐），不是整个
+  `AgentTurnResult`。F047 统一文档/API 表述。
 
 ### 3.4 Stores / recovery
 
@@ -164,8 +199,9 @@ OperatorMessageIngress（domains/a2a/router.ts）
 
 | 层 | 实际 owner | 实际动作 |
 |---|---|---|
-| T1 | `TurnExecutionLifecycle`（`RunAgentTurn.dispatch` 调用） | child terminal + attempt projection + `response_pending` + credential terminalize + recordCompletedTurn + cursor ack（promptDelivered gated） |
-| T2 | `RouteResponseCommitter`（`RunAgentTurn.dispatch` 调用） | R terminal（draft content/thinking/toolEvents/richBlocks）+ input refs settle + draft delete + `clearResponsePending` + multi-mention response terminal |
+| Phase B | `InvokeSingleAgent.begin`（`RunAgentTurn.run` 调用） | processing R + TurnExecution.createRunning + bindAppended + credential + draft + input dispatchRef + retireTargets；失败走 typed prestart failure |
+| T1 | `TurnExecutionLifecycle`（`RunAgentTurn.run` 调用） | child terminal + attempt projection + `response_pending` + credential terminalize + recordCompletedTurn + cursor ack（promptDelivered gated） |
+| T2 | `AgentRouter` → `RouteResponseCommitter.commit` | R terminal（draft content/thinking/toolEvents/richBlocks）+ input refs settle + draft delete + `clearResponsePending` + multi-mention response terminal；失败写日志留 T4 |
 | T3 | `QueueProcessor.aggregateParent` | `collectTerminalDispositions` + `applyTerminalAggregate` + queue/tracker/slot |
 | T4 | `ResponseRecoveryService` | `response_pending` / `response_missing` 恢复；不改 child/credential，不重跑 T3 |
 
@@ -174,15 +210,21 @@ OperatorMessageIngress（domains/a2a/router.ts）
 - Phase A（QueueProcessor 单事务）：parent create/reuse + markRunning + 每个 target
   `appendQueued → markStarting`。任一 deferred → releaseClaim + defer；invalid target
   在同事务终态化并写 `delivery_failure`。
-- Phase B（QueueProcessor 每 target 事务）：processing R + `TurnExecution.createRunning`
-  + `bindAppended` + credential + empty draft + input dispatchRef + `retireTargets`。
-- 这是 as-built；0007/0016 把 Phase B/T2 放在 `runAgentTurn`/route 是 target design。
+- Phase B（`InvokeSingleAgent.begin`，每 target 独立事务）：processing R +
+  `TurnExecution.createRunning` + `bindAppended` + credential + empty draft +
+  input dispatchRef + `retireTargets`。失败 → attempt `starting→failed` +
+  step-specific `delivery_failure`，target 保持 pending；不进入 provider convergence。
+- route 装配失败发生在 Phase B 之前：processor 用同一 prestart failure 记录
+  （`phase_b_failed`，content 带 `route_setup_failed:`），target 仍可重试。
+- Phase B 成功但 provider 失败：`convergeProviderFailure` 终端化 child/R/credential，
+  恢复 target 给 bounded retry；不写 `delivery_failure`。
 
 ## 6. 端到端 as-built
 
-- **operator 多 target**：ingress → 1 queue entry（多 target）→ Phase A → tracker.startAll
-  → Phase B per target → 并发 dispatch → 各 child T1/T2 → T3 聚合。F043 起 target
-  并发；context 固定在 queue source（F043 `upToSeq`）。
+- **operator 多 target**：ingress → 1 queue entry（多 target）→ Phase A →
+  tracker.startAll → routeParallel（先装配全部 context，再并发 runner）→ 每个
+  runner 内 Phase B → provider → T1 → route T2 → T3 聚合。F043 起 target 并发；
+  context 固定在 queue source（`upToSeq`），同批 sibling 不互相看见回答。
 - **A2A hop**：`post_message` → 新 message + 新 queue entry（targets 非空）→ 新 parent
   → 新 child；`a2aDepth + 1`，上限 15。
 - **multi_mention**：1 source message + 1 queue entry + 1 parent + N child；目标回答
@@ -222,6 +264,9 @@ OperatorMessageIngress（domains/a2a/router.ts）
   “execution layer behind the R2-a dispatch port”；没有找到“drop AgentRouter”的决策包/
   review/operator signoff。
 - **disposition**：需要 operator 决策 A（ratify 现状）或 B（补 route 层）。
+- **F044 resolution（2026-11-27）**：operator 选 B。F044a 恢复 AgentRouter/
+  routeParallel/routeSerial/runAgentTurn/T2 owner；F044b 把 Phase B 搬进
+  invoke-single-agent。as-built 见 §1–§3。
 
 ### R2 · Phase B / T2 ownership
 
@@ -234,6 +279,9 @@ OperatorMessageIngress（domains/a2a/router.ts）
   但与 0007/0016/0024 冲突，未回写。属于“有实现证据、无架构批准”的偏离。
 - **disposition**：与 R1 绑定；若 ratify 现状则更新 0016/0024；若补 route 层则把 T2
   移到 route（Phase B 是否移动按 0007 或 0024 再定）。
+- **F044 resolution（2026-11-27）**：T2 移到 route，Phase B 移到
+  `InvokeSingleAgent.begin`（`RunAgentTurn.run` 调用）；QueueProcessor 只保留
+  Phase A/T3 + provider-phase convergence。
 
 ### R3 · runAgentTurn / RouteResponseCommitter 接口
 
@@ -245,6 +293,10 @@ OperatorMessageIngress（domains/a2a/router.ts）
   DispatchTargetPort；R2-c 把 T1/T2 放进 dispatch）。
 - **disposition**：若 ratify 现状，0007 target 保留接口历史，0019 作为实际 API；
   若补 route 层，恢复 generator/result 或引入明确的 route result 类型。
+- **F044 resolution（2026-11-27）**：采用显式 `TurnRunner.run():
+  Promise<AgentTurnCompletion>`（result + release），不恢复 async generator；
+  `RouteResponseCommitter.commit` 输入改为 `{turnExecutionId, responseText?,
+  thinking?}`。F047 统一文档表述。
 
 ### R4 · routeSerial / priorResponses
 
@@ -257,6 +309,9 @@ OperatorMessageIngress（domains/a2a/router.ts）
   的决策记录；0024 仍写 serial）。
 - **disposition**：operator 决定 retire（无 serial 产品路径；多 target 恒 parallel）
   或 implement（显式 mode + priorResponses）。
+- **F044 resolution（2026-11-27）**：D3 选择 implement。routeSerial 已实现并保留
+  单 target 前后处理；多 target operator message 仍走 routeParallel，serial 的
+  `priorResponses` 有专项测试。
 
 ### R5 · 组件 API / deps / 方法
 
@@ -326,7 +381,7 @@ OperatorMessageIngress（domains/a2a/router.ts）
 > [`docs/plans/0050-a2a-runtime-alignment.md`](../plans/0050-a2a-runtime-alignment.md)；
 > feature 拆分 F044–F051。以下 A/B 选项保留为决策历史。
 
-### D1（已决定 2026-11-27）· route 层：ratify 还是补实现
+### D1（已决定 2026-11-27，F044 已实现）· route 层：ratify 还是补实现
 
 **Decision: Option B — 恢复 route 层**。`AgentRouter`/`routeAgents`/`routeParallel`/
 `routeSerial`/`priorResponses`/`RouteResponseCommitter` 按 0007 实现；Phase B/T1
@@ -362,7 +417,7 @@ OperatorMessageIngress（domains/a2a/router.ts）
 **历史建议（已被 2026-11-27 operator 决定取代）**：当时建议 v1 选 A；
 operator 现决定选 B，按 0007 恢复 route 层。
 
-### D2（已决定 2026-11-27）· T2 / Phase B ownership
+### D2（已决定 2026-11-27，F044 已实现）· T2 / Phase B ownership
 
 **Decision**：按 0007——Phase B/T1 在 `runAgentTurn`/`invokeSingleAgent`；T2 在
 route/`RouteResponseCommitter`；T3 在 `QueueProcessor`。不再保留 QueueProcessor/
@@ -372,7 +427,7 @@ RunAgentTurn 的 T2 写路径。
   0016/0024 的 owner 表，0019 作为实际 API。
 - 若选 B：T2 移到 route wrapper；Phase B 按 0007 或 0024 二选一并写死，不再两处矛盾。
 
-### D3（已决定 2026-11-27）· routeSerial / priorResponses
+### D3（已决定 2026-11-27，F044 已实现）· routeSerial / priorResponses
 
 **Decision: 实现 routeSerial，不 retire**。即使退化为一个 target，也必须保留
 worklist、context、T2、A2A successor、cleanup 等前后处理；multi-target 的

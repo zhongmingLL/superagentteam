@@ -1,6 +1,7 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { AgentStreamEvent } from "@superagentteam/shared/types";
 import { OperatorMessageIngress } from "../a2a/router.ts";
+import { InvokeSingleAgent } from "../agent/invoke-single-agent.ts";
 import type { AgentRegistry } from "../agent/registry.ts";
 import { AgentRouter, createContextAssembler } from "../agent/route.ts";
 import { RunAgentTurn } from "../agent/turn.ts";
@@ -23,6 +24,7 @@ import { ThreadStore } from "../thread/store.ts";
 import { WorkerPool, type WorkerSpawnPort } from "../worker/pool.ts";
 import { WorkerBindingStore, WorkerStore } from "../worker/store.ts";
 import { A2AControlServer } from "./control.ts";
+import type { A2ALog } from "./log.ts";
 import { LoopGuardService } from "./loop-guard.ts";
 import { ThreadContextService } from "./thread-context.ts";
 import { A2AToolService } from "./tool-service.ts";
@@ -37,6 +39,8 @@ export interface A2ARuntimeDeps {
 	spawn: WorkerSpawnPort;
 	onStreamEvent?: (event: AgentStreamEvent, threadId: string) => void;
 	changeBus?: ChangeBus;
+	/** Structured A2A lifecycle log; daemon wires this to the JSONL store. */
+	log?: A2ALog;
 	clock?: () => number;
 	processStartedAt?: number;
 	promptTimeoutMs?: number;
@@ -141,6 +145,18 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 				clock,
 			})
 		: null;
+	const invokeSingleAgent = new InvokeSingleAgent({
+		db,
+		attempts,
+		turns,
+		credentials,
+		drafts,
+		messages,
+		queue,
+		sessions,
+		clock,
+		...(deps.log ? { log: deps.log } : {}),
+	});
 	const runAgentTurn = new RunAgentTurn({
 		db,
 		pool,
@@ -152,7 +168,9 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		credentials,
 		readState,
 		messages,
+		invokeSingleAgent,
 		onStreamEvent: deps.onStreamEvent,
+		...(deps.log ? { log: deps.log } : {}),
 		clock,
 		promptTimeoutMs: deps.promptTimeoutMs,
 	});
@@ -173,6 +191,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		assemble: createContextAssembler({ assembler, registry: deps.registry, threads, messages }),
 		runner: runAgentTurn,
 		committer: new RouteResponseCommitter(settlementDeps),
+		...(deps.log ? { log: deps.log } : {}),
 	});
 	const processor = new QueueProcessor({
 		db,
@@ -188,6 +207,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		threads,
 		tracker,
 		router,
+		...(deps.log ? { log: deps.log } : {}),
 		multiMention,
 		multiMentionOrchestrator,
 		capacity: { check: (threadId, targets) => pool.checkCapacityFor(threadId, targets) },

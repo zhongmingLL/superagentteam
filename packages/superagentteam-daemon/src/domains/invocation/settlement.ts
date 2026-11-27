@@ -140,7 +140,7 @@ export class TurnExecutionLifecycle {
 export interface CommitResponseInput {
 	turnExecutionId: string;
 	/** Fallback body; the durable draft is canonical when present. */
-	content?: string;
+	responseText?: string;
 	thinking?: string | null;
 }
 
@@ -195,7 +195,7 @@ export class RouteResponseCommitter {
 				// plus thinking and the merged toolEvents (the only source for
 				// contentBlocks reconstruction once the draft is deleted).
 				const draft = this.deps.drafts.getByTurn(input.turnExecutionId);
-				const body = draft?.content ?? input.content ?? "";
+				const body = draft?.content ?? input.responseText ?? "";
 				const thinking = draft?.thinking ?? input.thinking ?? null;
 				const toolEvents = draft?.toolEvents ?? [];
 				const richBlocks = draft?.richBlocks ?? [];
@@ -350,7 +350,7 @@ export class ResponseRecoveryService {
 				if (response.lifecycle?.kind === "response" && response.lifecycle.status === "processing") {
 					const committed = this.committer.commit({
 						turnExecutionId: turn.turnExecutionId,
-						content: draft?.content ?? "",
+						responseText: draft?.content ?? "",
 						thinking: draft?.thinking ?? null,
 					});
 					if (committed.outcome === "committed" || committed.outcome === "already_terminal") {

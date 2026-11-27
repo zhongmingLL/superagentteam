@@ -42,9 +42,9 @@ related_features: [codeteam/F018, codeteam/F017]
 ## 0. 结论先行
 
 1. **10 个组件按 Clowder 结构复用**，只做 v1 轻量化；`routeSerial` 单体实现去掉，per-agent pipeline 抽成 `runAgentTurn`，`routeAgents` 保留 parallel/serial 调度。
-   > As-built 2026-11-27：当前实现没有 `AgentRouter`/`routeAgents`/`routeSerial`；
-   > 多 target 并发 fan-out 在 `QueueProcessor.processEntry`，T2 在
-   > `RunAgentTurn.dispatch`。见 §0.1。
+   > As-built 2026-11-27（F044a/F044b）：`AgentRouter`/`routeAgents`/
+   > `routeParallel`/`routeSerial`/`priorResponses` 已恢复；Phase B 在
+   > `invoke-single-agent`，T2 在 route 的 `RouteResponseCommitter`。见 §0.1。
 2. **父/子/认证三层固定**：
    - `InvocationRecord`（parent）管消息生命周期；
    - `TurnExecution`（child）管单 agent 执行；
@@ -58,16 +58,15 @@ related_features: [codeteam/F018, codeteam/F017]
    T4 `response_pending` / `response_missing` recovery。
 7. **v1 不做**：MCP、task/role/run 字段、custody/action/wait、compaction、full session seal/transcript/digest/restore、outputFence/coveredMessageIds、trajectory projector、Clowder action successor 的 `idempotencyKey`/`intent`。
 
-> **As-built note（2026-11-27）**：本文是 Clowder-aligned 的 target contract；当前实现
-> 已把 `AgentRouter`/route 层折叠进 `QueueProcessor` + `RunAgentTurn`，且 F043 后
-> 多 target 是并发 fan-out。§0.1 是 as-built 链路与 ownership；§2/§3.9 的
-> `AgentRouter`/`routeParallel`/`routeSerial`/`priorResponses` 是 target design，
-> 当前代码中不存在。
+> **As-built note（2026-11-27，F044a/F044b）**：route 层与 Phase B/T2 ownership
+> 已按本文恢复。Phase B 在 `invoke-single-agent`（`RunAgentTurn` 调用），T1 在
+> `RunAgentTurn`/`TurnExecutionLifecycle`，T2 在 route，T3 在 `QueueProcessor`。
+> 仍由后续 feature 收口：A2A successor admission（F046）、API/DDL/命名（F047）、
+> 并发/recovery 细节（F048）。§0.1 是 F044b 后的 as-built；0019 是详细 as-built。
 >
-> **Alignment plan（2026-11-27 operator direction）**：不再 ratify 折叠实现；
-> 按本文 target 恢复 route 层。执行计划见
+> **Alignment plan（2026-11-27 operator direction）**：
 > [`docs/plans/0050-a2a-runtime-alignment.md`](../plans/0050-a2a-runtime-alignment.md)
-> （F044–F051）。本文仍是 target-design；0019 是 cutover 前的 as-built。
+> （F044–F051）。
 
 ## 0.1 As-built implementation（2026-11-27）
 
@@ -79,13 +78,19 @@ OperatorMessageIngress（domains/a2a/router.ts）
   → QueueProcessor.processEntry（domains/queue/processor.ts）
       Phase A 单事务：parent InvocationRecord + 每个 target attempt starting
       InvocationTracker.startAll(thread, claimed targets)
-      Phase B 每 target：TurnExecution.createRunning + credential + draft + retireTargets
-      对已 dispatch 的 target 并发 fan-out（F043：Promise.allSettled；单 target 错误隔离）
-  → RunAgentTurn.dispatch（domains/agent/turn.ts）
-      loadHistory（queue source 作为 upToSeq；显式包含源消息）
+      AgentRouter.routeAgents(preparedTargets, parallel|serial)
+  → AgentRouter（domains/agent/route.ts）
+      routeParallel：先完成同批全部 target 的 history/prompt 装配（barrier），
+        再并发启动 runner；单 target 错误隔离
+      routeSerial：单 target operator/A2A hop 的 assemble → run → T2 → release；
+        多 target serial 时后一个 target 收到 priorResponses
+  → RunAgentTurn.run（domains/agent/turn.ts）
+      invoke-single-agent.begin：Phase B 单事务
+        processing R + TurnExecution.createRunning + bindAppended +
+        credential + draft + input dispatchRef + retireTargets
       workerPool.ensure + prompt + stream → ResponseEventSink → onStreamEvent
       T1 TurnExecutionLifecycle.invokeTerminal
-      T2 RouteResponseCommitter.commit
+  → route：T2 RouteResponseCommitter.commit → worker release
   → QueueProcessor finally：aggregateParent → collectTerminalDispositions +
       applyTerminalAggregate；tracker.complete；releaseClaim
   → ResponseRecoveryService（T4）
@@ -95,29 +100,33 @@ OperatorMessageIngress（domains/a2a/router.ts）
 |---|---|
 | `@` 解析 / target resolution | `OperatorMessageIngress` |
 | parent / attempts / Phase A | `QueueProcessor.processEntry` |
-| Phase B（R + TurnExecution + credential + draft + retire） | `QueueProcessor.processEntry` |
+| parallel barrier / serial worklist / priorResponses | `AgentRouter`（`route.ts`） |
+| Phase B（R + TurnExecution + credential + draft + retire） | `InvokeSingleAgent.begin`（`invoke-single-agent.ts`），由 `RunAgentTurn` 调用 |
 | `tracker.startAll` | `QueueProcessor` |
-| per-target context / worker / prompt / T1 | `RunAgentTurn.dispatch` |
-| T2 response commit | `RunAgentTurn.dispatch`（`RouteResponseCommitter`） |
-| T3 collector + parent aggregate | `QueueProcessor`（`aggregateParent`；`collectTerminalDispositions` + `applyTerminalAggregate`） |
+| worker / prompt / stream / T1 | `RunAgentTurn` + `TurnExecutionLifecycle` |
+| T2 response commit | route → `RouteResponseCommitter.commit({ turnExecutionId, responseText? })` |
+| provider-phase failure convergence（Phase B 已提交后） | `QueueProcessor.convergeProviderFailure` |
+| T3 collector + parent aggregate | `QueueProcessor`（`aggregateParent`） |
 | T4 recovery | `ResponseRecoveryService` |
 
-当前代码中不存在、仅属于 target design 的组件/接口：
+当前仍是显式映射、不是字面 target 的部分：
 
-- `AgentRouter`、`routeAgents`、`routeParallel`、`routeSerial`、`priorResponses`、
-  `mergeStreams`；
-- `runAgentTurn` 的 async-generator / `AgentTurnResult` 接口（实际是
-  `RunAgentTurn.dispatch(prepared): Promise<void>`）；
-- `invoke-single-agent` 作为独立组件（T1 在 `TurnExecutionLifecycle` 内）；
-- `RouteResponseCommitter.commit(result)`（实际签名是
-  `commit({ turnExecutionId, content, thinking? })`）。
-
-当前没有 serial mode；F043 之前的“串行”只是 `processEntry` 的 `for ... await` 隐式行为，
-没有 `priorResponses`。F043 起同一 entry 的 target 并发 fan-out，context 固定在 queue
-source（`upToSeq` + `includeSourceMessageId`）。
+- `runAgentTurn` 不是 async generator；`TurnRunner.run(input): Promise<AgentTurnCompletion>`
+  返回结果 + `release()`，route 用 `Promise.all` 做 parallel 提交，没有独立
+  `mergeStreams` 模块（stream 仍经 `ResponseEventSink` → `onStreamEvent`）。
+- `RouteResponseCommitter.commit` 的输入是
+  `{ turnExecutionId, responseText?, thinking? }`，不是整个 `AgentTurnResult`；
+  route 在 T2 失败时写 `route_t2_commit_failed` 日志并留给 T4。
+- A2A successor admission 仍由 tool-time `post_message` 完成；F046 统一到 durable
+  commit 之后。
+- 多 target operator message 恒走 `routeParallel`；`routeSerial` 用于单 target
+  operator/A2A hop 与显式 serial 测试路径。
+- `turn_executions`/`invocation_attempts` 等 schema 命名仍按 0019/0013；F047 处理
+  文档/API 对齐。
 
 > 逐项偏移清单（架构/组件 API/DDL/工具/验收）见
-> `docs/reports/2026-11-27-0007-as-built-audit.md`。
+> `docs/reports/2026-11-27-0007-as-built-audit.md`；F044a/F044b 已关闭 A1–A8、
+> B1/B2（route 部分）、B8、E3/E4（route 部分）。
 
 ## 1. 设计原则
 

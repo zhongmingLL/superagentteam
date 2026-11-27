@@ -1,16 +1,18 @@
+import type { A2ALog } from "../a2a/log.ts";
 import type { HistoryWindow } from "../history/assembler.ts";
 import { buildThreadPrompt, type HistoryAssembler } from "../history/assembler.ts";
 import type { MessageStore } from "../message/store.ts";
-import type { PreparedDispatch } from "../queue/processor.ts";
 import type { ThreadStore } from "../thread/store.ts";
+import type { PreparedDispatch } from "./invoke-single-agent.ts";
 import type { AgentRegistry } from "./registry.ts";
 
-// F044 route layer (0007 §3.5): QueueProcessor hands the Phase-A/B prepared
+// F044 route layer (0007 §3.5): QueueProcessor hands the Phase-A prepared
 // targets to AgentRouter. routeParallel MUST assemble every child context at
 // the batch boundary before any provider invocation starts, so siblings never
 // observe each other's answers. routeSerial is the single-target operator/A2A
 // hop (and the explicit serial mode for worklist tests); it keeps the same
 // assemble → run → T2 commit → cleanup shape instead of bypassing the route.
+// Phase B lives inside the runner (invoke-single-agent); the route owns T2.
 
 export interface TurnContext {
 	/** History snapshot captured by the route, not by the turn itself. */
@@ -29,6 +31,7 @@ export interface AgentTurnResult {
 	turnExecutionId: string;
 	responseMessageId: string;
 	status: "completed" | "failed" | "interrupted" | "canceled";
+	/** Fallback body; the durable draft is canonical when present. */
 	responseText: string;
 }
 
@@ -48,7 +51,7 @@ export interface AgentTurnCompletion {
 }
 
 export interface TurnRunner {
-	run(input: AgentTurnInput): Promise<AgentTurnCompletion | null>;
+	run(input: AgentTurnInput): Promise<AgentTurnCompletion>;
 }
 
 export interface RouteCommitter {
@@ -60,6 +63,8 @@ export type AssembleContext = (prepared: PreparedDispatch, priorResponses: reado
 export interface RouteError {
 	agentId: string;
 	error: unknown;
+	/** `assemble` never entered Phase B; `run` committed or attempted Phase B. */
+	stage: "assemble" | "run";
 }
 
 export interface RouteResult {
@@ -72,6 +77,8 @@ export interface AgentRouterDeps {
 	assemble: AssembleContext;
 	runner: TurnRunner;
 	committer: RouteCommitter;
+	/** Structured lifecycle/error log; T2 failures must never be silent (P3-c). */
+	log?: A2ALog;
 }
 
 export class AgentRouter {
@@ -99,7 +106,7 @@ export class AgentRouter {
 			try {
 				worklist.push({ prepared, context: this.deps.assemble(prepared, []) });
 			} catch (error) {
-				errors.push({ agentId: prepared.agentId, error });
+				errors.push({ agentId: prepared.agentId, error, stage: "assemble" });
 			}
 		}
 
@@ -107,9 +114,9 @@ export class AgentRouter {
 			worklist.map(async (item) => {
 				try {
 					const completion = await this.deps.runner.run(item);
-					if (!completion) return { result: null };
+					if (!completion) throw new Error(`turn_runner_returned_null: ${item.prepared.agentId}`);
 					this.commit(completion.result);
-					await completion.release();
+					await this.release(completion);
 					return { result: completion.result };
 				} catch (error) {
 					return { error };
@@ -121,7 +128,7 @@ export class AgentRouter {
 		for (let index = 0; index < settled.length; index += 1) {
 			const item = settled[index]!;
 			if ("error" in item) {
-				errors.push({ agentId: worklist[index]!.prepared.agentId, error: item.error });
+				errors.push({ agentId: worklist[index]!.prepared.agentId, error: item.error, stage: "run" });
 			} else if (item.result) {
 				results.push(item.result);
 			}
@@ -139,29 +146,52 @@ export class AgentRouter {
 			try {
 				context = this.deps.assemble(prepared, priorResponses);
 			} catch (error) {
-				errors.push({ agentId: prepared.agentId, error });
+				errors.push({ agentId: prepared.agentId, error, stage: "assemble" });
 				continue;
 			}
 			try {
 				const completion = await this.deps.runner.run({ prepared, context });
-				if (!completion) continue;
+				if (!completion) throw new Error(`turn_runner_returned_null: ${prepared.agentId}`);
 				this.commit(completion.result);
-				await completion.release();
+				await this.release(completion);
 				results.push(completion.result);
 				priorResponses.push({ agentId: completion.result.agentId, content: completion.result.responseText });
 			} catch (error) {
-				errors.push({ agentId: prepared.agentId, error });
+				errors.push({ agentId: prepared.agentId, error, stage: "run" });
 			}
 		}
 		return { mode: "serial", results, errors };
+	}
+
+	/**
+	 * Carrier release is cleanup, not turn outcome: a failing release must not
+	 * turn an already-terminal T1 into a provider-phase error (the worker lease
+	 * reaper owns the fallout).
+	 */
+	private async release(completion: AgentTurnCompletion): Promise<void> {
+		try {
+			await completion.release();
+		} catch (error) {
+			this.deps.log?.("warn", "route_carrier_release_failed", {
+				status: completion.result.status,
+				phase: "cleanup",
+			});
+			void error;
+		}
 	}
 
 	/** T2 failure leaves response_pending for T4; it never fails the turn. */
 	private commit(result: AgentTurnResult): void {
 		try {
 			this.deps.committer.commit(result);
-		} catch {
-			// ResponseRecoveryService owns the retry.
+		} catch (error) {
+			// ResponseRecoveryService owns the retry; the route only guarantees
+			// the failure is observable instead of silently swallowed.
+			this.deps.log?.("warn", "route_t2_commit_failed", {
+				status: result.status,
+				phase: "t2",
+			});
+			void error;
 		}
 	}
 }

@@ -4,6 +4,7 @@ import { join } from "node:path";
 import type { AccountConfig, AgentCatalog, AgentConfig, AgentStreamEvent } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { OperatorMessageIngress } from "../src/domains/a2a/router.ts";
+import { InvokeSingleAgent } from "../src/domains/agent/invoke-single-agent.ts";
 import type { AgentRegistry } from "../src/domains/agent/registry.ts";
 import { buildRegistry } from "../src/domains/agent/registry.ts";
 import { AgentRouter, createContextAssembler } from "../src/domains/agent/route.ts";
@@ -154,6 +155,17 @@ function makeWorld() {
 	const assembler = new HistoryAssembler({ messages, readState });
 	const ingress = new OperatorMessageIngress({ db: db.db, registry, threads, messages, queue });
 	const streamEvents: AgentStreamEvent[] = [];
+	const invokeSingleAgent = new InvokeSingleAgent({
+		db: db.db,
+		attempts,
+		turns,
+		credentials,
+		drafts,
+		messages,
+		queue,
+		sessions,
+		clock,
+	});
 	const runAgentTurn = new RunAgentTurn({
 		db: db.db,
 		pool,
@@ -165,6 +177,7 @@ function makeWorld() {
 		credentials,
 		readState,
 		messages,
+		invokeSingleAgent,
 		onStreamEvent: (event) => streamEvents.push(event),
 		clock,
 	});

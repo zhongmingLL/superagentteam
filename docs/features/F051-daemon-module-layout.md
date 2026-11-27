@@ -64,7 +64,8 @@ operator 2026-11-27：当前 `packages/superagentteam-daemon/src` 目录设计�
   `domains/invocation` 按 records/attempts/turns/settlement/aggregate/recovery/read-models 拆。
 - [x] AC-3：composition roots 只在 `app/`；domain 不 import app；api/cli 不直接写 store。
 - [x] AC-4：daemon full tests、typecheck、doc-index、layout guard 绿；无行为变化。
-- [ ] AC-5：非作者 review 覆盖最终 HEAD；迁移映射与 0020 一致。
+- [x] AC-5：非作者 review 覆盖最终 HEAD（砚砚 approve @ `ec74c33d3`）；迁移映射与
+  0020 一致（layout guard 长驻强制）。
 
 - [x] AC-E2E（operator 2026-11-27，强制）：必须在**当前测试 worktree**的隔离 test runtime
   跑真实端到端链路；**Clowder 是 golden**，按 Clowder 参考目录/行为构建对照用例；
@@ -104,6 +105,8 @@ operator 2026-11-27：当前 `packages/superagentteam-daemon/src` 目录设计�
 - layout guard 扩展到 F051b：禁止旧 domain 名、禁止 `invocation/store.ts`、要求新锚点文件。
 - 验证：daemon **559/5**、tsc、ts-imports、entry-graphs、doc-index、layout guard 绿；
   与 F051a 前同一套件结果一致（无行为变化）。
+- **合入**：PR #260 merged `87a9f7a2d`；reviewed HEAD `ec74c33d3`；砚砚 approve
+  （P2 三段解除：multi-mention 在 a2a 下、旧路径消失、AC-2 措辞转真）；CI 5/5。
 
 - **Clowder 参考目录/文件**（相对参考仓根目录）：
   - `packages/api/src/domains/cats/services/agents/{routing,invocation,registry}`（domain-first）

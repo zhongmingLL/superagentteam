@@ -1,9 +1,9 @@
 ---
 title: "A2A runtime alignment plan — 0007 target / 0019 as-built"
 doc_kind: plan
-status: draft-for-review
+status: done
 created: 2026-11-27
-updated: 2026-11-27
+updated: 2026-11-28
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [墨墨 (Qwen 3.8 Flash), 砚砚 (GLM 5.3 Flash)]
 related_features: [superagentteam/F044, superagentteam/F045, superagentteam/F046, superagentteam/F047, superagentteam/F048, superagentteam/F049, superagentteam/F050, superagentteam/F051]
@@ -244,11 +244,27 @@ F043 文档加 superseded banner；不再在其上追加补丁。F043 的代码�
 - **multi_mention callback 递归**：按 0007 depth ≤ 2 / anti-cascade；F046 覆盖。
 - **文档漂移**：F050 guard + 每 feature 强制先读 0007/0019/audit。
 
-## 10. 待 operator 确认
+## 10. 收口状态与剩余 operator gate（2026-11-28）
 
-- Feature owner/reviewer 分工（默认：F044/F045/F046/F048/F050/F051 宪宪；F047 宪宪+砚砚；
-  F043 AC-4 视觉 review 墨墨；review 按风险找非作者）。
-- F044 完成后是否允许直接切 runtime，还是先在隔离 test runtime 跑一轮再切。
+工程面已收口：F044–F051 全部合入 `superagentteam-work`，每个 feature 有非作者
+review 与 CI 5/5：
+
+| Feature | PR / merge | Review |
+|---|---|---|
+| F044 | #244 `49658c23d` / #245 `695f85b3f` | 砚砚 approve @ `0062a35ae` |
+| F045 | #249 `6b3ca58e8` | 砚砚 approve @ `f96f9f733` |
+| F046 | #255 `2ef63f16a` / #256 `2443b1836` | 砚砚 approve @ `a8adbf458` / `6305468bd` |
+| F047 | #254 `0dc8dcf7a` | 砚砚 approve @ `ea2b37826` |
+| F048 | #253 `59f0ec53e` | 砚砚 approve @ `ae99d75e0` |
+| F050 | #258 `b453703ee` | 砚砚 approve @ `6e3a3ec48` |
+| F051 | #259 `fcbe0ac37` / #260 `87a9f7a2d` | 砚砚 approve @ `ec74c33d3` |
+
+剩余 operator gate：
+
+- F050 AC-4b：真实 Hub 的 A2A 私有气泡/汇总卡 1440/390、光暗截图与 operator 视觉验收。
+- F050 AC-5：runtime 3005/3014 部署需要 operator 显式授权；本轮证据均来自隔离 test runtime。
+- F037 P3：real provider 长尾/限流只覆盖单次成功回合，不外推为全矩阵稳定性。
+- F044 完成后是否直接切 runtime，仍按原计划由 operator 决定。
 
 ## 11. Clowder 参考实现索引
 

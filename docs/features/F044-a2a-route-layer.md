@@ -2,12 +2,12 @@
 feature_ids: [superagentteam/F044]
 related_features: [superagentteam/F018, superagentteam/F043, superagentteam/F045, superagentteam/F046, superagentteam/F047, superagentteam/F048, superagentteam/F050]
 title: "F044: A2A route & execution ownership"
-status: in-progress
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-27
-updated: 2026-11-27
+updated: 2026-11-28
 source_decision: "operator 2026-11-27: 纠正所有 0007↔当前实现偏移；F043 不是设计轴；恢复 route 层与 T1/T2/T3 ownership"
 ---
 
@@ -100,12 +100,13 @@ single-target serial / priorResponses / T2 failure 留给 T4）；daemon full su
   `0062a35ae:671` 的代码证据 push back。reviewer 复核 helper 本体后撤回该 finding，
   确认为 false positive（误把调用点 600–603 当作 helper 本体），**关闭、不进 F048**。
 
-仍属后续 feature（F044 本切片不声称全部完成）：
+后续切片已收口（2026-11-28）：
 
-- AC-3：A2A successor admission 已由 F046b 统一到 response durable commit 后；
-  历史记录：tool-time `post_message` 曾提前 admission，F046 已收口。
-  durable commit 之后。
-- 0019 as-built 已更新到 F044b 状态；F047 继续统一 API/DDL/命名表述。
+- AC-3：A2A successor admission 已由 F046b 统一到 response durable commit 后
+  （PR #256 merged `2443b1836`）；tool-time 提前 admission 的旧路径已删除。
+- 0019 as-built 已更新到 F044b 状态；F047（PR #254 merged `0dc8dcf7a`）已统一
+  API/DDL/命名表述。F044 AC-1–AC-6 与 AC-E2E 全部有证据，engineering 完成；
+  剩余 operator gate 属 F050 AC-4b/AC-5，不在本 feature。
 
 ## Why
 

@@ -309,11 +309,10 @@ describe("F018 R4-b loop guard", () => {
 		);
 		expect(result.warnPingPong).toBe(true);
 		expect(w.messages.getByThread("t1", 50)).toHaveLength(messagesBefore + 1);
-		const entry = w.queue.get("t1", result.queueEntryId!);
-		expect(entry?.status).toBe("queued");
-		// The warn is a typed return value; it must not become a durable
-		// queue note or a second system message.
-		expect(JSON.stringify(entry)).not.toContain("warn");
+		// F046b: the successor is pending until T2; the warn is a typed return
+		// value and must not become a durable queue note or system message.
+		expect(result.queueEntryId).toBeNull();
+		expect(w.queue.listQueued("t1")).toHaveLength(0);
 		expect(w.messages.getByThread("t1", 50).some((message) => message.content.includes("loop_guard"))).toBe(false);
 	});
 

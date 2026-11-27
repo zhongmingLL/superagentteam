@@ -183,6 +183,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		readState,
 		messages,
 		drafts,
+		queue,
 		multiMention,
 		threads,
 		clock,

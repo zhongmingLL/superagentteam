@@ -2380,13 +2380,18 @@ interface InvocationCredential {
 
 | 工具 | model-facing input | result | queue |
 |---|---|---|---|
-| `post_message` | `targets`（0 或 1 agent）, `bodyMd`, `replyTo?` | `{ message, queueEntryId: string | null, replayed }` | targets=1：message + queue；targets=0：仅 message（message-only write），无 queue |
-| `cross_post_message` | `threadId`, `targets`（0 或 1 agent）, `bodyMd`, `replyTo?` | `{ message, queueEntryId: string | null, sourceThreadId, targetThreadId, replayed }` | 1 message + 1 queue entry（targets=1）；targets=0 仅 message |
+| `post_message` | `targets`（0 或 1 agent）, `bodyMd`, `replyTo?` | `{ message, queueEntryId: string | null, replayed }` | targets=1：tool 时只写 message + pending successor；T2 提交后 admission 1 queue（tool result 在 T2 前 `queueEntryId=null`）；targets=0：仅 message，无 queue |
+| `cross_post_message` | `threadId`, `targets`（0 或 1 agent）, `bodyMd`, `replyTo?` | `{ message, queueEntryId: string | null, sourceThreadId, targetThreadId, replayed }` | tool 时只写 target thread message + pending successor；T2 后 admission 1 queue（targets=1）；targets=0 仅 message |
 | `multi_mention` | `targets`（2-3 agents）, `question`, `context?`, `callbackTo`, `timeoutMinutes?` | `{ requestId, status, message, queueEntryId, targetAgentIds, callbackTo, replayed }` | 1 source message + 1 queue + 1 parent + N children；terminal 后 1 aggregate system message + 1 callback queue/parent/child |
 | `thread_context` | `threadId?`, `anchor?`, `before?`, `after?`, `limit?`, `cursor?` | `{ threadId, messages, hasMore, nextCursor? }` | 不入队 |
 
 - `piExtToolCallId` **不在 model-facing input**；pi extension 从 `toolCallId + toolName`
   派生后注入 control envelope。handler 收不到它 → `invalid_input`（transport 错误）。
+- **successor admission（F046b）**：`post_message`/`cross_post_message` 的 targets 非空时，
+  tool handler 在 caller credential 的 `toolCallClaims` 里写 `pendingSuccessor`；
+  不创建 queue/parent。`RouteResponseCommitter` 在 T2 事务内（R terminal 后）读取
+  pending claims，enqueue queue entry 并回写 `queueEntryId`；T4 对已 terminal R 的
+  settling tail 也执行同一 flush。T2 失败时 R 保持 processing，由 T4 重试。
 - handler 接口：`handle(toolName, input, { piExtToolCallId, credentialId, turnExecutionId })`；
   后三者来自 control envelope/credential，不来自 model input。
 - `bodyMd` 非空、上限 32 KiB；`question` / `context` 各上限 5 KiB。
@@ -4089,6 +4094,9 @@ parent partial_failed: successful=[A], failed=[B]
   时只创建 message（message-only write），无论是否设置 `mentionsUser`，都不创建
   queue/parent。child
   `a2aParentTurnExecutionId`/`a2aDepth` 正确。
+- `post_message`/`cross_post_message` 的 targets 非空时，queue entry 只在该 caller
+  child 的 response durable commit（T2）后 admission；tool 返回的 `queueEntryId` 在
+  T2 前为 null。caller 在 T2 前失败/取消时 pending successor 不投递。
 - `cross_post_message` 跨 thread 同 user；target thread 必须 active/not deleted；
   targets 非空时还必须有 projectPath；message 写 `extra.crossPost`；不同 user/deleted/
   缺 projectPath（仅 targets 非空）都 typed reject。

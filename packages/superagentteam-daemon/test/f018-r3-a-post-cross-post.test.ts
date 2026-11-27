@@ -150,29 +150,34 @@ describe("F018 R3-a post_message", () => {
 		}
 	});
 
-	it("creates one agent message + one message_wake queue entry + execution metadata", () => {
+	it("creates one agent message + a pending successor claim; T2 owns queue admission", () => {
 		const w = makeWorld();
 		const result = w.service.postMessage(ctx(), {
 			targets: [{ kind: "agent", id: "a2" }],
 			bodyMd: "hello @a2",
 		});
 		expect(result.replayed).toBe(false);
-		expect(result.queueEntryId).toBeTruthy();
+		expect(result.queueEntryId).toBeNull();
 		expect(result.message.from).toEqual({ kind: "agent", agentId: "a1" });
 		expect(result.message.threadId).toBe("t1");
 		expect(result.message.content).toBe("hello @a2");
 		expect(result.message.extra?.targetAgentIds).toEqual(["a2"]);
 		expect(result.message.lifecycle).toMatchObject({ kind: "input", dispatchRefs: [] });
-		const entry = w.queue.get("t1", result.queueEntryId!)!;
-		expect(entry.kind).toBe("message_wake");
-		expect(entry.owner).toEqual({ kind: "system", service: "a2a" });
-		expect(entry.from).toEqual({ kind: "agent", agentId: "a1" });
-		expect(entry.targets).toEqual([{ kind: "agent", id: "a2" }]);
-		expect(entry.execution).toMatchObject({
-			a2aParentTurnExecutionId: "te1",
-			a2aTriggerMessageId: result.message.id,
-			a2aDepth: 1,
-			multiMentionCallbackDepth: null,
+		expect(w.queue.listQueued("t1")).toHaveLength(0);
+		const claim = w.credentials.getToolCallClaim("te1", "call-1")!;
+		expect(claim.queueEntryId).toBeNull();
+		expect(claim.pendingSuccessor).toMatchObject({
+			threadId: "t1",
+			owner: { kind: "system", service: "a2a" },
+			from: { kind: "agent", agentId: "a1" },
+			targets: [{ kind: "agent", id: "a2" }],
+			content: "hello @a2",
+			execution: {
+				a2aParentTurnExecutionId: "te1",
+				a2aTriggerMessageId: result.message.id,
+				a2aDepth: 1,
+				multiMentionCallbackDepth: null,
+			},
 		});
 	});
 
@@ -304,9 +309,13 @@ describe("F018 R3-a cross_post_message", () => {
 			sourceTriggerMessageId: "m-trigger",
 		});
 		expect(result.message.extra?.targetAgentIds).toBeUndefined();
-		const entry = w.queue.get("t2", result.queueEntryId!)!;
-		expect(entry.kind).toBe("message_wake");
-		expect(entry.owner).toEqual({ kind: "system", service: "cross_post" });
+		expect(result.queueEntryId).toBeNull();
+		expect(w.queue.listQueued("t2")).toHaveLength(0);
+		const claim = w.credentials.getToolCallClaim("te1", "cross-1")!;
+		expect(claim.pendingSuccessor).toMatchObject({
+			threadId: "t2",
+			owner: { kind: "system", service: "cross_post" },
+		});
 	});
 
 	it("rejects same-thread cross-post, foreign/deleted threads, and missing projectPath with a target", () => {

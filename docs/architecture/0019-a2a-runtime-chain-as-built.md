@@ -226,8 +226,9 @@ OperatorMessageIngress（domains/a2a/router.ts）
   runner 内 Phase B → provider → T1 → route T2 → T3 聚合。F043 起 target 并发；
   context 固定在 queue source（`upToSeq`）；A2A hop 用 `includeSourceMessageId`
   保底源消息（cursor 已越过源 seq 时仍可见，不 rewind ack），同批 sibling 不互相看见回答。
-- **A2A hop**：`post_message` → 新 message + 新 queue entry（targets 非空）→ 新 parent
-  → 新 child；`a2aDepth + 1`，上限 15。
+- **A2A hop**：`post_message` → 新 message + caller claim 的 pending successor；
+  caller T2 提交后 flush 新 queue entry（targets 非空）→ 新 parent → 新 child；
+  `a2aDepth + 1`，上限 15。T4 对已 terminal R 补 flush。
 - **multi_mention**：1 source message + 1 queue entry + 1 parent + N child；目标回答
   自动汇总；terminal 后 aggregate system message + callback delivery 给 initiator。
 - **retry**：同 parent / 同 queue entry，`invocation_attempts` 追加 `attempt+1`；

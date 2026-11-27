@@ -170,7 +170,7 @@ describe("F018 R5-a A2A control bridge", () => {
 		expect(first.ok).toBe(true);
 		const result = first.result as { message: { content: string }; queueEntryId: string; replayed: boolean };
 		expect(result.message.content).toBe("hello from the worker");
-		expect(result.queueEntryId).toBeTruthy();
+		expect(result.queueEntryId).toBeNull();
 		expect(result.replayed).toBe(false);
 
 		const replay = await call(w.socketPath, request);

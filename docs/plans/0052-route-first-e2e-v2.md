@@ -47,7 +47,7 @@ durable-commit admission，归 F046）显式标 known-gap。不使用 unit/targe
 | P1 | P | live pi RPC 单 agent 真实回合 | 真实 pi worker + 真实 Kimi account；R completed | `f018-r3-live.e2e.test.ts`（runtime.env key 注入，不打印） | pass |
 | P2 | U/P | 真实 Hub 单 agent | 真实 account/agent；`REAL_UI_OK`；DB R completed | `f044-ui-real-kimi-success.png`；DB attempt/turn/R completed | pass |
 | P3 | U/P | 真实 Hub 多 target | agentA+agentB 同时回复；T2/T3 正常 | `f044-ui-real-kimi-multi-target.png`；两 parent completed | pass |
-| R8 | B | A2A successor 只在 A 的 response durable commit 后 admission | 0007 §3.5 step 11 → successor；当前 tool-time `post_message` 仍提前 | 现状记录为 F044 AC-3 / F046 gap；不在 v2 声明 pass | known-gap |
+| R8 | B | A2A successor 只在 A 的 response durable commit 后 admission | 0007 §3.5 step 11 → successor | `f044-route-fullstack-e2e.test.ts` F046b：tool 消息已落库但 T2 前无 B queue entry；B provider 请求到达时 A R=completed；claim queueEntryId 回写 | pass（F046b） |
 | C1 | B/P | 并行 target 共享同一触发快照；sibling 回复互不可见 | 0007 §3.5.1 `upToSeq` = queue source；barrier 在批次边界装配 | B：`f045-context-history-e2e.test.ts` C1（boundary+双向 prompt）；P：`f045-context-history-live.e2e.test.ts` C1（真实 Kimi `a1_LIVE_OK`/`b1_LIVE_OK`，boundary=1） | pass（F045） |
 | C2 | B/P | `post_message` 源 seq 低于目标 delivery cursor | 0007 §3.5.1 `includeSourceMessageId`；ack 不回退 | B：`f045-context-history-e2e.test.ts` C2（prompt 含源、不含 later）；P：live C2（真实 Kimi 回复 `LIVE_SOURCE_BELOW_CURSOR`，boundary=3，row_count=1） | pass（F045） |
 | U1 | U | 真实 Hub：创建 thread、@agentA、看到回复 | 真实前端 + 真实 daemon/worker；Phase B/T1/T2/T3 真跑 | `f044-ui-real-kimi-success.png`；真实 Kimi `REAL_UI_OK` | pass（真实 Kimi） |
@@ -71,7 +71,7 @@ durable-commit admission，归 F046）显式标 known-gap。不使用 unit/targe
 
 ## 非目标
 
-- 不实现 F046 的 successor admission / multi_mention；R5/R8 只记录边界。
+- R5/R8 由 F046a/F046b 实现；本矩阵记录验证证据，不把实现细节塞回测试计划。
 - 不用 v2 替代 0007 契约；v2 是验证层。
 - 不把 mock provider 当真实模型证据；真实 provider 单独标注。
 

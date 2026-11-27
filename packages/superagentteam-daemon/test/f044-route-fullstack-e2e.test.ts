@@ -615,6 +615,73 @@ describe("F044 route ownership full-stack E2E v2", () => {
 		expect(runtime.queue.listQueued(thread.id)).toHaveLength(0);
 	}, 60_000);
 
+	it("F046b: a post_message successor is admitted only after the caller's T2 commit", async () => {
+		let runtimeForCheck: A2ARuntime | null = null;
+		let aInvocationForCheck = "";
+		let aCompletedWhenBRequested: boolean | null = null;
+		provider = await startMockAnthropic(async (request) => {
+			if (request.model === "a-model") {
+				if (lastMessageHasToolResult(request.body)) {
+					await sleep(1_500);
+					return textResponse("A_DEFERRED_DONE");
+				}
+				return toolCallResponse("superagentteam_post_message", {
+					targets: [{ kind: "agent", id: "b1" }],
+					bodyMd: "DEFERRED_SUCCESSOR_BODY",
+				});
+			}
+			if (request.model === "b-model") {
+				const aAttempt = runtimeForCheck?.attempts.getLatest(aInvocationForCheck, "a1");
+				const aResponse = aAttempt?.responseMessageId
+					? runtimeForCheck?.messages.get(aAttempt.responseMessageId)
+					: null;
+				aCompletedWhenBRequested =
+					aResponse?.lifecycle?.kind === "response" && aResponse.lifecycle.status === "completed";
+				return textResponse("B_DEFERRED_DONE");
+			}
+			return errorResponse("unexpected model", 400);
+		});
+		const { base, headers, thread } = await startStack();
+		const runtime = daemon!.a2aControlPlane!.runtime;
+		runtimeForCheck = runtime;
+		const submitted = await submit(base, headers, thread.id, "deferred @a1", "f046b-deferred");
+		const aInvocation = `inv:${thread.id}:${submitted.userMessageId}`;
+		aInvocationForCheck = aInvocation;
+
+		const successorMessage = await waitFor(() => {
+			const message = runtime.messages
+				.getByThread(thread.id, 50)
+				.find((candidate) => candidate.content === "DEFERRED_SUCCESSOR_BODY");
+			return message ?? null;
+		}, 15_000);
+		// The tool message is durable, but no successor queue entry exists until
+		// the caller's R reaches terminal state in T2.
+		expect(
+			[...runtime.queue.listQueued(thread.id), ...runtime.queue.listActive(thread.id)].some(
+				(entry) => entry.payload.sourceRecordId === successorMessage.id,
+			),
+		).toBe(false);
+
+		const aAttempt = runtime.attempts.getLatest(aInvocation, "a1")!;
+		const aResponseId = aAttempt.responseMessageId!;
+		await waitFor(() => {
+			const bMessages = runtime.messages
+				.getByThread(thread.id, 50)
+				.filter((candidate) => candidate.content === "B_DEFERRED_DONE");
+			return bMessages.length === 0 ? null : true;
+		}, 20_000);
+		expect(aCompletedWhenBRequested).toBe(true);
+		expect(runtime.records.get(aInvocation)?.status).toBe("completed");
+		expect(runtime.messages.get(aResponseId)?.lifecycle).toMatchObject({
+			kind: "response",
+			status: "completed",
+		});
+		const claims = runtime.credentials.listToolCallClaims(aAttempt.turnExecutionId!);
+		expect(claims).toHaveLength(1);
+		expect(claims[0]!.claim.queueEntryId).toBeTruthy();
+		expect(claims[0]!.claim.pendingSuccessor).toBeUndefined();
+	}, 60_000);
+
 	async function assertPhaseBFault(
 		label: string,
 		reason: "draft_create_failed" | "credential_mint_failed" | "retire_targets_failed",

@@ -14,9 +14,9 @@ related_features: [codeteam/F018, codeteam/F017]
 # SuperAgentTeam A2A runtime chain v1
 
 > **Status: target design (historical).** 当前实现真相见
-> [`0008-a2a-runtime-chain-as-built.md`](./0008-a2a-runtime-chain-as-built.md)。
+> [`0019-a2a-runtime-chain-as-built.md`](./0019-a2a-runtime-chain-as-built.md)。
 > 本文保留 2026-11-06 的 Clowder-aligned target contract 与决策历史；每个偏离点的
-> as-built、证据与整改选项见 0008 §7–§10 和
+> as-built、证据与整改选项见 0019 §7–§10 和
 > `docs/reports/2026-11-27-0007-as-built-audit.md`。
 
 > Naming (F019.5): current product name is SuperAgentTeam; `codeteam` below is the

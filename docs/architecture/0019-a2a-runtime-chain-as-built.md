@@ -15,7 +15,7 @@ evidence_baseline: "code f51d9f3c7; docs 23298eeab; live 3005/3014 f51d9f3c7"
 
 - **0007** = 2026-11-06 的 Clowder-aligned **target contract** + 决策历史；不再作为
   “当前实现了什么”的真相源。
-- **0008（本文）** = 当前实现的 as-built 真相。所有“当前 owner / 实际调用 / 实际 API /
+- **0019（本文）** = 当前实现的 as-built 真相。所有“当前 owner / 实际调用 / 实际 API /
   实际 DDL”以本文为准。
 - 逐项偏移证据见 `docs/reports/2026-11-27-0007-as-built-audit.md`。
 - 本文不是把 0007 的设计目标判死：每个偏离点在 §8 标明 **ratified / implementation
@@ -127,7 +127,7 @@ OperatorMessageIngress（domains/a2a/router.ts）
 ## 4. 数据模型 as-built
 
 - 迁移源：`packages/superagentteam-daemon/src/infrastructure/db/migrations/`；
-  live DB 的 `sqlite_master` 与 0008 基线 `f51d9f3c7` 一致。
+  live DB 的 `sqlite_master` 与 0019 基线 `f51d9f3c7` 一致。
 - 核心表：`invocation_queue`、`invocation_records`、`turn_executions`、
   `invocation_attempts`、`response_drafts`、`invocation_credentials`、
   `agent_read_state`、`workers`、`worker_bindings`、`messages`、`threads`、
@@ -241,7 +241,7 @@ OperatorMessageIngress（domains/a2a/router.ts）
   `commit({ turnExecutionId, content, thinking? })`；T1 在 `TurnExecutionLifecycle`。
 - **classification**：**implementation decision**（R2-b `9624eba0b` 把 RunAgentTurn 定为
   DispatchTargetPort；R2-c 把 T1/T2 放进 dispatch）。
-- **disposition**：若 ratify 现状，0007 target 保留接口历史，0008 作为实际 API；
+- **disposition**：若 ratify 现状，0007 target 保留接口历史，0019 作为实际 API；
   若补 route 层，恢复 generator/result 或引入明确的 route result 类型。
 
 ### R4 · routeSerial / priorResponses
@@ -260,11 +260,11 @@ OperatorMessageIngress（domains/a2a/router.ts）
 
 - **0007**：QueueProcessorDeps/methods、InvocationRecordStore methods、
   InvocationTracker signatures 见 0007 §3.2-§3.4。
-- **as-built**：见 0008 §3；差异包括 `dispatchTarget`/`capacity`/`multiMention*` deps、
+- **as-built**：见 0019 §3；差异包括 `dispatchTarget`/`capacity`/`multiMention*` deps、
   `drain(threadId,userId,{maxEntries})`/`drainAll`/`requestRetry`/`abandon`、
   `InvocationRecordStore.create/byThreadSource/admitRetry`、`startAll` 的 slot_busy 返回等。
 - **classification**：**implementation drift**；无行为 bug，但 target API 没有实现。
-- **disposition**：0008 是实际 API；若需要 0007 的接口，补实现或在 0007 标 target-only。
+- **disposition**：0019 是实际 API；若需要 0007 的接口，补实现或在 0007 标 target-only。
 
 ### R6 · 数据模型差异
 
@@ -273,7 +273,7 @@ OperatorMessageIngress（domains/a2a/router.ts）
   `json_type='object'` 收紧。
 - **classification**：**ratified / minor implementation tightening**。F031 有 feature +
   plan + PR；R-01 有 0018 + decision packet；json_type 是校验收紧，无行为偏离。
-- **disposition**：已写入 0008；0007 的 SQL 已修正 rich_blocks_json 与 unique。
+- **disposition**：已写入 0019；0007 的 SQL 已修正 rich_blocks_json 与 unique。
 
 ### R7 · 工具 / F031 / F043
 
@@ -283,17 +283,21 @@ OperatorMessageIngress（domains/a2a/router.ts）
 - **classification**：**ratified addition**。F031 有 feature/plan/PR；F043 有 operator
   指令、PR #235、daemon 520 tests、live 3005/3014 证据（multi-mention 并发
   +2.82/+3.00/+3.66s；C probe 在 D 60s turn 内完成）。
-- **disposition**：保留在 0008；需要时把 F043 行为补进 0007 target 或新的 target 版本。
+- **disposition**：保留在 0019；需要时把 F043 行为补进 0007 target 或新的 target 版本。
 
 ### R8 · 读模型 / preflight / 验收
 
 - **MessageDispatchSummary**：**ratified deferred**（F016c S0 freeze：F018 未落地，
-  改由 F016c S0 交付；M1 用 queue+live，summary 路由留 M2/后续）。0008 记录为 deferred。
+  改由 F016c S0 交付；M1 用 queue+live，summary 路由留 M2/后续）。0019 记录为 deferred。
 - **preflight invalid reasons**：0007/0010 要求 `session_workspace_changed` /
   `workspace_unavailable`；实际 preflight 只分类 `agent_not_found`/`agent_disabled`/
   `account_not_found`；`sessions.ensureActive` 抛 `session_workspace_changed` 时
-  preflight 没有 typed 分类。**classification: code gap**。
-- **§9.1 routeAgents 验收**：target-only；实际验收应按 0008 §3.2 的 QueueProcessor
+  preflight 没有 typed 分类。**classification: code gap → fixed**（`743a94237`）：
+  preflight 现在把这两个 reason 归为 invalid target，走 Phase A 的
+  `failed(target_invalid)` + typed `delivery_failure` + retire；回归见
+  `packages/superagentteam-daemon/test/f018-r2a-dispatch.test.ts`
+  “session workspace drift is a terminal target_invalid, not an endless defer”。
+- **§9.1 routeAgents 验收**：target-only；实际验收应按 0019 §3.2 的 QueueProcessor
   行为重写。**disposition: doc rewrite**。
 
 ### R9 · 命名
@@ -343,7 +347,7 @@ OperatorMessageIngress（domains/a2a/router.ts）
 ### D2 · T2 / Phase B ownership
 
 - 若选 A：T2 留在 `RunAgentTurn.dispatch`，Phase B 留在 QueueProcessor；更新
-  0016/0024 的 owner 表，0008 作为实际 API。
+  0016/0024 的 owner 表，0019 作为实际 API。
 - 若选 B：T2 移到 route wrapper；Phase B 按 0007 或 0024 二选一并写死，不再两处矛盾。
 
 ### D3 · routeSerial / priorResponses
@@ -351,17 +355,22 @@ OperatorMessageIngress（domains/a2a/router.ts）
 - 推荐 v1 retire：没有 serial 产品路径；multi-target 恒 parallel；F043 已按
   Clowder `route_parallel` 行为验证。若保留，必须定义真实 consumer 和测试。
 
-### D4 · 独立代码整改（不依赖 D1）
+### D4 · 独立代码整改（不依赖 D1）· done
 
 **preflight workspace/session typed invalid**：`QueueProcessor.preflight` 调
 `sessions.ensureActive` 时没有捕获 `session_workspace_changed`（`session/store.ts`
 会抛）；应把它和 `workspace_unavailable` 归类为 invalid target，终态化 + typed
 `delivery_failure`，不能让它逃出 `processEntry` 变成 loop error。补回归测试。
 
+**已修复 `743a94237`**：`preflight` 捕获这两个 reason 并归为 invalid target；
+Phase A 写 attempt `failed(target_invalid)`、`delivery_failure` 并 retire target。
+回归用例在 `packages/superagentteam-daemon/test/f018-r2a-dispatch.test.ts`，
+daemon 521 passed / 1 skipped。
+
 ### D5 · 文档 / 验收
 
-- 0007 标 `target-design` + banner；0008 为当前真相。
-- §9.1 的 routeAgents 验收按 0008 的 QueueProcessor 行为重写；§9.2 的唯一性措辞改为
+- 0007 标 `target-design` + banner；0019 为当前真相。
+- §9.1 的 routeAgents 验收按 0019 的 QueueProcessor 行为重写；§9.2 的唯一性措辞改为
   `(threadId, sourceRecordId)`；§9.3.1 去掉 T2 “A2A successor”，改为 post_message
   tool-time successor + T2 settling tail。
 - `MessageDispatchSummary` 保持 deferred（F016c S0）；需要时再立 feature。
@@ -410,4 +419,4 @@ OperatorMessageIngress（domains/a2a/router.ts）
 2. **D3**：serial/priorResponses retire 还是 implement。
 3. **D4**：preflight workspace/session 修复是否现在做（建议做，小改）。
 
-在 D1/D3 决定前，0008 只声明 as-built 真相，不把未批准的 route 缺失写成“已批准设计”。
+在 D1/D3 决定前，0019 只声明 as-built 真相，不把未批准的 route 缺失写成“已批准设计”。

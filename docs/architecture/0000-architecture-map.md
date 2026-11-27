@@ -12,11 +12,12 @@ related_features: [codeteam/F018]
 
 ## 0. 结论
 
-**不合并成一个大文件。** 采用 **3 个整体视角文件 + 分册设计 + 历史/参考分层**：
+**不合并成一个大文件。** 采用 **4 个整体视角文件 + 分册设计 + 历史/参考分层**：
 
 1. **方向**：`0005-thread-first-runtime.md` — 为什么 thread-first、v1 边界、约束。
-2. **V1 目标契约**：`0007-a2a-runtime-chain.md` — 组件、事务、数据模型、验收，是实现的 canonical contract。
-3. **体验**：`0014-operator-message-journey.md` — operator 从发出消息到流式回复的完整 journey；解释“用户看到什么”，不替代机制契约。
+2. **V1 target contract**：`0007-a2a-runtime-chain.md` — 2026-11-06 的目标组件、事务、数据模型、验收；保留为 target-design，不是当前实现真相。
+3. **V1 as-built**：`0019-a2a-runtime-chain-as-built.md` — 当前实现的 canonical truth：实际链路、API、DDL 与 deviation register。
+4. **体验**：`0014-operator-message-journey.md` — operator 从发出消息到流式回复的完整 journey；解释“用户看到什么”，不替代机制契约。
 
 分册设计：AgentConfig / Thread / Session / Identity / Idempotency / Terminal & Settlement / DraftStore。
 
@@ -27,28 +28,30 @@ related_features: [codeteam/F018]
 新猫/新实现者按这个顺序读：
 
 1. `0005-thread-first-runtime.md`：方向、范围、v1 不做什么。
-2. `0007-a2a-runtime-chain.md`：V1 全链路和契约。
-3. 按任务读分册：`0008` / `0009` / `0010` / `0011` / `0013` / `0016` / `0017`。
-4. `0014-operator-message-journey.md`：用 operator journey 校验体验。
-5. 需要 Clowder 对照时读 `reuse-review/`、`0012`、`0002` 的对应段落。
-6. 历史审计/旧决议只做追溯：`0001` / `0003` / `0004` / `0006` / `0015`。
+2. `0007-a2a-runtime-chain.md`：V1 target contract（实现前的目标设计）。
+3. `0019-a2a-runtime-chain-as-built.md`：当前实现真相与 0007 的 deviation register。
+4. 按任务读分册：`0008` / `0009` / `0010` / `0011` / `0013` / `0016` / `0017`。
+5. `0014-operator-message-journey.md`：用 operator journey 校验体验。
+6. 需要 Clowder 对照时读 `reuse-review/`、`0012`、`0002` 的对应段落。
+7. 历史审计/旧决议只做追溯：`0001` / `0003` / `0004` / `0006` / `0015`。
 
 ## 2. 真相源规则
 
 | 层 | canonical | 冲突时 |
 |---|---|---|
-| 方向/范围 | `0005` | 0005 只解释 why/scope；具体机制以 0007 为准 |
-| V1 runtime 机制 | `0007` | 0007 是实现基线；深挖章节以 0016/0017 为准并回链 0007 |
-| domain contract | `0008`/`0009`/`0010`/`0011`/`0013` | 领域细节以对应文档为准；0007 负责集成 |
+| 方向/范围 | `0005` | 0005 只解释 why/scope；目标机制看 0007，当前实现看 0019 |
+| V1 runtime target | `0007` | target-design；与 as-built 冲突时以 0019 为准 |
+| V1 runtime as-built | `0019` | 当前实现真相；深挖章节以 0016/0017 为准并回链 0019 |
+| domain contract | `0008`/`0009`/`0010`/`0011`/`0013` | 领域细节以对应文档为准；0019 负责集成 |
 | 深挖设计 | `0016`/`0017` | 0016 管 terminal/settlement；0017 管 draft store |
-| operator 体验 | `0014` | 解释体验；机制冲突以 0007/0016/0017 为准 |
+| operator 体验 | `0014` | 解释体验；机制冲突以 0019/0016/0017 为准 |
 | 历史/审计 | `0001`/`0003`/`0004`/`0006`/`0015` | 只做追溯，不得作为实现基线 |
 | Clowder reference | `0002`/`0012`/`reuse-review/` | 只作参考；SuperAgentTeam 契约以本仓文档为准 |
 | 决策记录 | `decision-packets/` | 记录拍板；已拍结论已折入 canonical docs |
 
-**规则：** 任何新设计先判断它属于哪一层；不要新增与 0005/0007 平行的“第二真相源”。历史文档保留原文，但加边界横幅。
+**规则：** 任何新设计先判断它属于哪一层；不要新增与 0005/0007/0019 平行的“第二真相源”。0007 只保留 target-design，0019 是 as-built。历史文档保留原文，但加边界横幅。
 
-## 3. V1 canonical chain
+## 3. V1 target chain（target design；as-built 见 0019）
 
 ```text
 Operator / Hub ingress（W7a transport）
@@ -90,20 +93,18 @@ Operator / Hub ingress（W7a transport）
 
 | 问题 | 处置 |
 |---|---|
-| `0001` 旧 runtime/A2A/数据模型与 thread-first 冲突 | 标为 reference；runtime 章节由 0005/0007 取代，非 runtime 章节仅参考 |
-| `0005` 含数据模型/执行链/验收摘要，与 `0007` 重复 | 保留为方向/范围；具体机制以 0007 为准 |
-| `0014` 含组件机制描述，与 `0007` 重复 | 保留为体验/journey；机制以 0007/0016/0017 为准 |
+| `0001` 旧 runtime/A2A/数据模型与 thread-first 冲突 | 标为 reference；runtime 章节由 0005/0007/0019 取代，非 runtime 章节仅参考 |
+| `0005` 含数据模型/执行链/验收摘要，与 `0007` 重复 | 保留为方向/范围；目标机制以 0007 为准，当前实现以 0019 为准 |
+| `0014` 含组件机制描述，与 `0007` 重复 | 保留为体验/journey；机制以 0019/0016/0017 为准 |
 | `0015` 是审计与决策证据，不是当前设计 | 标为 historical；不再作为实现基线 |
-| `0003`/`0004` 是旧评审/计划 | 标为 historical；执行结果看 0005/0007/plans |
+| `0003`/`0004` 是旧评审/计划 | 标为 historical；执行结果看 0005/0007/0019/plans |
 | `0006` 是 legacy inventory | 保留为 legacy-reference；不得据此写新代码 |
 | `0002`/`0012` 是 pi/Clowder reference | 标为 reference；SuperAgentTeam 契约以本仓 canonical docs 为准 |
 
-### 仍然开放/待实现
+### 实现状态
 
-- `0017 ResponseDraftStore` 仍是 `draft-for-review`，实现前需要非作者 review。
-- W7a 的 Hub ingress/WS/SSE/replay 与 read DTO transport 尚未实现；F018 不能声称端到端。
-- R2/R3/R4 的产品代码尚未开始；当前是 contract/design 完成，不是 implementation 完成。
-- 0014 的“风险与待定项”只作为体验提醒；其中已拍项以 0007/0016/0017 为准。
+- 本索引写于 2026-11-16；当时“R2/R3/R4 尚未开始”等状态已过期，不得再作为当前判断。
+- 当前实现链路、API、DDL、F018/F043 落地与 deviation register 见 `0019`。
 - 2026-11-14 的全局设计 review 见 `0018-v1-global-design-review.md`；D-0/D-1/D-2/D-3
   已按 operator `BBBA` 拍板：正文 `@` 匹配、callback child、completed 去重接受风险、
   `allFailed` 派生。
@@ -113,7 +114,8 @@ Operator / Hub ingress（W7a transport）
 | 文档 | 角色 | 状态 |
 |---|---|---|
 | `0005-thread-first-runtime.md` | 方向/范围 | accepted direction |
-| `0007-a2a-runtime-chain.md` | V1 target contract | accepted |
+| `0007-a2a-runtime-chain.md` | V1 target contract（历史目标） | target-design |
+| `0019-a2a-runtime-chain-as-built.md` | V1 runtime as-built（当前真相） | as-built |
 | `0008-agent-config.md` | AgentConfig 分册 | draft-for-review |
 | `0009-thread-model.md` | Thread 分册 | draft-for-review |
 | `0010-session-model.md` | Session 分册 | accepted |

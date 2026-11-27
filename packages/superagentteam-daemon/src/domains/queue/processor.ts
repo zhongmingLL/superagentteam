@@ -1,5 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
-import type { AgentConfig, QueueEntry, QueueTarget } from "@superagentteam/shared/types";
+import type { AgentConfig, AgentSession, QueueEntry, QueueTarget } from "@superagentteam/shared/types";
 import { runInTransaction } from "../../infrastructure/db/database.ts";
 import { WORKER_CREDENTIAL_TOOL_NAMES } from "../a2a/tool-service.ts";
 import type { AgentRegistry } from "../agent/registry.ts";
@@ -110,6 +110,13 @@ export interface DrainResult {
 	convergenceFailed: string[];
 }
 
+type InvalidTargetReason =
+	| "agent_not_found"
+	| "agent_disabled"
+	| "account_not_found"
+	| "session_workspace_changed"
+	| "workspace_unavailable";
+
 type PreflightTarget =
 	| {
 			kind: "startable";
@@ -120,7 +127,19 @@ type PreflightTarget =
 			attemptNumber: number;
 			agentSessionId: string;
 	  }
-	| { kind: "invalid"; agentId: string; reason: "agent_not_found" | "agent_disabled" | "account_not_found" };
+	| { kind: "invalid"; agentId: string; reason: InvalidTargetReason };
+
+/**
+ * 0010 §2/§6: session/workspace rejects are permanent for this target until
+ * the operator changes the workspace. They must become invalid targets, not
+ * transient defers (which would spin the drain loop forever).
+ */
+const INVALID_SESSION_REASONS: ReadonlySet<string> = new Set(["session_workspace_changed", "workspace_unavailable"]);
+
+function invalidSessionReason(error: unknown): InvalidTargetReason | null {
+	const message = error instanceof Error ? error.message : String(error);
+	return INVALID_SESSION_REASONS.has(message) ? (message as InvalidTargetReason) : null;
+}
 
 /** Automatic provider retries allowed per manual retry epoch. */
 export const MAX_PROVIDER_ATTEMPTS = 5;
@@ -296,13 +315,21 @@ export class QueueProcessor {
 			// 0010 §6.1.1 step 1: ensureActive per claimed target BEFORE
 			// capacity/Phase A (session rows are durable identity, safe to
 			// create outside the Phase A transaction).
-			const session = this.deps.sessions.ensureActive({
-				threadId: entry.threadId,
-				agentId: target.id,
-				userId,
-				workingDirectory: this.deps.threads.get(entry.threadId)?.projectPath ?? "",
-				now: this.now(),
-			});
+			let session: AgentSession;
+			try {
+				session = this.deps.sessions.ensureActive({
+					threadId: entry.threadId,
+					agentId: target.id,
+					userId,
+					workingDirectory: this.deps.threads.get(entry.threadId)?.projectPath ?? "",
+					now: this.now(),
+				});
+			} catch (error) {
+				const reason = invalidSessionReason(error);
+				if (!reason) throw error;
+				targets.push({ kind: "invalid", agentId: target.id, reason });
+				continue;
+			}
 			targets.push({
 				kind: "startable",
 				agentId: target.id,

@@ -520,7 +520,16 @@ export class QueueProcessor {
 				/owner|workspace|parent_not_runnable|parent_conflict|agent_not_found|agent_disabled|account_not_found/.test(
 					message,
 				);
-			this.deps.queue.releaseClaim(entry.threadId, entry.queueEntryId, claimId, this.now());
+			const now = this.now();
+			if (permanent) {
+				// #240 P3-c: a permanent prestart cause must not spin every tick.
+				// Register the same bounded backoff as transient prestart failures;
+				// the target stays pending and is retried at the capped cadence.
+				for (const target of entry.targets) {
+					if (target.kind === "agent") this.deferrals.defer(entry.threadId, target.id, now);
+				}
+			}
+			this.deps.queue.releaseClaim(entry.threadId, entry.queueEntryId, claimId, now);
 			return { outcome: "deferred", reason: permanent ? `permanent:${message}` : message };
 		}
 
@@ -602,7 +611,7 @@ export class QueueProcessor {
 					}
 					continue;
 				}
-				this.convergeProviderFailure(entry, claimId, invocationId, prepared, convergenceFailed);
+				this.convergeProviderFailure(entry, claimId, invocationId, prepared, convergenceFailed, routed?.signal);
 			}
 		} finally {
 			// T3 slot release (§3.2 step 8): per-target ownership-fenced complete
@@ -687,10 +696,14 @@ export class QueueProcessor {
 		invocationId: string,
 		prepared: { agentId: string; attemptId: string; turnExecutionId: string },
 		convergenceFailed: string[],
+		turnSignal?: AbortSignal,
 	): void {
 		const nowP = this.now();
 		const responseMessageId = `resp:${prepared.turnExecutionId}`;
-		const canceled = this.deps.tracker.getController(entry.threadId, prepared.agentId)?.signal.aborted === true;
+		// B5: cancellation belongs to THIS turn's captured signal. The tracker
+		// slot may have been replaced by preemption, so reading the current
+		// controller would misclassify a preempted turn as a provider failure.
+		const canceled = turnSignal?.aborted === true;
 		const attempt = this.deps.attempts.get(prepared.attemptId);
 		const retryKey = this.providerRetryKey(invocationId, prepared.agentId);
 		const retryStart = this.providerRetryStart.get(retryKey) ?? 1;

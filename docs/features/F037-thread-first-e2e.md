@@ -167,6 +167,8 @@ test runtime 跑真实端到端链路；**Clowder 是 golden**，按 Clowder 参
 - F045 P 层真实 provider（2026-11-28）：`f045-context-history-live.e2e.test.ts` 用真实
   Kimi 跑 C1 并行快照（`a1_LIVE_OK`/`b1_LIVE_OK`，boundary=trigger seq）与 C2 源消息
   越 cursor（回复 `LIVE_SOURCE_BELOW_CURSOR`，boundary=later tail）；2/2。
+- F048 P 层真实并发（2026-11-28）：`f048-queue-concurrency-live.e2e.test.ts`，A 真实
+  Kimi 长回答（1455 字）运行中，B 的独立 entry 完成 `F048_LIVE_B_OK`；1/1。
 - 剩余：operator 验收；F034/F035/F036 的正式栈签收项不变。
 
 [宪宪/deepseek-flash🐾]

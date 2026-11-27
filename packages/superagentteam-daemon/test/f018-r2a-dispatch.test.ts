@@ -363,6 +363,21 @@ describe("InvocationTracker (0007 §3.4)", () => {
 		expect("error" in result && result.error).toBe("slot_busy");
 		expect(tracker.isBusy("t1", "a1")).toBe(false);
 	});
+
+	it("listStaleSlots reports age and cancelAll releases matching slots", () => {
+		let now = 1_000;
+		const tracker = new InvocationTracker(() => now);
+		tracker.start("t1", "a1", "u1", "te1");
+		tracker.start("t2", "a2", "u2", "te2");
+		now += 5_000;
+
+		expect(tracker.listStaleSlots(now, 3_000)).toEqual([
+			{ threadId: "t1", agentId: "a1", userId: "u1", turnExecutionId: "te1", startedAt: 1_000, ageMs: 5_000 },
+			{ threadId: "t2", agentId: "a2", userId: "u2", turnExecutionId: "te2", startedAt: 1_000, ageMs: 5_000 },
+		]);
+		expect(tracker.cancelAll("t1")).toEqual(["a1"]);
+		expect(tracker.listStaleSlots(now).map((slot) => slot.threadId)).toEqual(["t2"]);
+	});
 });
 
 // ------------------------------------------------------------------

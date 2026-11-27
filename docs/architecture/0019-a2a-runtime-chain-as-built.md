@@ -234,6 +234,9 @@ OperatorMessageIngress（domains/a2a/router.ts）
   `requestRetry` 在 QueueProcessor，store `admitRetry`。
 - **cancel**：`POST /api/threads/:threadId/agents/:agentId/cancel` → tracker controller
   abort → child canceled；T3 按 target 聚合。
+- **preempt**：tracker slot 被替换时，旧 turn 的 canceled 终态由该 turn 捕获的
+  `PreparedDispatch.signal` 决定；converge 不读当前 slot（F048 B5，避免 slot 替换后
+  误判 failed + restore target）。
 - **recovery**：startup reconciler 处理 crash-prestart/running；reaper 处理运行期僵尸；
   T4 处理 `response_pending` / `response_missing`。
 - **读模型**：`/api/threads/:id/queue`（QueueView）、`/api/threads/:id/live`

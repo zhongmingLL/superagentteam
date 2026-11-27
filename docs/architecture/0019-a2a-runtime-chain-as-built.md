@@ -1,15 +1,19 @@
 ---
 title: "SuperAgentTeam A2A runtime chain — as-built"
 doc_kind: architecture
-status: as-built
+status: final-as-built
 created: 2026-11-27
-updated: 2026-11-27
+updated: 2026-11-28
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 doc_role: "current implementation truth; 0007 remains the target-design/history document"
-evidence_baseline: "code f51d9f3c7; docs 23298eeab; live 3005/3014 f51d9f3c7"
+evidence_baseline: "code 2443b1836; docs 43e7cdcd0; isolated live 3007/3016 2026-11-28"
 ---
 
 # SuperAgentTeam A2A runtime chain — as-built
+
+> **F050 final as-built（2026-11-28）**：F044–F048 + F046b 已合入；本文件是当前
+> 实现真相。0007 仍是 target-design/history，二者冲突时以本文件为准并在 0050 覆盖表
+> 记录处置。
 
 ## 0. 读法
 

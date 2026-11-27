@@ -2,12 +2,12 @@
 feature_ids: [superagentteam/F045]
 related_features: [superagentteam/F018, superagentteam/F043, superagentteam/F044, superagentteam/F046, superagentteam/F050]
 title: "F045: A2A context/history parity"
-status: planned
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-27
-updated: 2026-11-27
+updated: 2026-11-28
 source_decision: "operator 2026-11-27: 纠正所有 0007↔当前实现偏移；history/source message 语义按 0007 + F043 回归重做"
 ---
 
@@ -63,19 +63,39 @@ F043 用 `upToSeq` + `includeSourceMessageId` 修了表面症状，但这两个�
 
 ## 验收
 
-- [ ] AC-1（A9）：parallel multi-target 从同一触发快照装配 context；一个 target 先完成
+- [x] AC-1（A9）：parallel multi-target 从同一触发快照装配 context；一个 target 先完成
   并写入 response 时，sibling 的 prompt 不包含它。
-- [ ] AC-2（A9）：`post_message` 目标在 cursor 已越过源 seq 时仍能在 prompt 读到源消息；
+- [x] AC-2（A9）：`post_message` 目标在 cursor 已越过源 seq 时仍能在 prompt 读到源消息；
   不出现空窗口。
-- [ ] AC-3：F043 Q1/Q2 context 部分回归；tests/typecheck/review 绿。
+- [x] AC-3：F043 Q1/Q2 context 部分回归；tests/typecheck/review 绿。
 
-- [ ] AC-E2E（operator 2026-11-27，强制）：必须在**当前测试 worktree**的隔离 test runtime
+- [x] AC-E2E（operator 2026-11-27，强制）：必须在**当前测试 worktree**的隔离 test runtime
   跑真实端到端链路；**Clowder 是 golden**，先按其 context/history 参考实现/测试构建
   用例与断言，再在本仓复现；执行时观察并输出 daemon/worker/queue 日志关键行；
   unit/targeted test 只能补充，不能替代。证据须含 worktree/HEAD、隔离端口/data dir、
   用例、日志/输出、结果；无 E2E 证据不得声明 verified。
 
 ## 证据
+
+### 执行（2026-11-28）
+
+- 用例：`packages/superagentteam-daemon/test/f045-context-history-e2e.test.ts`
+  - C1：真实 daemon + 真实 pi worker + mock provider，A/B 并行；两 target 的
+    `deliveryBoundarySeq` 都等于触发消息 seq；双向 prompt 都不含 sibling 回复。
+  - C2：先写入 A2A 源消息 S，再消费两条更晚广播消息把 b1 cursor 推到 S 之后；用
+    `message_wake` queue entry（`post_message` 的真实账本形态）触发；b1 prompt 仍含 S，
+    不含已消费的 later 消息，ack 保持在 later tail（不回退）。
+- 隔离坐标：`/home/ming/agent/codeteam-f037`；`mkdtemp` data dir + 进程内 ephemeral
+  HTTP port；未触碰 runtime 3005/3014 与 `~/.superagentteam-runtime/data`。
+- daemon 日志证据：新增 `route_context_assembled`（`agent_id` / `mode` /
+  `boundary_seq` / `row_count` / `source_record_id`，无正文）。C1 断言两 agent 的
+  `boundary_seq` 都等于 trigger seq；C2 断言 b1 `boundary_seq` = later tail、
+  `row_count=1`、`source_record_id` = 源消息 id。
+- RED 反证：临时移除 `includeSourceMessageId` 后 C2 失败（prompt 显示 `(no messages)`），
+  恢复后 2/2 通过。
+- 命令：`NODE_ENV=development npm test --workspace=@superagentteam/daemon -- f045-context-history-e2e.test.ts`
+  → 2 passed。
+- 契约落点：0007 §3.5.1 Trigger snapshot、§6 step 6、§9.1；0019 §6/R7。
 
 - **Clowder 参考路径**（相对参考仓根目录）：
   - `packages/api/src/domains/cats/services/context/ContextAssembler.ts`

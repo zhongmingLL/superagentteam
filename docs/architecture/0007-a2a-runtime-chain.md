@@ -105,6 +105,9 @@ OperatorMessageIngress（domains/a2a/router.ts）
 没有 `priorResponses`。F043 起同一 entry 的 target 并发 fan-out，context 固定在 queue
 source（`upToSeq` + `includeSourceMessageId`）。
 
+> 逐项偏移清单（架构/组件 API/DDL/工具/验收）见
+> `docs/reports/2026-11-27-0007-as-built-audit.md`。
+
 ## 1. 设计原则
 
 - **直接复用结构，不复制特性**：组件/职责照 Clowder；v1 不需要的字段和分支删掉。
@@ -2497,7 +2500,7 @@ CREATE TABLE multi_mention_requests (
   timeout_minutes INTEGER NOT NULL CHECK (timeout_minutes BETWEEN 3 AND 20),
   expires_at INTEGER NOT NULL,
   parent_invocation_id TEXT,
-  source_record_id TEXT NOT NULL UNIQUE,
+  source_record_id TEXT NOT NULL,
   aggregate_message_id TEXT,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
@@ -3348,6 +3351,7 @@ CREATE TABLE invocation_records (
   CHECK (status IN ('queued', 'failed', 'canceled') OR started_at IS NOT NULL),
   CHECK (status NOT IN ('completed', 'partial_failed')
          OR json_array_length(successful_agent_ids_json) > 0),
+  UNIQUE (thread_id, source_record_id),
   FOREIGN KEY (thread_id) REFERENCES threads(id) ON DELETE RESTRICT,
   FOREIGN KEY (user_message_id) REFERENCES messages(id) ON DELETE RESTRICT
 ) STRICT;
@@ -3531,6 +3535,8 @@ CREATE TABLE response_drafts (
   thinking TEXT,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
+  rich_blocks_json TEXT NOT NULL DEFAULT '[]'
+    CHECK (json_valid(rich_blocks_json) AND json_type(rich_blocks_json) = 'array'),
 
   FOREIGN KEY (attempt_id) REFERENCES invocation_attempts(attempt_id) ON DELETE CASCADE,
   FOREIGN KEY (turn_execution_id) REFERENCES turn_executions(turn_execution_id) ON DELETE CASCADE,
@@ -3924,7 +3930,7 @@ parent partial_failed: successful=[A], failed=[B]
 
 ### 9.2 InvocationRecord
 
-- `sourceRecordId` unique；重试复用同一 parent。
+- `(threadId, sourceRecordId)` unique；重试复用同一 parent。
 - parent 在 `processEntry` 事务内 claim 后即 `markRunning`（`queued → running`）；全部
   target 在 dispatch 前失败时仍能由 T3 `applyTerminalAggregate` 收敛为 failed/canceled，
   不允许永久停在 `queued`。

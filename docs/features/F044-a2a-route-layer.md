@@ -96,9 +96,9 @@ single-target serial / priorResponses / T2 failure 留给 T4）；daemon full su
   537 passed / 1 skipped；daemon build 通过；full-stack E2E 2 passed。
 - **Review**：砚砚 approve @ `0062a35ae`（最终实质 HEAD；merge commit
   `695f85b3f` 与该 HEAD 零树差异），CI 5/5。P3-a–d 关闭。
-- **P3-e 处置**：reviewer 认为 `failRouteSetup` 缺 `deferrals.defer()`；作者复核
-  `0062a35ae:671` 已调用 defer，并附代码证据 push back。最终以 reviewer 复核为准，
-  不阻塞本 feature；若确认误读则关闭，不挂 F048。
+- **P3-e 处置**：reviewer 初判 `failRouteSetup` 缺 `deferrals.defer()`；作者以
+  `0062a35ae:671` 的代码证据 push back。reviewer 复核 helper 本体后撤回该 finding，
+  确认为 false positive（误把调用点 600–603 当作 helper 本体），**关闭、不进 F048**。
 
 仍属后续 feature（F044 本切片不声称全部完成）：
 

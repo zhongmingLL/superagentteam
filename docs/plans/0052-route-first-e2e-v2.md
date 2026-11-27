@@ -42,9 +42,12 @@ v2 的原则：每个 case 必须能区分“旧折叠实现”和“0007 route 
 | R5 | B | `multi_mention` B+C + callback A | F046 工具面；one source/parent + N turns；aggregate/callback | 设计已列，尚未自动化（F046） | todo |
 | R6 | B | T2 单写者 / R 生命周期 | R terminal 只由 route/RouteResponseCommitter 写；draft delete、settlement settled | R1/R2 DB 断言（R status、draft null、settlement） | pass |
 | R7 | B | Phase B 失败隔离（draft/credential/retire） | Phase B 失败 = attempt failed + delivery_failure + target pending；不进 provider convergence | 现有 integration：`f044b-phase-b-ownership.test.ts`；fullstack 无 fault injection | partial |
+| P1 | P | live pi RPC 单 agent 真实回合 | 真实 pi worker + 真实 Kimi account；R completed | `f018-r3-live.e2e.test.ts`（runtime.env key 注入，不打印） | pass |
+| P2 | U/P | 真实 Hub 单 agent | 真实 account/agent；`REAL_UI_OK`；DB R completed | `f044-ui-real-kimi-success.png`；DB attempt/turn/R completed | pass |
+| P3 | U/P | 真实 Hub 多 target | agentA+agentB 同时回复；T2/T3 正常 | `f044-ui-real-kimi-multi-target.png`；两 parent completed | pass |
 | R8 | B | A2A successor 只在 A 的 response durable commit 后 admission | 0007 §3.5 step 11 → successor；当前 tool-time `post_message` 仍提前 | 现状记录为 F044 AC-3 / F046 gap；不在 v2 声明 pass | known-gap |
-| U1 | U | 真实 Hub：创建 thread、@a1、看到回复 | 真实前端 + 真实 daemon/worker；Phase B/T1/T2/T3 真跑 | `docs/design/F044/f044-ui-multi-target-success.png`（A 单 target 后续场景） | pass |
-| U2 | U | 真实 Hub：`@a1 @b1` 多 target fan-out | 同一触发边界、两个回复、thread 成员 2 位 | 同上截图；UI 显示 A/B 两条回复 | pass |
+| U1 | U | 真实 Hub：创建 thread、@agentA、看到回复 | 真实前端 + 真实 daemon/worker；Phase B/T1/T2/T3 真跑 | `f044-ui-real-kimi-success.png`；真实 Kimi `REAL_UI_OK` | pass（真实 Kimi） |
+| U2 | U | 真实 Hub：`@agentA @agentB` 多 target fan-out | 同一触发边界、两个回复、thread 成员 2 位 | `f044-ui-real-kimi-multi-target.png`；两个真实 `REAL_MULTI_OK` | pass（真实 Kimi） |
 | U3 | U | 真实 Hub：运行中停止 | LivePill 停止 → “已取消”，queue 不 restore | `docs/design/F044/f044-ui-stop-canceled.png`；DB canceled | pass |
 | U4 | U | 真实 Hub：provider 失败 + 重试 | 失败气泡 + retry；attempt 2；无假成功 | `docs/design/F044/f044-ui-provider-401-retry.png`；真实 Kimi 401 | pass（失败路径）；success path 未验证 |
 | U5 | U | rich block / execution record | 最终消息保留 rich/tool/thinking | 旧 F037 截图仍是视觉证据，本轮未重跑 | todo |
@@ -59,7 +62,8 @@ v2 的原则：每个 case 必须能区分“旧折叠实现”和“0007 route 
   U 层使用真实 Vite Hub + 真实 daemon；provider 成功路径用 mock，失败路径可用
   真实 Kimi（key 只注入 env，不打印）。
 - 每个 case 记录：命令、HEAD、data dir、端口、关键日志行、DB 坐标/截图。
-- 真实 provider 成功路径没有 fresh 证据时，不把旧 Kimi 结果外推；标记未验证。
+- 真实 provider 成功路径用 runtime `kimi` account 在隔离栈验证；没有 fresh 证据时
+  不把旧结果外推，也不把 mock 当真实模型证据。
 
 ## 非目标
 

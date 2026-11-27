@@ -76,6 +76,11 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
 
 ## 证据
 
+- **Clowder 参考测试路径**（相对参考仓根目录）：
+  - `packages/api/test/route-parallel-*.test.js` / `route-serial-*.test.js`
+  - `packages/api/test/invocation-queue.test.js` / `invocation-tracker.test.js`
+  - `packages/api/test/multi-mention-*.test.js` / `route-serial-callback-dedup.test.js`
+  - `packages/api/test/context-assembler.test.js` / `incremental-context-*.test.js`
 - 0007 §9.1/§9.2/§9.3 验收；0019 §8/§9；audit A–F 全表。
 - F043 live 证据（`docs/reports/2026-11-27-a2a-parallel-investigation.md` 与 F043 doc）。
 - 0007 audit report: `docs/reports/2026-11-27-0007-as-built-audit.md`。

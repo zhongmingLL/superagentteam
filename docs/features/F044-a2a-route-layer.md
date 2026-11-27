@@ -99,6 +99,14 @@ target，也保留 worklist、context、T2、A2A successor、cleanup。
 
 ## 证据
 
+- **Clowder 参考路径**（相对参考仓根目录）：
+  - `packages/api/src/domains/cats/services/agents/routing/AgentRouter.ts`
+  - `.../routing/route-parallel.ts`（setup barrier/mergeStreams/错误隔离）
+  - `.../routing/route-serial.ts`（priorResponses/worklist/单 target 前后处理）
+  - `.../routing/commit-completed-response.ts`（T2 + A2A successor）
+  - `.../routing/response-terminal.ts`
+  - `.../invocation/invoke-single-cat.ts`（per-agent composition/T1）
+  - `.../invocation/stream-merge.ts`
 - 0007 §0/§2/§3.2/§3.5/§3.6/§3.9/§9.1/§9.3.1。
 - 0019 §3/§5/§7/§8、audit A1–A8/B1/B2/B8/E3/E4。
 - `docs/reuse/dispatch.md`：R0 直接复用契约；P1 风险明确“只复用 Queue、重写

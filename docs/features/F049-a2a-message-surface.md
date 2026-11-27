@@ -59,6 +59,13 @@ F043 AC-4 还没完成：A2A 私有消息可能和公开回复长得一样，mul
 
 ## 证据
 
+- **Clowder 参考路径**（相对参考仓根目录）：
+  - `packages/web/src/components/ChatMessage.tsx`（气泡/direction pill）
+  - `packages/web/src/lib/parse-direction.ts`（whisper/crossPost/mention）
+  - `packages/web/src/components/thread-chat/single-cat-conversation-projection.ts`
+  - `packages/web/src/components/thread-chat/ThreadChatSurface.tsx`
+  - `packages/web/src/components/thread-chat/SingleCatConversationTimeline.tsx`
+  - `packages/web/src/components/QueuePanel.tsx`
 - 0007 §3.8 multi_mention aggregate、message lifecycle/extra。
 - 0019 §3.5/§6 as-built 消息形态。
 - F043 设计稿 `docs/design/F043/`（A+C）与 AC-4。

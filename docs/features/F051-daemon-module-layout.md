@@ -68,6 +68,13 @@ operator 2026-11-27：当前 `packages/superagentteam-daemon/src` 目录设计�
 
 ## 证据
 
+- **Clowder 参考目录/文件**（相对参考仓根目录）：
+  - `packages/api/src/domains/cats/services/agents/{routing,invocation,registry}`（domain-first）
+  - `packages/api/src/domains/cats/services/{context,stores/{ports,redis}}`
+  - `packages/api/src/domains/messaging/{contract,stores}`
+  - `packages/api/src/infrastructure/`（scheduler/websocket 等）
+  - `packages/api/src/index.ts`（composition root 外置）
+  - `packages/mcp-server/src/tools/`（worker-side tool surface 独立）
 - `docs/architecture/0020-daemon-module-layout.md`：目标树、映射、依赖规则。
 - 当前目录与 Clowder 参考结构的对照（domain-first + store/service/port + composition root 外置）。
 - daemon full test + typecheck + layout guard 输出。

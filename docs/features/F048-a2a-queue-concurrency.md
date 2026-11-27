@@ -89,6 +89,14 @@ recovery 的 API 和并发语义正式对齐，并补 backpressure/read model。
 
 ## 证据
 
+- **Clowder 参考路径**（相对参考仓根目录）：
+  - `.../invocation/QueueProcessor.ts`（requestDrain/processNext/drain/processEntry）
+  - `.../invocation/InvocationQueue.ts`（claim/retire/release）
+  - `.../invocation/InvocationTracker.ts`
+  - `.../invocation/InvocationOwnerReaper.ts` + `InvocationOwnerReaperInterval.ts`
+  - `.../invocation/StartupReconciler.ts` + `TurnExecutionStartupReconciler.ts`
+  - `.../invocation/queue-retry-deferrals.ts` / `queue-routing-recovery-policy.ts`
+  - `packages/api/src/index.ts`（QueueProcessor composition root）
 - 0007 §3.2 candidate selection、§3.4 tracker、§3.9 recovery、§9.1 concurrency。
 - 0019 §6 端到端 as-built、§8 D4、F043 live 时间线（D 60s turn / C probe 169ms）。
 - `docs/reports/2026-11-27-a2a-parallel-investigation.md`：Q4 根因。

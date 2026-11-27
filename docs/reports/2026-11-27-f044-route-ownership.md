@@ -50,7 +50,7 @@ code commit `8c144a894`.
 
 - `NODE_ENV=development npm run build --workspace=@superagentteam/daemon` — passed.
 - `NODE_ENV=test ./node_modules/.bin/vitest --run` in `packages/superagentteam-daemon`
-  — 77 files passed / 1 skipped; 527 tests passed / 1 skipped.
+  — 77 files passed / 1 skipped; 528 tests passed / 1 skipped.
 - New `test/f044-route-ownership.test.ts` — 5 tests:
   - parallel assemblies all contexts before first run;
   - failing target isolated while healthy sibling commits;
@@ -61,6 +61,14 @@ code commit `8c144a894`.
   concurrently”) passes through the new router.
 - T2 integration remains covered by `f018-r2b-worker-stream.test.ts` and
   `f018-r2c-settlement.test.ts`, now driven through `AgentRouter`.
+- **Current test-worktree E2E** (operator 2026-11-27 requirement):
+  `NODE_ENV=test npx vitest --run test/f037-fullstack-e2e.test.ts` — 2 passed:
+  - real daemon + real pi worker + mock provider: A→B `post_message` chain,
+    both replies settled, ≥2 parents completed;
+  - multi-target operator message `@a1 @b1`: one parent with
+    `target_agent_ids=["a1","b1"]`, both replies settled, B's provider prompt
+    contains no `A_PARALLEL_REPLY` (batch-barrier isolation).
+  - Isolated temp data dir + ephemeral daemon port; no runtime/production data.
 
 ## Ownership after F044a
 

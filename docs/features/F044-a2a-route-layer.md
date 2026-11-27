@@ -63,7 +63,7 @@ Phase B 搬迁保留到 F044b，不在本切片声称 F044 全部完成。
 
 验证：新增 `f044-route-ownership.test.ts`（barrier / per-target error isolation /
 single-target serial / priorResponses / T2 failure 留给 T4）；daemon full suite
-527 passed / 1 skipped；daemon build 通过。
+528 passed / 1 skipped；daemon build 通过。
 
 仍属 F044b（未完成，不勾 AC-2/AC-4）：
 
@@ -138,6 +138,14 @@ target，也保留 worklist、context、T2、A2A successor、cleanup。
 - [ ] AC-6：F043 AC-1 回归；T1–T4 ownership matrix 通过；daemon/web tests、typecheck、
   doc-index 绿；非作者 review 覆盖最终 HEAD。
   F043 AC-1 回归与 daemon tests 已绿；review 待最终 HEAD。
+
+- [x] AC-E2E（operator 2026-11-27，强制，F044a slice）：必须在**当前测试 worktree**的隔离 test runtime
+  跑真实端到端链路；**Clowder 是 golden**，先按其 route 参考实现/测试构建用例与断言，
+  再在本仓复现；执行时观察并输出 daemon/worker/queue 日志关键行；unit/targeted test
+  只能补充，不能替代。证据须含 worktree/HEAD、隔离端口/data dir、用例、日志/输出、
+  结果；无 E2E 证据不得声明 verified。F044a 证据：`f037-fullstack-e2e.test.ts` 真实
+  daemon + 真实 pi worker + mock provider 两条（A→B A2A 链、multi-target `@a1 @b1`
+  同批 fan-out，B prompt 不含 A 回复，parent completed）；F044b 搬迁 Phase B 后必须重跑。
 
 ## 证据
 

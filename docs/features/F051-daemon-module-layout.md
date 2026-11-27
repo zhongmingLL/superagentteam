@@ -66,6 +66,12 @@ operator 2026-11-27：当前 `packages/superagentteam-daemon/src` 目录设计�
 - [ ] AC-4：daemon full tests、typecheck、doc-index、layout guard 绿；无行为变化。
 - [ ] AC-5：非作者 review 覆盖最终 HEAD；迁移映射与 0020 一致。
 
+- [ ] AC-E2E（operator 2026-11-27，强制）：必须在**当前测试 worktree**的隔离 test runtime
+  跑真实端到端链路；**Clowder 是 golden**，按 Clowder 参考目录/行为构建对照用例；
+  布局移动前后跑同一 E2E smoke 并对比日志/输出，证明无行为变化；unit/targeted test
+  只能补充，不能替代。证据须含 worktree/HEAD、隔离端口/data dir、用例、日志/输出、
+  结果；无 E2E 证据不得声明 verified。
+
 ## 证据
 
 - **Clowder 参考目录/文件**（相对参考仓根目录）：

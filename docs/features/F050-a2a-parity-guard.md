@@ -83,6 +83,12 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
   daemon src 无抛出点、测试零覆盖；F050 只能标 “contract-reserved, no runtime path”，
   不能标成 “verified”。
 
+- [ ] AC-E2E（operator 2026-11-27，强制）：必须在**当前测试 worktree**的隔离 test runtime
+  跑真实端到端链路；**Clowder 是 golden**，parity 用例先按 Clowder 参考实现/测试构建，
+  再在本仓复现；执行时观察并输出 daemon/worker/queue 日志关键行；unit/targeted test
+  只能补充，不能替代 AC-4/AC-4b 的隔离 runtime/Hub 验收。证据须含 worktree/HEAD、
+  隔离端口/data dir、用例、日志/输出、结果；无 E2E 证据不得声明 verified/live。
+
 ## 证据
 
 - **Clowder 参考测试路径**（相对参考仓根目录）：

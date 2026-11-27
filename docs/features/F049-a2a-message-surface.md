@@ -61,6 +61,13 @@ F043 AC-4 还没完成：A2A 私有消息可能和公开回复长得一样，mul
 - [ ] AC-3：1440/390、浅色/深色截图一致；无布局回退。
 - [ ] AC-4：operator 视觉验收；非作者 review。
 
+- [ ] AC-E2E（operator 2026-11-27，强制）：必须在**当前测试 worktree**的隔离 test runtime
+  跑真实端到端链路；**Clowder 是 golden**，先按其 message surface 参考实现/测试构建
+  用例与断言，再在本仓复现；执行时观察并输出 daemon/worker/queue 日志关键行；
+  unit/targeted test 只能补充，不能替代。F049 已并入 F043 AC-4 的部分按 F050 AC-4b
+  的真实 Hub E2E 执行。证据须含 worktree/HEAD、隔离端口/data dir、用例、日志/输出、
+  结果；无 E2E 证据不得声明 verified。
+
 ## 证据
 
 - **Clowder 参考路径**（相对参考仓根目录）：

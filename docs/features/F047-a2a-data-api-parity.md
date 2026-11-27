@@ -104,6 +104,12 @@ F047 用 live `sqlite_master`/代码签名逐项对账，修 DDL 文档、API �
 - [ ] AC-7：B9 的 `InvocationQueue`/`QueueLedgerStore` decision 已记录（facade 或
   intentional merge），并有对应测试/ownership 说明。
 
+- [ ] AC-E2E（operator 2026-11-27，强制）：必须在**当前测试 worktree**的隔离 test runtime
+  跑真实端到端链路；**Clowder 是 golden**，先按其 store/API/DDL 参考实现与测试构建
+  用例和断言，再在本仓复现；执行时观察并输出 daemon/worker/queue 日志关键行；
+  unit/targeted test 只能补充，不能替代。证据须含 worktree/HEAD、隔离端口/data dir、
+  用例、日志/输出、结果；无 E2E 证据不得声明 verified。
+
 ## 证据
 
 - **Clowder 参考路径**（相对参考仓根目录）：

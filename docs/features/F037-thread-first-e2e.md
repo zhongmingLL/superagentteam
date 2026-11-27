@@ -95,6 +95,13 @@ Agent 管理、执行记录、富块、停止/重试、Settings、视觉与启�
 - [x] AC-7：F037 feature/plan/BACKLOG/docs index/report 与真实交付一致，不把
       “已实现”写成“已验收”。
 
+## 验证纪律（2026-11-27 追加）
+
+后续 F044–F051 及任何 F037 相关切片的功能验证，必须在**当前测试 worktree**的隔离
+test runtime 跑真实端到端链路；**Clowder 是 golden**，按 Clowder 参考实现/测试构建
+用例与断言，观察并输出 daemon/worker/queue 日志关键行。unit/targeted test 只能补充，
+不能替代。没有 fresh E2E 证据不得声明 verified/complete。
+
 ## 分阶段
 
 | Phase | 内容 | 出口 |

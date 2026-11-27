@@ -87,6 +87,12 @@ recovery 的 API 和并发语义正式对齐，并补 backpressure/read model。
   target 终态化 + typed delivery_failure；无限 defer 回归不存在；其余 session reject
   的脆弱匹配有记录/后续方向。
 
+- [ ] AC-E2E（operator 2026-11-27，强制）：必须在**当前测试 worktree**的隔离 test runtime
+  跑真实端到端链路；**Clowder 是 golden**，先按其 queue/tracker/recovery 参考实现与
+  测试构建用例和断言，再在本仓复现；执行时观察并输出 daemon/worker/queue 日志关键行；
+  unit/targeted test 只能补充，不能替代。证据须含 worktree/HEAD、隔离端口/data dir、
+  用例、日志/输出、结果；无 E2E 证据不得声明 verified。
+
 ## 证据
 
 - **Clowder 参考路径**（相对参考仓根目录）：

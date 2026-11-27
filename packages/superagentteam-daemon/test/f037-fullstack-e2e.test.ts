@@ -105,18 +105,12 @@ describe("F037 full-stack thread-first E2E", () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
-	it("drives a real worker through post_message to a second worker and settles both replies", async () => {
-		provider = await startMockAnthropic((request) => {
-			if (request.model === "a-model") {
-				if (lastMessageHasToolResult(request.body)) return textResponse("A_DONE");
-				return toolCallResponse("superagentteam_post_message", {
-					targets: [{ kind: "agent", id: "b1" }],
-					bodyMd: "POST_FROM_A",
-				});
-			}
-			if (request.model === "b-model") return textResponse("B_DONE");
-			return textResponse("UNEXPECTED_MODEL");
-		});
+	async function startStack(): Promise<{
+		base: string;
+		headers: Record<string, string>;
+		thread: { id: string };
+	}> {
+		if (!provider) throw new Error("mock provider not started");
 		writeWorkerModels(join(dataDir, "worker-agent"), provider.baseUrl);
 		daemon = await startDaemon({
 			installationRoot,
@@ -147,7 +141,6 @@ describe("F037 full-stack thread-first E2E", () => {
 			origin: HUB_ORIGIN,
 			"content-type": "application/json",
 		};
-
 		const threadResponse = await fetch(`${base}/api/threads`, {
 			method: "POST",
 			headers,
@@ -155,6 +148,22 @@ describe("F037 full-stack thread-first E2E", () => {
 		});
 		expect(threadResponse.status).toBe(201);
 		const thread = (await threadResponse.json()) as { id: string };
+		return { base, headers, thread };
+	}
+
+	it("drives a real worker through post_message to a second worker and settles both replies", async () => {
+		provider = await startMockAnthropic((request) => {
+			if (request.model === "a-model") {
+				if (lastMessageHasToolResult(request.body)) return textResponse("A_DONE");
+				return toolCallResponse("superagentteam_post_message", {
+					targets: [{ kind: "agent", id: "b1" }],
+					bodyMd: "POST_FROM_A",
+				});
+			}
+			if (request.model === "b-model") return textResponse("B_DONE");
+			return textResponse("UNEXPECTED_MODEL");
+		});
+		const { base, headers, thread } = await startStack();
 
 		const posted = await fetch(`${base}/api/messages`, {
 			method: "POST",
@@ -170,7 +179,7 @@ describe("F037 full-stack thread-first E2E", () => {
 
 		const messages = await waitFor(async () => {
 			const response = await fetch(`${base}/api/messages?threadId=${encodeURIComponent(thread.id)}&limit=50`, {
-				headers: { cookie },
+				headers: { cookie: headers.cookie! },
 			});
 			const body = (await response.json()) as {
 				messages: Array<{
@@ -226,6 +235,73 @@ describe("F037 full-stack thread-first E2E", () => {
 				)
 				.get() as { count: number };
 			expect(legacy.count).toBe(0);
+		} finally {
+			db.close();
+		}
+	}, 60_000);
+
+	it("fan-outs one multi-target operator message without sibling context leakage", async () => {
+		const requests: Array<{ model: string; body: string }> = [];
+		provider = await startMockAnthropic((request) => {
+			requests.push({ model: request.model, body: JSON.stringify(request.body) });
+			if (request.model === "a-model") return textResponse("A_PARALLEL_REPLY");
+			if (request.model === "b-model") return textResponse("B_PARALLEL_REPLY");
+			return textResponse("UNEXPECTED_MODEL");
+		});
+		const { base, headers, thread } = await startStack();
+
+		const posted = await fetch(`${base}/api/messages`, {
+			method: "POST",
+			headers,
+			body: JSON.stringify({
+				threadId: thread.id,
+				content: "run in parallel @a1 @b1",
+				idempotencyKey: "f037-parallel-message",
+			}),
+		});
+		expect(posted.status).toBe(202);
+
+		const messages = await waitFor(async () => {
+			const response = await fetch(`${base}/api/messages?threadId=${encodeURIComponent(thread.id)}&limit=50`, {
+				headers: { cookie: headers.cookie! },
+			});
+			const body = (await response.json()) as {
+				messages: Array<{
+					type: string;
+					content: string;
+					from: { kind: string; agentId?: string };
+				}>;
+			};
+			const assistant = body.messages.filter((message) => message.type === "assistant");
+			return assistant.some((message) => message.content === "A_PARALLEL_REPLY") &&
+				assistant.some((message) => message.content === "B_PARALLEL_REPLY")
+				? body.messages
+				: null;
+		}, 40_000);
+
+		const aReply = messages.find((message) => message.type === "assistant" && message.content === "A_PARALLEL_REPLY");
+		const bReply = messages.find((message) => message.type === "assistant" && message.content === "B_PARALLEL_REPLY");
+		expect(aReply?.from.agentId).toBe("a1");
+		expect(bReply?.from.agentId).toBe("b1");
+
+		// The route assembles every target prompt at the batch boundary, so B's
+		// prompt cannot contain A's response even though both run concurrently.
+		const bPrompts = requests.filter((request) => request.model === "b-model");
+		expect(bPrompts.length).toBeGreaterThan(0);
+		expect(bPrompts.every((request) => !request.body.includes("A_PARALLEL_REPLY"))).toBe(true);
+
+		const db = new F018Database({ path: join(dataDir, "f018.db") });
+		try {
+			// T3 parent aggregate settles just after the two replies become
+			// visible; wait for the terminal status instead of racing a bare read.
+			const parent = await waitFor(async () => {
+				const row = db.db
+					.prepare("SELECT target_agent_ids_json, status FROM invocation_records ORDER BY created_at DESC LIMIT 1")
+					.get() as { target_agent_ids_json: string; status: string } | undefined;
+				return row?.status === "completed" ? row : null;
+			});
+			expect(JSON.parse(parent.target_agent_ids_json)).toEqual(["a1", "b1"]);
+			expect(parent.status).toBe("completed");
 		} finally {
 			db.close();
 		}

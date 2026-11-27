@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F044]
 related_features: [superagentteam/F018, superagentteam/F043, superagentteam/F045, superagentteam/F046, superagentteam/F047, superagentteam/F048, superagentteam/F050]
 title: "F044: A2A route & execution ownership"
-status: planned
+status: in-progress
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -36,6 +36,53 @@ source_decision: "operator 2026-11-27: 纠正所有 0007↔当前实现偏移；
 - B1/B2：QueueProcessor deps/methods 与 0007 不一致（route 部分）。
 - B8：`RouteResponseCommitter.commit` 签名不一致。
 - E3/E4：§9.1 routeAgents 验收、§9.3.1 T2 描述需按恢复后的 route 重写。
+
+## 实施进度（F044a，2026-11-27）
+
+分支 `feat/f044-route-ownership`（base `superagentteam-work` @ `c4d1c13a`，code
+`8c144a894`）完成 route/T2 切片；
+Phase B 搬迁保留到 F044b，不在本切片声称 F044 全部完成。
+
+已落地：
+
+- `packages/superagentteam-daemon/src/domains/agent/route.ts`：`AgentRouter` /
+  `routeAgents(mode)` / `routeParallel` / `routeSerial` / `AgentTurnResult` /
+  `AgentTurnCompletion`。
+- **Parallel barrier**：`routeParallel` 先同步完成所有 target 的 history snapshot + prompt
+  装配，再启动任何 `TurnRunner`；单个 target 装配失败只产生 per-target error，不阻止
+  healthy sibling。
+- **Single-target routeSerial**：即使只有一个 target，也走 assemble → run → T2 commit →
+  carrier release；serial 多 target 时后续 target 在 prompt 中收到 `priorResponses`。
+- **T2 单写者**：`RunAgentTurn` 改为 `TurnRunner`，接收 route 提供的 `TurnContext`，
+  返回 `AgentTurnCompletion`；不再构造/调用 `RouteResponseCommitter`。route 在 T2 commit
+  后才 `release()` carrier（0007 §3.5 step 11 → step 14）。
+- **QueueProcessor**：移除 `dispatchTarget`，改注入 `router`；per-target route error 回到
+  processor convergence，T3 aggregate 仍由 processor 拥有。
+- **上下文装配**：`createContextAssembler` 保留 queue-source `upToSeq` +
+  `includeSourceMessageId` 快照语义，history/prompt 都在 route setup 完成。
+
+验证：新增 `f044-route-ownership.test.ts`（barrier / per-target error isolation /
+single-target serial / priorResponses / T2 failure 留给 T4）；daemon full suite
+528 passed / 1 skipped；daemon build 通过。
+
+仍属 F044b（未完成，不勾 AC-2/AC-4）：
+
+- Phase B（R + TurnExecution + credential + draft + retire）仍在
+  `QueueProcessor.processEntry`，尚未搬进 `runAgentTurn` / `invokeSingleAgent`。
+- `invoke-single-agent` 独立组件仍是 `RunAgentTurn` + `TurnExecutionLifecycle` 的显式映射，
+  尚未抽出独立类/函数。
+- A2A successor admission 仍由 tool-time `post_message` 完成；F046 把它统一到 durable
+  commit 之后。
+- `0019` as-built 的 route 描述在 F044 全部完成后更新；当前 `0019` 仍描述 F044a 之前的
+  QueueProcessor inline fan-out。
+- 砚砚 review P3（非阻塞，全部挂 F044b）：
+  - P3-a：`TurnRunner` 契约去掉 `| null`，或 route 把 null 视为 error，避免理论上
+    attempt 已 appended 但被静默跳过。
+  - P3-b：`RouteCommitter` 字段名与 `AgentTurnResult.responseText` 对齐，去掉
+    `content`/`responseText` 的语义误导。
+  - P3-c：T2 commit 失败至少写一条可观测日志，再留给 T4。
+  - P3-d：E2E 证据补 daemon/worker/queue 日志关键行与固定端口/HEAD 坐标；F044b 重跑时
+    一并补齐。
 
 ## Why
 
@@ -84,18 +131,30 @@ target，也保留 worklist、context、T2、A2A successor、cleanup。
 
 ## 验收
 
-- [ ] AC-1（A1/A7/A8）：`AgentRouter`/`routeAgents` 存在；routeParallel 先完成同批全部
+- [x] AC-1（A1/A7/A8）：`AgentRouter`/`routeAgents` 存在；routeParallel 先完成同批全部
   target context 装配，再启动任何 invocation；per-target signal/错误隔离。
 - [ ] AC-2（A2/A3/A4）：Phase B/T1 在 `runAgentTurn`/`invokeSingleAgent`；T2 只由
   route/`RouteResponseCommitter` 写；`runAgentTurn` 不再写 R terminal/draft delete。
+  F044a 已完成 T2 owner + `AgentTurnResult` 契约；Phase B 搬迁留 F044b。
 - [ ] AC-3（A6/B8）：A2A successor 只在 response durable commit 后 admission；
   `RouteResponseCommitter.commit(result)` 契约对齐。
+  F044a 已对齐 `commit(result)`；successor admission 由 F046 接线。
 - [ ] AC-4（A5/E3/E4）：`invoke-single-agent` 实现或明确映射；§9.1/§9.3.1 验收按恢复后的
   route 重写。
-- [ ] AC-5：单 target routeSerial 仍执行 worklist/context/T2/A2A successor/cleanup；
+- [x] AC-5：单 target routeSerial 仍执行 worklist/context/T2/A2A successor/cleanup；
   多 target operator message 走 routeParallel，不误用 serial 产品路径。
 - [ ] AC-6：F043 AC-1 回归；T1–T4 ownership matrix 通过；daemon/web tests、typecheck、
   doc-index 绿；非作者 review 覆盖最终 HEAD。
+  F043 AC-1 回归与 daemon tests 已绿；review 待最终 HEAD。
+
+- [x] AC-E2E（operator 2026-11-27，强制，F044a slice）：必须在**当前测试 worktree**的隔离 test runtime
+  跑真实端到端链路；**Clowder 是 golden**，先按其 route 参考实现/测试构建用例与断言，
+  再在本仓复现；执行时观察并输出 daemon/worker/queue 日志关键行；unit/targeted test
+  只能补充，不能替代。证据须含 worktree/HEAD、隔离端口/data dir、用例、日志/输出、
+  结果；无 E2E 证据不得声明 verified。F044a 证据：`f037-fullstack-e2e.test.ts` 真实
+  daemon + 真实 pi worker + mock provider 两条（A→B A2A 链、multi-target `@a1 @b1`
+  同批 fan-out，B prompt 不含 A 回复，parent completed）；daemon/worker/queue 日志关键行
+  与固定端口坐标留 F044b 重跑补齐（P3-d）。
 
 ## 证据
 

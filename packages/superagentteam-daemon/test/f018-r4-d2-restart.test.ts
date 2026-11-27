@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { type A2ARuntime, buildA2ARuntime } from "../src/domains/a2a/runtime.ts";
 import { buildRegistry } from "../src/domains/agent/registry.ts";
+import { AgentRouter } from "../src/domains/agent/route.ts";
 import { QueueProcessor } from "../src/domains/queue/processor.ts";
 import type { WorkerRpcConnection, WorkerSpawnPort } from "../src/domains/worker/pool.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
@@ -78,6 +79,15 @@ function makeNoopProcessor(
 	db: F018Database["db"],
 	now: number,
 ): QueueProcessor {
+	const router = new AgentRouter({
+		assemble: () => ({ window: { mode: "bootstrap", rows: [], boundarySeq: 0 }, prompt: "" }),
+		runner: {
+			async run() {
+				return null;
+			},
+		},
+		committer: { commit() {} },
+	});
 	return new QueueProcessor({
 		db,
 		registry,
@@ -91,7 +101,7 @@ function makeNoopProcessor(
 		messages: runtime.messages,
 		threads: runtime.threads,
 		tracker: runtime.tracker,
-		dispatchTarget: { async dispatch() {} },
+		router,
 		clock: () => now,
 	});
 }

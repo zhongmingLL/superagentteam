@@ -1,26 +1,24 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { AgentStreamEvent } from "@superagentteam/shared/types";
 import { runInTransaction } from "../../infrastructure/db/database.ts";
-import type { AgentRegistry } from "../agent/registry.ts";
 import type { InvocationCredentialStore } from "../auth/store.ts";
-import { buildThreadPrompt, type HistoryAssembler } from "../history/assembler.ts";
-import { RouteResponseCommitter, TurnExecutionLifecycle } from "../invocation/settlement.ts";
+import { TurnExecutionLifecycle } from "../invocation/settlement.ts";
 import type { InvocationAttemptStore, TurnExecutionStore } from "../invocation/store.ts";
 import type { AgentReadStateStore, MessageStore } from "../message/store.ts";
-import type { DispatchTargetPort, PreparedDispatch } from "../queue/processor.ts";
 import { ResponseEventSink } from "../response/sink.ts";
 import type { ResponseDraftStore } from "../response/store.ts";
 import type { AgentSessionStore } from "../session/store.ts";
 import type { ThreadStore } from "../thread/store.ts";
 import type { WorkerPool } from "../worker/pool.ts";
 import type { WorkerPoolKey } from "../worker/store.ts";
+import type { AgentTurnCompletion, AgentTurnInput, AgentTurnResult, TurnRunner } from "./route.ts";
 
 // F018 R2-b runAgentTurn (0007 §3.5 / 0010 §6.1.1 steps 2-8): the real
-// DispatchTargetPort. loadHistory (no ack) → acquire worker → build prompt →
-// prompt RPC (markPromptDelivered from onAccepted) → stream into
-// response_drafts + ephemeral AgentStreamEvents → usage to the attempt.
-// T1 child-terminal / T2 settlement are R2-c; on failure this port throws
-// CLEAN (the R2-a processor convergence owns turn/attempt/credential/R).
+// TurnRunner. The route owns context assembly (batch-barrier snapshot + prompt)
+// and T2 settlement; this class acquires the worker, prompts it, streams into
+// response_drafts + ephemeral AgentStreamEvents, records usage, and owns T1.
+// On failure before T1 it throws CLEAN (QueueProcessor convergence owns
+// turn/attempt/credential/R).
 
 export class TurnCanceledError extends Error {
 	constructor() {
@@ -31,14 +29,12 @@ export class TurnCanceledError extends Error {
 
 export interface RunAgentTurnDeps {
 	db: DatabaseSync;
-	registry: AgentRegistry;
-	assembler: HistoryAssembler;
 	pool: WorkerPool;
 	attempts: InvocationAttemptStore;
 	sessions: AgentSessionStore;
 	drafts: ResponseDraftStore;
 	threads: ThreadStore;
-	/** R2-c settlement layers (T1 child terminal + T2 response commit). */
+	/** T1 child-terminal settlement deps (T2 is route-owned). */
 	turns: TurnExecutionStore;
 	credentials: InvocationCredentialStore;
 	readState: AgentReadStateStore;
@@ -48,7 +44,7 @@ export interface RunAgentTurnDeps {
 	promptTimeoutMs?: number;
 }
 
-export class RunAgentTurn implements DispatchTargetPort {
+export class RunAgentTurn implements TurnRunner {
 	private readonly deps: RunAgentTurnDeps;
 	private readonly clock: () => number;
 
@@ -72,7 +68,8 @@ export class RunAgentTurn implements DispatchTargetPort {
 		};
 	}
 
-	async dispatch(prepared: PreparedDispatch): Promise<void> {
+	async run(input: AgentTurnInput): Promise<AgentTurnCompletion> {
+		const { prepared, context } = input;
 		const now = this.clock();
 		const session = this.deps.sessions.get(prepared.agentSessionId);
 		if (!session || session.status !== "active") {
@@ -84,18 +81,9 @@ export class RunAgentTurn implements DispatchTargetPort {
 		}
 		const aborted = (): boolean => prepared.signal?.aborted === true;
 
-		// Step 2: history window (read-only cursor — ack happens in T1). The queue
-		// source message is the turn's trigger snapshot: rows after it must not leak
-		// into this turn, and the exact source stays visible even when the agent's
-		// delivery cursor has already moved past it.
-		const sourceMessage =
-			prepared.sourceMessageId === null
-				? null
-				: this.deps.messages.get(prepared.sourceMessageId, { includeDeleted: true });
-		const window = this.deps.assembler.loadHistory(prepared.threadId, prepared.agentId, undefined, {
-			...(sourceMessage !== null ? { upToSeq: sourceMessage.seq } : {}),
-			...(prepared.sourceMessageId !== null ? { includeSourceMessageId: prepared.sourceMessageId } : {}),
-		});
+		// Step 2: the route already captured the history snapshot and prompt at
+		// the batch boundary; ack still happens only in T1.
+		const window = context.window;
 
 		// Step 3: acquire the ephemeral worker and bind it to the attempt.
 		const poolKey: WorkerPoolKey = {
@@ -109,6 +97,24 @@ export class RunAgentTurn implements DispatchTargetPort {
 		// leak the worker (port contract: release before any throw).
 		let handle: Awaited<ReturnType<WorkerPool["ensure"]>> | null = null;
 		let abortCleanup: (() => void) | null = null;
+		let handedOff = false;
+		let released = false;
+		const completion = (result: AgentTurnResult): AgentTurnCompletion => {
+			handedOff = true;
+			return {
+				result,
+				release: async () => {
+					if (released) return;
+					released = true;
+					abortCleanup?.();
+					if (handle) {
+						await this.deps.pool
+							.release(handle, aborted() ? "operator-canceled" : "turn-complete")
+							.catch(() => {});
+					}
+				},
+			};
+		};
 		try {
 			handle = await this.deps.pool.ensure(poolKey, session, prepared.credentialToken);
 			this.deps.attempts.bindWorker(prepared.attemptId, handle.workerId);
@@ -131,23 +137,6 @@ export class RunAgentTurn implements DispatchTargetPort {
 					});
 				});
 			}
-
-			// Step 4: prompt (thread/participants/recent; no task scaffolding).
-			const thread = this.deps.threads.get(prepared.threadId);
-			if (!thread) throw new Error(`turn_thread_missing: ${prepared.threadId}`);
-			const prompt = buildThreadPrompt({
-				thread,
-				participants: this.deps.threads.listParticipants(prepared.threadId),
-				rows: window.rows,
-				selfAgentId: prepared.agentId,
-				knownAgents: [...this.deps.registry.agents.values()]
-					.filter((agent) => agent.enabled)
-					.map((agent) => ({
-						id: agent.id,
-						displayName: agent.displayName,
-						mentionPatterns: agent.mentionPatterns,
-					})),
-			});
 
 			const sink = new ResponseEventSink({
 				drafts: this.deps.drafts,
@@ -175,7 +164,7 @@ export class RunAgentTurn implements DispatchTargetPort {
 				// Step 5: prompt RPC. markPromptDelivered fires from onAccepted —
 				// the provider has the payload; later failures still ack
 				// (0010 §6.1.3 row 7 semantics live in T1/R2-c).
-				const promptResult = await handle.connection.promptAndWait(prompt, {
+				const promptResult = await handle.connection.promptAndWait(context.prompt, {
 					timeoutMs: this.deps.promptTimeoutMs ?? 300_000,
 					signal: prepared.signal,
 					onAccepted: () => {
@@ -195,12 +184,11 @@ export class RunAgentTurn implements DispatchTargetPort {
 			if (aborted()) throw new TurnCanceledError();
 			const summary = sink.summary();
 			const lifecycle = new TurnExecutionLifecycle(this.settlementDeps());
-			const committer = new RouteResponseCommitter(this.settlementDeps());
 
 			if (summary.errorMessage) {
 				// 0010 §6.1.3 rows 6-7 split on prompt delivery:
 				// - prompt ACCEPTED then failed → T1 failed (ack! no replay —
-				//   next round sees the failed R) + T2; return normally.
+				//   next round sees the failed R); the route then commits T2.
 				// - prompt never accepted → clean throw: the R2-a convergence
 				//   terminalizes the chain and restores the target to replay.
 				const fresh = this.deps.attempts.get(prepared.attemptId);
@@ -215,12 +203,13 @@ export class RunAgentTurn implements DispatchTargetPort {
 					if (t1f.outcome === "not_found" || t1f.outcome === "terminal_conflict") {
 						throw new Error(`t1_failed: ${t1f.outcome}`);
 					}
-					try {
-						committer.commit({ turnExecutionId: prepared.turnExecutionId, content: summary.content });
-					} catch {
-						// T4 owns recovery; the child is already terminal.
-					}
-					return;
+					return completion({
+						agentId: prepared.agentId,
+						turnExecutionId: prepared.turnExecutionId,
+						responseMessageId: prepared.responseMessageId,
+						status: "failed",
+						responseText: summary.content,
+					});
 				}
 				throw new Error(`turn_provider_error: ${summary.errorMessage}`);
 			}
@@ -240,21 +229,25 @@ export class RunAgentTurn implements DispatchTargetPort {
 			if (t1.outcome === "not_found" || t1.outcome === "terminal_conflict") {
 				throw new Error(`t1_failed: ${t1.outcome}`);
 			}
-
-			// T2 response commit (§3.9): separate transaction; failure leaves
-			// response_pending for T4 — never fails the turn.
-			try {
-				committer.commit({ turnExecutionId: prepared.turnExecutionId, content: summary.content });
-			} catch {
-				// T4 owns recovery; the child is already terminal.
-			}
+			// T2 is route-owned; returning here leaves response_pending for the
+			// route commit, or for T4 if the commit fails.
+			return completion({
+				agentId: prepared.agentId,
+				turnExecutionId: prepared.turnExecutionId,
+				responseMessageId: prepared.responseMessageId,
+				status: "completed",
+				responseText: summary.content,
+			});
 		} finally {
-			// 0010 §6.1.1 step 10 (R2-c): worker release AFTER T2 settlement —
-			// the response R is committed (or safely response_pending) before
-			// the carrier retires; the pi session file survives regardless.
-			abortCleanup?.();
-			if (handle) {
-				await this.deps.pool.release(handle, aborted() ? "operator-canceled" : "turn-complete").catch(() => {});
+			// Successful/failed-completed turns hand the carrier to the route so
+			// T2 commits before release (0007 §3.5 step 11 before step 14). A
+			// clean throw before T1 releases here; the port contract still
+			// forbids leaking a worker.
+			if (!handedOff) {
+				abortCleanup?.();
+				if (handle) {
+					await this.deps.pool.release(handle, aborted() ? "operator-canceled" : "turn-complete").catch(() => {});
+				}
 			}
 		}
 	}

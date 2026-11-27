@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { OperatorMessageIngress } from "../src/domains/a2a/router.ts";
 import type { AgentRegistry } from "../src/domains/agent/registry.ts";
 import { buildRegistry } from "../src/domains/agent/registry.ts";
+import { AgentRouter } from "../src/domains/agent/route.ts";
 import { InvocationCredentialStore } from "../src/domains/auth/store.ts";
 import { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "../src/domains/invocation/store.ts";
 import { AgentReadStateStore, MessageStore } from "../src/domains/message/store.ts";
@@ -39,6 +40,19 @@ function agentConfig(overrides: Partial<AgentConfig> = {}): AgentConfig {
 }
 
 const ACCOUNT: AccountConfig = { ref: "main", provider: "pi", apiKeyRef: "KEY", models: ["m1"] };
+
+function dispatchRouter(dispatch: (prepared: PreparedDispatch) => Promise<void>): AgentRouter {
+	return new AgentRouter({
+		assemble: () => ({ window: { mode: "bootstrap", rows: [], boundarySeq: 0 }, prompt: "" }),
+		runner: {
+			async run({ prepared }) {
+				await dispatch(prepared);
+				return null;
+			},
+		},
+		committer: { commit() {} },
+	});
+}
 
 function makeRegistry(
 	agents: AgentConfig[],
@@ -75,6 +89,21 @@ function makeWorld(
 	const tracker = new InvocationTracker();
 	const ingress = new OperatorMessageIngress({ db: db.db, registry, threads, messages, queue });
 	const dispatched: PreparedDispatch[] = [];
+	const dispatchTargetPort = dispatchTarget ?? {
+		async dispatch(prepared: PreparedDispatch) {
+			dispatched.push(prepared);
+		},
+	};
+	const router = new AgentRouter({
+		assemble: () => ({ window: { mode: "bootstrap", rows: [], boundarySeq: 0 }, prompt: "" }),
+		runner: {
+			async run({ prepared }) {
+				await dispatchTargetPort.dispatch(prepared);
+				return null;
+			},
+		},
+		committer: { commit() {} },
+	});
 	const processor = new QueueProcessor({
 		db: db.db,
 		registry,
@@ -88,11 +117,7 @@ function makeWorld(
 		messages,
 		threads,
 		tracker,
-		dispatchTarget: dispatchTarget ?? {
-			async dispatch(prepared: PreparedDispatch) {
-				dispatched.push(prepared);
-			},
-		},
+		router,
 		clock: () => 1000,
 	});
 	return {
@@ -390,11 +415,9 @@ describe("QueueProcessor (0007 §3.2)", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			dispatchTarget: {
-				async dispatch(prepared: PreparedDispatch) {
-					w.dispatched.push(prepared);
-				},
-			},
+			router: dispatchRouter(async (prepared) => {
+				w.dispatched.push(prepared);
+			}),
 			clock: () => 1000,
 		});
 
@@ -466,9 +489,7 @@ describe("QueueProcessor (0007 §3.2)", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			dispatchTarget: {
-				async dispatch() {},
-			},
+			router: dispatchRouter(async () => {}),
 			capacity: { check: () => ({ ok: false, reason: "worker_capacity" }) },
 			clock: () => 1000,
 		});
@@ -526,11 +547,9 @@ describe("QueueProcessor (0007 §3.2)", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			dispatchTarget: {
-				async dispatch() {
-					throw new Error("provider exploded");
-				},
-			},
+			router: dispatchRouter(async () => {
+				throw new Error("provider exploded");
+			}),
 			clock: () => 1000,
 		});
 		const result = await processor.drain("t1", "u1");
@@ -611,15 +630,13 @@ describe("QueueProcessor (0007 §3.2)", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			dispatchTarget: {
-				async dispatch(prepared: PreparedDispatch) {
-					// Sabotage: the claim changes hands (e.g. TTL expiry +
-					// re-claim) before the port throws → restoreTargets will
-					// hit state_changed inside the convergence transaction.
-					w.queue.releaseClaim(prepared.threadId, prepared.queueEntryId, prepared.claimId, 2000);
-					throw new Error("provider exploded after claim loss");
-				},
-			},
+			router: dispatchRouter(async (prepared) => {
+				// Sabotage: the claim changes hands (e.g. TTL expiry + re-claim)
+				// before the port throws → restoreTargets will hit state_changed
+				// inside the convergence transaction.
+				w.queue.releaseClaim(prepared.threadId, prepared.queueEntryId, prepared.claimId, 2000);
+				throw new Error("provider exploded after claim loss");
+			}),
 			clock: () => 1000,
 		});
 		const result = await processor.drain("t1", "u1");
@@ -692,12 +709,10 @@ describe("QueueProcessor (0007 §3.2)", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			dispatchTarget: {
-				async dispatch() {
-					calls += 1;
-					throw new Error("provider exploded");
-				},
-			},
+			router: dispatchRouter(async () => {
+				calls += 1;
+				throw new Error("provider exploded");
+			}),
 			clock: () => now,
 		});
 		for (let index = 0; index < 5; index += 1) {
@@ -735,11 +750,9 @@ describe("QueueProcessor (0007 §3.2)", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			dispatchTarget: {
-				async dispatch() {
-					if (fail) throw new Error("provider exploded");
-				},
-			},
+			router: dispatchRouter(async () => {
+				if (fail) throw new Error("provider exploded");
+			}),
 			clock: () => now,
 		});
 		for (let index = 0; index < 5; index += 1) {
@@ -772,22 +785,20 @@ describe("QueueProcessor (0007 §3.2)", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			dispatchTarget: {
-				async dispatch(prepared) {
-					await new Promise<void>((_resolve, reject) => {
-						const signal = prepared.signal;
-						if (!signal) {
-							reject(new Error("missing cancel signal"));
-							return;
-						}
-						if (signal.aborted) {
-							reject(new Error("aborted"));
-							return;
-						}
-						signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
-					});
-				},
-			},
+			router: dispatchRouter(async (prepared) => {
+				await new Promise<void>((_resolve, reject) => {
+					const signal = prepared.signal;
+					if (!signal) {
+						reject(new Error("missing cancel signal"));
+						return;
+					}
+					if (signal.aborted) {
+						reject(new Error("aborted"));
+						return;
+					}
+					signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+				});
+			}),
 			clock: () => 1000,
 		});
 		const draining = processor.drain("t1", "u1");

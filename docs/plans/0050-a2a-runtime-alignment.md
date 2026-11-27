@@ -213,6 +213,11 @@ F043 文档加 superseded banner；不再在其上追加补丁。F043 的代码�
 
 ## 8. 验证与证据
 
+- **当前测试 worktree E2E（operator 2026-11-27，强制）**：每个 feature 的功能验证必须在
+  当前测试 worktree 的隔离 test runtime 跑真实端到端链路；**Clowder 是 golden**，按
+  Clowder 参考实现/测试构建用例与断言；执行时观察并输出 daemon/worker/queue 日志关键行。
+  unit/targeted test 只能补充，不能替代。证据须含 worktree/HEAD、隔离端口/data dir、
+  用例、日志/输出、结果；无 E2E 证据不得声明 verified。
 - **全量覆盖**：F050 逐行核对 audit A–F，记录 fixed / doc-aligned / no-action 证据。
 - **Clowder parity suite**：parallel barrier、serial priorResponses、单 target serial、
   T2 ownership、A2A successor、multi-mention callback/auto-delivery、daemon 并发。

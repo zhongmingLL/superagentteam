@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { realpathSync, statSync } from "node:fs";
-import { DaemonError } from "./errors.ts";
+import { DaemonError } from "../shared/errors.ts";
 
 export interface InstallationIdentity {
 	realRoot: string;

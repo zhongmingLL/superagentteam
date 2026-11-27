@@ -2,8 +2,12 @@ import { mkdtempSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { readRuntimeState, resolveRuntimeStatePath, writeRuntimeState } from "../src/runtime/state.ts";
-import type { RuntimeStateFile } from "../src/runtime/types.ts";
+import {
+	readRuntimeState,
+	resolveRuntimeStatePath,
+	writeRuntimeState,
+} from "../src/infrastructure/supervisor/state.ts";
+import type { RuntimeStateFile } from "../src/infrastructure/supervisor/types.ts";
 
 const dirs: string[] = [];
 afterEach(() => {

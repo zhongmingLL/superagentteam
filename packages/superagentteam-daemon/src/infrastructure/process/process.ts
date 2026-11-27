@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from "node:fs";
-import { ControlError } from "../control/errors.ts";
+import { ControlError } from "../../shared/control/errors.ts";
 import type { ProcessIdentity } from "./types.ts";
 
 export interface ProcessIdentityProvider {

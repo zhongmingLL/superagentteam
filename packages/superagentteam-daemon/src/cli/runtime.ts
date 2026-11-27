@@ -1,9 +1,8 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { ControlError } from "../control/errors.ts";
-import { LinuxProcessIdentityProvider } from "../lifecycle/process.ts";
-import { RealProcessSignalSender } from "../lifecycle/signal.ts";
-import { defaultRuntimeEnvFile, resolveRuntimeEnv } from "../runtime/env.ts";
+import { LinuxProcessIdentityProvider } from "../infrastructure/process/process.ts";
+import { RealProcessSignalSender } from "../infrastructure/process/signal.ts";
+import { defaultRuntimeEnvFile, resolveRuntimeEnv } from "../infrastructure/supervisor/env.ts";
 import {
 	assertBuilt,
 	gitHead,
@@ -13,9 +12,10 @@ import {
 	readDaemonBootId,
 	resolveRuntimeWorktree,
 	syncWorktree,
-} from "../runtime/real.ts";
-import { RuntimeService } from "../runtime/service.ts";
-import { checkWritePath, type WritePathCheckResult } from "../runtime/write-path.ts";
+} from "../infrastructure/supervisor/real.ts";
+import { RuntimeService } from "../infrastructure/supervisor/service.ts";
+import { checkWritePath, type WritePathCheckResult } from "../infrastructure/supervisor/write-path.ts";
+import { ControlError } from "../shared/control/errors.ts";
 import { flag, numberOption, option, type ParsedArgs } from "./args.ts";
 import type { CliCommandContext } from "./context.ts";
 import { writeJson, writeLine } from "./output.ts";

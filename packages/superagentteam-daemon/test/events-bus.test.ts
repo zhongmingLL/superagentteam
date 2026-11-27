@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { ChangeBus } from "../src/domains/events/bus.ts";
+import { ChangeBus } from "../src/infrastructure/events/bus.ts";
 
 describe("ChangeBus", () => {
 	it("publishes deduped topics to subscribers and unsubscribes cleanly", () => {

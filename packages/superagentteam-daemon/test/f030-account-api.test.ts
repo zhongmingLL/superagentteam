@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { createConsoleToken } from "../src/api/console-link.ts";
-import { initOperatorCredential } from "../src/auth/operator.ts";
+import { initOperatorCredential } from "../src/domains/access/operator.ts";
 import { type DaemonHandle, startDaemon } from "../src/index.ts";
 
 const HUB_ORIGIN = "http://localhost:3000";

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { buildA2ARuntime } from "../src/domains/a2a/runtime.ts";
+import { buildA2ARuntime } from "../src/app/a2a-runtime.ts";
 import { buildRegistry } from "../src/domains/agent/registry.ts";
 import { PiWorkerSpawnPort } from "../src/domains/worker/pi-spawn.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";

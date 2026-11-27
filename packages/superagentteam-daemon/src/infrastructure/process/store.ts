@@ -12,7 +12,7 @@ import {
 	writeSync,
 } from "node:fs";
 import { join } from "node:path";
-import { ControlError } from "../control/errors.ts";
+import { ControlError } from "../../shared/control/errors.ts";
 import type { ProcessIdentity, StopClaim, StopOperationRecord, StopOperationState } from "./types.ts";
 
 export interface LifecyclePaths {

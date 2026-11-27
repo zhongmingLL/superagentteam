@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 import type { QueueEntry } from "@superagentteam/shared/types";
 
-import type { A2ARuntime } from "../../domains/a2a/runtime.ts";
+import type { A2ARuntime } from "../../app/a2a-runtime.ts";
 import { getThreadLiveInvocations, type LiveInvocationView } from "../../domains/invocation/live.ts";
 import { QUEUE_CAP_PER_KIND } from "../../domains/queue/store.ts";
 import { sendError, sendJson } from "../http.ts";

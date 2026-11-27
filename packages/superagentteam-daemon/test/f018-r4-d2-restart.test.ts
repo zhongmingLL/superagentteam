@@ -4,7 +4,7 @@ import { join } from "node:path";
 import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { type A2ARuntime, buildA2ARuntime } from "../src/domains/a2a/runtime.ts";
+import { type A2ARuntime, buildA2ARuntime } from "../src/app/a2a-runtime.ts";
 import { InvokeSingleAgent } from "../src/domains/agent/invoke-single-agent.ts";
 import { buildRegistry } from "../src/domains/agent/registry.ts";
 import { AgentRouter } from "../src/domains/agent/route.ts";

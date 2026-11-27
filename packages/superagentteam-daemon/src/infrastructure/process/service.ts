@@ -1,16 +1,16 @@
 import { readFileSync } from "node:fs";
+import { readBootLedger } from "../../app/boot-ledger.ts";
+import { resolveInstallation } from "../../app/installation.ts";
+import { resolveDaemonPaths } from "../../app/paths.ts";
+import { readStateFile } from "../../app/state.ts";
 import {
 	fingerprintOfPublicKey,
 	loadOperatorPublicKey,
 	operatorCredentialPaths,
 	verifyOperatorSignature,
-} from "../auth/operator.ts";
-import { readBootLedger } from "../boot-ledger.ts";
-import { ControlError } from "../control/errors.ts";
-import { envValue } from "../env.ts";
-import { resolveInstallation } from "../installation.ts";
-import { resolveDaemonPaths } from "../paths.ts";
-import { readStateFile } from "../state.ts";
+} from "../../domains/access/operator.ts";
+import { ControlError } from "../../shared/control/errors.ts";
+import { envValue } from "../../shared/env.ts";
 import { HttpStopHealthProbe, type StopHealthProbe } from "./health.ts";
 import { assertExecutorOutside, LinuxProcessIdentityProvider, type ProcessIdentityProvider } from "./process.ts";
 import { type ProcessSignalSender, RealProcessSignalSender } from "./signal.ts";

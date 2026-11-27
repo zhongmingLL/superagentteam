@@ -1,7 +1,7 @@
 import { chmodSync, closeSync, existsSync, mkdirSync, openSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { envValue, resolveDataDir } from "../env.ts";
+import { envValue, resolveDataDir } from "../shared/env.ts";
 import { MemoryError } from "./errors.ts";
 
 export const MEMORY_DATABASE_FILE = "memory.db";

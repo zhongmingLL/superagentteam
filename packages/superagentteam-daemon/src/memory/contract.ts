@@ -164,4 +164,3 @@ export interface TriggerRecallResult {
 	readonly result: RecallResult;
 	readonly contextBlock: string;
 }
-

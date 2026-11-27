@@ -2,7 +2,7 @@ import { copyFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { AccountConfig, AgentSession } from "@superagentteam/shared/types";
-import { RpcConnection } from "../../workers/rpc-client.ts";
+import { RpcConnection } from "../../pi-worker/rpc-client.ts";
 import type { AccountStore } from "../account/store.ts";
 import type { SpawnedWorker, WorkerSpawnPort } from "./pool.ts";
 import type { WorkerPoolKey } from "./store.ts";
@@ -76,9 +76,9 @@ export function freshPiSessionId(session: AgentSession, now: number): string {
 /** R5-b: resolve the v1 A2A extension (not the legacy task-first extension). */
 export function resolveA2AExtensionPath(): string {
 	const dir = dirname(fileURLToPath(import.meta.url));
-	const js = join(dir, "..", "..", "workers", "a2a-extension.js");
+	const js = join(dir, "..", "..", "pi-worker", "a2a-extension.js");
 	if (existsSync(js)) return js;
-	const ts = join(dir, "..", "..", "workers", "a2a-extension.ts");
+	const ts = join(dir, "..", "..", "pi-worker", "a2a-extension.ts");
 	if (existsSync(ts)) return ts;
 	throw new Error("a2a_worker_extension_not_found");
 }

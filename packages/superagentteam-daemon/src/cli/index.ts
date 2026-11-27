@@ -1,10 +1,10 @@
 import { consoleLinkUrl, createConsoleToken } from "../api/console-link.ts";
-import { initOperatorCredential } from "../auth/operator.ts";
-import { ControlError } from "../control/errors.ts";
-import { resolveControlDataDir } from "../data-dir.ts";
-import { envValue } from "../env.ts";
-import { resolveDaemonPaths } from "../paths.ts";
-import { readStateFile } from "../state.ts";
+import { resolveControlDataDir } from "../app/data-dir.ts";
+import { resolveDaemonPaths } from "../app/paths.ts";
+import { readStateFile } from "../app/state.ts";
+import { initOperatorCredential } from "../domains/access/operator.ts";
+import { ControlError } from "../shared/control/errors.ts";
+import { envValue } from "../shared/env.ts";
 import { flag, option, parseArgs } from "./args.ts";
 import { openCliCommandContext } from "./context.ts";
 import { runDaemonCommand } from "./daemon.ts";

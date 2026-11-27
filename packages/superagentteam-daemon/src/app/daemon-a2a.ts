@@ -2,22 +2,22 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { AgentStreamEvent } from "@superagentteam/shared/types";
-import { defaultA2AControlSocketPath } from "./domains/a2a/control.ts";
-import type { A2ALog } from "./domains/a2a/log.ts";
-import { type A2ARuntime, buildA2ARuntime } from "./domains/a2a/runtime.ts";
-import { AccountStore } from "./domains/account/store.ts";
-import type { AgentRegistry } from "./domains/agent/registry.ts";
-import { loadRegistryFromFiles } from "./domains/agent/registry.ts";
-import type { ChangeBus } from "./domains/events/bus.ts";
+import { defaultA2AControlSocketPath } from "../domains/a2a/control.ts";
+import type { A2ALog } from "../domains/a2a/log.ts";
+import { AccountStore } from "../domains/account/store.ts";
+import type { AgentRegistry } from "../domains/agent/registry.ts";
+import { loadRegistryFromFiles } from "../domains/agent/registry.ts";
 import {
 	PiWorkerSpawnPort,
 	resolveA2AExtensionPath,
 	resolveRichMessagingSkillPath,
-} from "./domains/worker/pi-spawn.ts";
-import type { WorkerSpawnPort } from "./domains/worker/pool.ts";
-import { envValue } from "./env.ts";
-import { DaemonError } from "./errors.ts";
-import { F018Database } from "./infrastructure/db/database.ts";
+} from "../domains/worker/pi-spawn.ts";
+import type { WorkerSpawnPort } from "../domains/worker/pool.ts";
+import { F018Database } from "../infrastructure/db/database.ts";
+import type { ChangeBus } from "../infrastructure/events/bus.ts";
+import { envValue } from "../shared/env.ts";
+import { DaemonError } from "../shared/errors.ts";
+import { type A2ARuntime, buildA2ARuntime } from "./a2a-runtime.ts";
 
 /** Bounded concurrent drains: a parked provider turn must not block another agent's entry. */
 const MAX_ACTIVE_DRAINS = 8;

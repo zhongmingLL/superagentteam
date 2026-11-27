@@ -19,7 +19,7 @@ import {
 	writeSync,
 } from "node:fs";
 import { join } from "node:path";
-import { ControlError } from "../control/errors.ts";
+import { ControlError } from "../../shared/control/errors.ts";
 
 export interface OperatorCredentialPaths {
 	readonly privateKeyPath: string;

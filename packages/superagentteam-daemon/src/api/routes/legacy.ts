@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import type { A2ARuntime } from "../../domains/a2a/runtime.ts";
+import type { A2ARuntime } from "../../app/a2a-runtime.ts";
 import { sendError, sendJson } from "../http.ts";
 import type { ApiRouteContext } from "./context.ts";
 

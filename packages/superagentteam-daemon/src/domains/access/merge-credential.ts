@@ -1,5 +1,5 @@
 import type { KeyObject } from "node:crypto";
-import { ControlError } from "../control/errors.ts";
+import { ControlError } from "../../shared/control/errors.ts";
 import { signOperatorPayload, verifyOperatorSignature } from "./operator.ts";
 
 export const MERGE_SERVICE_ACTOR = "service:merge-owner";

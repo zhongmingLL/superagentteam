@@ -6,8 +6,8 @@ import {
 	operatorCredentialPaths,
 	signOperatorPayload,
 	verifyOperatorSignature,
-} from "../auth/operator.ts";
-import { ControlError } from "../control/errors.ts";
+} from "../domains/access/operator.ts";
+import { ControlError } from "../shared/control/errors.ts";
 
 const TOKEN_PREFIX = "v1";
 const TOKEN_VERSION = 1;

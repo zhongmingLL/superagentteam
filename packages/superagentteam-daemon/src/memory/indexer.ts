@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { existsSync, statSync } from "node:fs";
 import { basename } from "node:path";
-import { envValue } from "../env.ts";
-import { resolveInstallation } from "../installation.ts";
+import { resolveInstallation } from "../app/installation.ts";
+import { envValue } from "../shared/env.ts";
 import type { EvidenceSourceRef } from "./contract.ts";
 import { type MemoryDatabase, resolveMemoryMaxFileBytes } from "./database.ts";
 import { MemoryError } from "./errors.ts";

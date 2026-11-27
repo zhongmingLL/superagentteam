@@ -2,8 +2,8 @@ import { execFileSync, spawn } from "node:child_process";
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { basename, dirname, join, resolve } from "node:path";
-import { ControlError } from "../control/errors.ts";
-import { envValue } from "../env.ts";
+import { ControlError } from "../../shared/control/errors.ts";
+import { envValue } from "../../shared/env.ts";
 import type { RuntimeDaemonSpawnInput, RuntimeHealthProbe, RuntimeSpawner, RuntimeWebSpawnInput } from "./types.ts";
 
 const DEFAULT_HEALTH_TIMEOUT_MS = 2_000;

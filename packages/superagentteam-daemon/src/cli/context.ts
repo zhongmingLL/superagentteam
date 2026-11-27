@@ -1,9 +1,9 @@
 import type { KeyObject } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { loadOperatorPrivateKey, operatorCredentialPaths, signOperatorPayload } from "../auth/operator.ts";
-import { principalFromOperatorProof } from "../auth/principals.ts";
-import { ControlError } from "../control/errors.ts";
-import { resolveControlDataDir } from "../data-dir.ts";
+import { resolveControlDataDir } from "../app/data-dir.ts";
+import { loadOperatorPrivateKey, operatorCredentialPaths, signOperatorPayload } from "../domains/access/operator.ts";
+import { principalFromOperatorProof } from "../domains/access/principals.ts";
+import { ControlError } from "../shared/control/errors.ts";
 import { flag, option, type ParsedArgs } from "./args.ts";
 
 export interface CliCommandContext {

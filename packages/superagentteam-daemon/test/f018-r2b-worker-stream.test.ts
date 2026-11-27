@@ -25,7 +25,7 @@ import type { WorkerRpcConnection, WorkerSpawnPort } from "../src/domains/worker
 import { WorkerPool } from "../src/domains/worker/pool.ts";
 import { WorkerBindingStore, WorkerStore } from "../src/domains/worker/store.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
-import type { RpcEvent } from "../src/workers/rpc-client.ts";
+import type { RpcEvent } from "../src/pi-worker/rpc-client.ts";
 
 const dirs: string[] = [];
 

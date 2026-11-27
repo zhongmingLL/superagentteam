@@ -1,4 +1,4 @@
-import { envValue } from "../env.ts";
+import { envValue } from "../shared/env.ts";
 import type { SpanExporter, TraceSpanDTO } from "./contracts.ts";
 
 export interface OtlpConfig {

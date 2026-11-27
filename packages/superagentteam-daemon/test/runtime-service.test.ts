@@ -2,12 +2,16 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import type { ProcessIdentityProvider } from "../src/lifecycle/process.ts";
-import type { ProcessSignalSender } from "../src/lifecycle/signal.ts";
-import type { ProcessIdentity } from "../src/lifecycle/types.ts";
-import { RuntimeService } from "../src/runtime/service.ts";
-import { readRuntimeState } from "../src/runtime/state.ts";
-import type { RuntimeServiceOptions, RuntimeSpawner, RuntimeStartOptions } from "../src/runtime/types.ts";
+import type { ProcessIdentityProvider } from "../src/infrastructure/process/process.ts";
+import type { ProcessSignalSender } from "../src/infrastructure/process/signal.ts";
+import type { ProcessIdentity } from "../src/infrastructure/process/types.ts";
+import { RuntimeService } from "../src/infrastructure/supervisor/service.ts";
+import { readRuntimeState } from "../src/infrastructure/supervisor/state.ts";
+import type {
+	RuntimeServiceOptions,
+	RuntimeSpawner,
+	RuntimeStartOptions,
+} from "../src/infrastructure/supervisor/types.ts";
 
 const dirs: string[] = [];
 afterEach(() => {

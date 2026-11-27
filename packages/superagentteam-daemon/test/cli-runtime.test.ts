@@ -5,8 +5,8 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { defaultHubOrigin } from "../src/cli/runtime.ts";
-import { writeRuntimeState } from "../src/runtime/state.ts";
-import type { RuntimeStateFile } from "../src/runtime/types.ts";
+import { writeRuntimeState } from "../src/infrastructure/supervisor/state.ts";
+import type { RuntimeStateFile } from "../src/infrastructure/supervisor/types.ts";
 
 const CLI = fileURLToPath(new URL("../dist/cli.js", import.meta.url));
 const dirs: string[] = [];

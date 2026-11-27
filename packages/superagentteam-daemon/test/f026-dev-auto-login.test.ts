@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/shared/types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { initOperatorCredential, operatorCredentialPaths } from "../src/auth/operator.ts";
+import { initOperatorCredential, operatorCredentialPaths } from "../src/domains/access/operator.ts";
 import { type DaemonHandle, startDaemon } from "../src/index.ts";
 
 const HUB_ORIGIN = "http://localhost:3000";

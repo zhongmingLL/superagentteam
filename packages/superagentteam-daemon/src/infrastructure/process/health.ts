@@ -1,4 +1,4 @@
-import { envValue } from "../env.ts";
+import { envValue } from "../../shared/env.ts";
 import type { StopHealthExpectation, StopHealthResult } from "./types.ts";
 
 export interface StopHealthProbe {

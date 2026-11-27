@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { chmodSync, closeSync, fsyncSync, mkdirSync, openSync, renameSync, writeSync } from "node:fs";
 import { join } from "node:path";
-import { ControlError } from "../control/errors.ts";
+import { ControlError } from "../../shared/control/errors.ts";
 
 export const INVOCATION_TOKEN_PREFIX = "ct1";
 

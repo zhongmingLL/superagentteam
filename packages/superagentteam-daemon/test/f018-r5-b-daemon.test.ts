@@ -3,14 +3,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { startDaemon } from "../src/daemon.ts";
-import { A2ADaemonControlPlane } from "../src/daemon-a2a.ts";
+import { startDaemon } from "../src/app/daemon.ts";
+import { A2ADaemonControlPlane } from "../src/app/daemon-a2a.ts";
 import { buildRegistry } from "../src/domains/agent/registry.ts";
 import { InvocationRecordStore, TurnExecutionStore } from "../src/domains/invocation/store.ts";
 import { ThreadStore } from "../src/domains/thread/store.ts";
 import type { WorkerRpcConnection, WorkerSpawnPort } from "../src/domains/worker/pool.ts";
 import { F018Database } from "../src/infrastructure/db/database.ts";
-import type { RpcEvent } from "../src/workers/rpc-client.ts";
+import type { RpcEvent } from "../src/pi-worker/rpc-client.ts";
 
 const dirs: string[] = [];
 const ACCOUNT: AccountConfig = { ref: "main", provider: "pi", apiKeyRef: "KEY", models: ["m1"] };

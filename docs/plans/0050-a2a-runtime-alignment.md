@@ -241,4 +241,60 @@ F043 文档加 superseded banner；不再在其上追加补丁。F043 的代码�
   F049 墨墨；review 按风险找非作者）。
 - F044 完成后是否允许直接切 runtime，还是先在隔离 test runtime 跑一轮再切。
 
+## 11. Clowder 参考实现索引
+
+> 路径相对 Clowder 参考仓根目录，不嵌入本机绝对路径。实现时读契约与流程，不复制
+> store/transport；SuperAgentTeam 的 SQLite/HTTP/invoke 适配在 0007/0019 已定。
+
+| Feature | 参考路径 | 重点 |
+|---|---|---|
+| F044 | `packages/api/src/domains/cats/services/agents/routing/AgentRouter.ts` | AgentRouter/routeAgents composition |
+| F044 | `.../routing/route-parallel.ts` | parallel setup barrier、mergeStreams、单 target 错误隔离 |
+| F044 | `.../routing/route-serial.ts` | serial loop、priorResponses、worklist、单 target 前后处理 |
+| F044 | `.../routing/commit-completed-response.ts` | T2 response commit + A2A successor admission |
+| F044 | `.../routing/response-terminal.ts` | response terminal 语义 |
+| F044 | `.../invocation/invoke-single-cat.ts` | per-agent composition/T1 |
+| F044 | `.../invocation/stream-merge.ts` | parallel stream merge |
+| F045 | `.../services/context/ContextAssembler.ts` | context assembly |
+| F045 | `.../routing/route-helpers.ts` | `assembleIncrementalContext`/`explicitPromptForIncrementalContext`/`collectExactPromptMessageIds` |
+| F045 | `.../stores/message-delivery-boundary.ts` | delivery boundary |
+| F045 | `.../stores/ports/DeliveryCursorStore.ts` | cursor contract |
+| F045 | `.../invocation/context-continuity.ts` | context continuity |
+| F046 | `packages/mcp-server/src/tools/callback-tools.ts` | post_message/cross_post_message/multi_mention tool schemas/handlers |
+| F046 | `packages/api/src/routes/callbacks.ts` | post_message callback delivery |
+| F046 | `packages/api/src/routes/callback-multi-mention-routes.ts` | multi_mention callback/status routes |
+| F046 | `.../routing/MultiMentionOrchestrator.ts` | group lifecycle/aggregate/callback |
+| F046 | `.../routing/multi-mention-state-machine.ts` | timeout/partial/anti-cascade |
+| F046 | `.../routing/callback-post-result.ts` | callback result parsing |
+| F047 | `.../invocation/InvocationQueue.ts` | InvocationQueue service |
+| F047 | `.../invocation/queue-ledger/QueueLedger.ts` | ledger contract |
+| F047 | `.../invocation/queue-ledger/QueueLedgerAdmission.ts` | admission/replay |
+| F047 | `.../invocation/queue-ledger/RedisQueueLedgerStore.ts` | store adapter shape（只借契约） |
+| F047 | `.../invocation/InvocationRegistry.ts` | invocation credential registry |
+| F047 | `.../invocation/PerCatTerminalDispositionCollector.ts` | T3 collector |
+| F047 | `.../invocation/InvocationSettlementProjection.ts` | settlement projection |
+| F047 | `.../stores/ports/InvocationRecordStore.ts` / `TurnExecutionStore.ts` / `MessageStore.ts` | store API contracts |
+| F048 | `.../invocation/QueueProcessor.ts` | requestDrain/processNext/drain/processEntry |
+| F048 | `.../invocation/InvocationQueue.ts` | claim/retire/release |
+| F048 | `.../invocation/InvocationTracker.ts` | per-cat slot/tracker |
+| F048 | `.../invocation/InvocationOwnerReaper.ts` + `InvocationOwnerReaperInterval.ts` | owner reaper |
+| F048 | `.../invocation/StartupReconciler.ts` + `TurnExecutionStartupReconciler.ts` | startup recovery |
+| F048 | `.../invocation/queue-retry-deferrals.ts` / `queue-routing-recovery-policy.ts` | retry/defer/recovery |
+| F048 | `packages/api/src/index.ts` | QueueProcessor composition root |
+| F049 | `packages/web/src/components/ChatMessage.tsx` | message bubble/direction pill |
+| F049 | `packages/web/src/lib/parse-direction.ts` | whisper/crossPost/mention direction |
+| F049 | `packages/web/src/components/thread-chat/single-cat-conversation-projection.ts` | private reverse link/grouping |
+| F049 | `packages/web/src/components/thread-chat/ThreadChatSurface.tsx` | thread surface |
+| F049 | `packages/web/src/components/thread-chat/SingleCatConversationTimeline.tsx` | timeline |
+| F049 | `packages/web/src/components/QueuePanel.tsx` | queue surface |
+| F050 | `packages/api/test/route-parallel-*.test.js` / `route-serial-*.test.js` | route parity |
+| F050 | `packages/api/test/invocation-queue.test.js` / `invocation-tracker.test.js` | queue/tracker parity |
+| F050 | `packages/api/test/multi-mention-*.test.js` / `route-serial-callback-dedup.test.js` | multi-mention/callback |
+| F050 | `packages/api/test/context-assembler.test.js` / `incremental-context-*.test.js` | context parity |
+| F051 | `packages/api/src/domains/cats/services/{agents/routing,agents/invocation,agents/registry,context,stores}` | domain-first service/store 分层 |
+| F051 | `packages/api/src/domains/messaging/{contract,stores}` | domain + ports 分层 |
+| F051 | `packages/api/src/infrastructure/` | infrastructure 与 domain 分离 |
+| F051 | `packages/api/src/index.ts` | composition root 外置 |
+| F051 | `packages/mcp-server/src/tools/` | worker-side tool surface 独立 |
+
 [宪宪/deepseek-flash🐾]

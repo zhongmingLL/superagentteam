@@ -71,6 +71,13 @@ F043 用 `upToSeq` + `includeSourceMessageId` 修了表面症状，但这两个�
 
 ## 证据
 
+- **Clowder 参考路径**（相对参考仓根目录）：
+  - `packages/api/src/domains/cats/services/context/ContextAssembler.ts`
+  - `.../routing/route-helpers.ts`（`assembleIncrementalContext` /
+    `explicitPromptForIncrementalContext` / `collectExactPromptMessageIds`）
+  - `.../stores/message-delivery-boundary.ts`
+  - `.../stores/ports/DeliveryCursorStore.ts`
+  - `.../invocation/context-continuity.ts`
 - 0007 §3.5.1 history/cursor、§9.1 context 验收。
 - 0019 §3.5/§7 R8、audit A9。
 - `docs/reports/2026-11-27-a2a-parallel-investigation.md`：Q1/Q2 时间线。

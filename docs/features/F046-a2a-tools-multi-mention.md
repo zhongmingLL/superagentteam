@@ -79,6 +79,13 @@ F043 又加了 auto-delivery 拒绝和 prompt 提示。F046 把这些工具面/�
 
 ## 证据
 
+- **Clowder 参考路径**（相对参考仓根目录）：
+  - `packages/mcp-server/src/tools/callback-tools.ts`（post/cross_post/multi_mention tool schemas/handlers）
+  - `packages/api/src/routes/callbacks.ts`（post_message callback delivery）
+  - `packages/api/src/routes/callback-multi-mention-routes.ts`
+  - `.../routing/MultiMentionOrchestrator.ts`
+  - `.../routing/multi-mention-state-machine.ts`
+  - `.../routing/callback-post-result.ts`
 - 0007 §3.8 tool surface、multi_mention lifecycle、callback/status/anti-cascade。
 - 0019 §3.5/§7 R7/R8、audit A9/D1–D3/D6/F5。
 - `docs/reports/2026-11-27-a2a-parallel-investigation.md`：Q1 时间线。

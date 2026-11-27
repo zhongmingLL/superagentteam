@@ -106,6 +106,15 @@ F047 用 live `sqlite_master`/代码签名逐项对账，修 DDL 文档、API �
 
 ## 证据
 
+- **Clowder 参考路径**（相对参考仓根目录）：
+  - `.../invocation/InvocationQueue.ts`
+  - `.../invocation/queue-ledger/QueueLedger.ts`
+  - `.../invocation/queue-ledger/QueueLedgerAdmission.ts`
+  - `.../invocation/queue-ledger/RedisQueueLedgerStore.ts`（只借契约/分层）
+  - `.../invocation/InvocationRegistry.ts`
+  - `.../invocation/PerCatTerminalDispositionCollector.ts`
+  - `.../invocation/InvocationSettlementProjection.ts`
+  - `.../stores/ports/InvocationRecordStore.ts` / `TurnExecutionStore.ts` / `MessageStore.ts`
 - 0007 §3.3/§3.4/§3.7/§4/§9.2/§9.3.1。
 - 0019 §4/§5/§7 R6/R9、audit B3/B6/B7/C1–C4/E1/E4/F1–F4。
 - live DB `sqlite_master` / `pragma table_info` 对账（隔离 runtime）。

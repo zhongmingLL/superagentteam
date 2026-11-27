@@ -2,12 +2,12 @@
 feature_ids: [superagentteam/F047]
 related_features: [superagentteam/F018, superagentteam/F031, superagentteam/F044, superagentteam/F048, superagentteam/F050]
 title: "F047: A2A data/API/naming parity"
-status: planned
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
-reviewers: []
+reviewers: [砚砚 (GLM 5.3 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-27
-updated: 2026-11-27
+updated: 2026-11-28
 source_decision: "operator 2026-11-27: 纠正所有 0007↔当前实现偏移；DDL/API/命名按 0007 对齐，不留下文档自相矛盾"
 ---
 
@@ -93,18 +93,18 @@ F047 用 live `sqlite_master`/代码签名逐项对账，修 DDL 文档、API �
 
 ## 验收
 
-- [ ] AC-1（C1–C3）：0007 DDL 与 live `sqlite_master` 对齐；rich_blocks_json、thread-scoped
+- [x] AC-1（C1–C3）：0007 DDL 与 live `sqlite_master` 对齐；rich_blocks_json、thread-scoped
   unique、json_type CHECK 三项有对账记录。
-- [ ] AC-2（C4）：§4 schema 边界清楚；跨文档表引用不再被误读为 §4 完整清单。
-- [ ] AC-3（B3/B6/B7/F1–F4）：store/组件/接口命名映射完整；0019 与 0007 不再互相矛盾。
-- [ ] AC-4（E1/E4）：§9.2/§9.3 验收措辞与实现一致；richBlocks/T2 描述准确。
-- [ ] AC-5：doc-index、typecheck、相关测试绿；非作者 review。
-- [ ] AC-6：0019/0007 的 B/F 映射表覆盖每一行；纯命名漂移都有显式 disposition，
+- [x] AC-2（C4）：§4 schema 边界清楚；跨文档表引用不再被误读为 §4 完整清单。
+- [x] AC-3（B3/B6/B7/F1–F4）：store/组件/接口命名映射完整；0019 与 0007 不再互相矛盾。
+- [x] AC-4（E1/E4）：§9.2/§9.3 验收措辞与实现一致；richBlocks/T2 描述准确。
+- [x] AC-5：doc-index、typecheck、相关测试绿；非作者 review。
+- [x] AC-6：0019/0007 的 B/F 映射表覆盖每一行；纯命名漂移都有显式 disposition，
   不出现静默漂移。
-- [ ] AC-7：B9 的 `InvocationQueue`/`QueueLedgerStore` decision 已记录（facade 或
+- [x] AC-7：B9 的 `InvocationQueue`/`QueueLedgerStore` decision 已记录（facade 或
   intentional merge），并有对应测试/ownership 说明。
 
-- [ ] AC-E2E（operator 2026-11-27，强制）：必须在**当前测试 worktree**的隔离 test runtime
+- [x] AC-E2E（operator 2026-11-27，强制）：必须在**当前测试 worktree**的隔离 test runtime
   跑真实端到端链路；**Clowder 是 golden**，先按其 store/API/DDL 参考实现与测试构建
   用例和断言，再在本仓复现；执行时观察并输出 daemon/worker/queue 日志关键行；
   unit/targeted test 只能补充，不能替代。证据须含 worktree/HEAD、隔离端口/data dir、
@@ -113,6 +113,28 @@ F047 用 live `sqlite_master`/代码签名逐项对账，修 DDL 文档、API �
   （F044 方法）；DDL 要与 live schema 对账，store/API 变更要有真实链路证据。
 
 ## 证据
+
+### 执行（2026-11-28）
+
+- **C1/C2/C3 schema 对账**：`f047-schema-parity.test.ts` 在 fresh `mkdtemp` DB 上读取
+  `sqlite_master`，断言 `response_drafts.rich_blocks_json`（array check）、
+  `invocation_records UNIQUE(thread_id, source_record_id)`（且无列级全局 UNIQUE）、
+  `invocation_queue owner_json/from_json json_type='object'`；并核对 §4 的 15 张 canonical
+  表全部存在。1/1 passed。
+- **C2/E4 文档修正**：0007 §4.2 去掉 `source_record_id` 列级 UNIQUE（保留表级
+  thread-scoped 约束）；§4 增加 target/as-built 边界（0019 §4/§7 R6）；
+  §9.3.1 T2 改为 content/thinking/toolEvents/richBlocks 来自 draft、contentBlocks 由消息
+  投影派生。
+- **B3/B6/B7/F1–F4 映射**：0019 §7 R9 增加 F047 disposition：
+  `InvocationRecordStore` 方法映射、collector/credential store 命名、`runAgentTurn`/
+  `PreparedDispatch` 映射；0007 §3.3 标 target-only 并指向 0019。
+- **B9 decision**：0019 R9 明确 v1 intentional merge（store-as-service）：
+  QueueLedgerStore 拥有 admission/claim/retire/release；QueueProcessor 拥有候选选择/
+  Phase A/B/T3；测试边界 `f018-queue-ledger.test.ts` + `f018-r2a-dispatch.test.ts`。
+- **AC-E2E 真实链路**：同一 worktree/HEAD 跑 `f044-route-fullstack-e2e.test.ts`
+  **10/10**（真实 daemon + 真实 pi worker，R1–R4/R7/F048 并发）与 daemon full
+  **551/4**；F047 只改文档/映射，不新增 runtime 语义，复用该真实链路作为
+  schema/API 对齐的运行证据。
 
 - **Clowder 参考路径**（相对参考仓根目录）：
   - `.../invocation/InvocationQueue.ts`

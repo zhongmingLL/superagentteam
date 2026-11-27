@@ -149,6 +149,11 @@ recovery 的 API 和并发语义正式对齐，并补 backpressure/read model。
   `SUPERAGENTTEAM_LIVE_PROVIDER=1 SUPERAGENTTEAM_LIVE_PROVIDER_ID=kimi-coding SUPERAGENTTEAM_LIVE_API_KEY_REF=KIMI_API_KEY SUPERAGENTTEAM_LIVE_MODEL=kimi-for-coding npx vitest --run test/f048-queue-concurrency-live.e2e.test.ts`
   → 1 passed。该 live test 默认 skip，不进 CI。
 
+- 非作者 review：砚砚 approve @ `ae99d75e0`（无 P1/P2；B5 signal owner、
+  P3-c backoff 分支、AC-1 read-model 三焦点均核过）。CI 5/5。
+- 合入：PR #253，merge commit `59f0ec53e`（与 review HEAD 零树差异）。合后基线
+  daemon 551/4、web 120、doc-index。
+
 - **Clowder 参考路径**（相对参考仓根目录）：
   - `.../invocation/QueueProcessor.ts`（requestDrain/processNext/drain/processEntry）
   - `.../invocation/InvocationQueue.ts`（claim/retire/release）

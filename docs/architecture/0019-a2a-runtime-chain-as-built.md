@@ -380,6 +380,24 @@ OperatorMessageIngress（domains/a2a/router.ts）
 - `MessageDispatchSummary` → deferred（R8）。
 - **classification**：naming；doc-only。
 
+**F047 disposition（2026-11-28）**
+
+- **B3 `InvocationRecordStore`**：0007 §3.3 的 `createQueued/getBySource/
+  listByThread/listBySource/listRunning/requestRetry` 是 target 方法面；as-built 为
+  `create/byThreadSource/markRunning/setTerminal/applyTerminalAggregate/admitRetry/get`。
+  语义映射：createQueued→create、getBySource→byThreadSource、requestRetry→
+  QueueProcessor.requestRetry + admitRetry；其余查询用 thread/status 直接过滤。
+  0007 §3.3 标 target-only，live API 以 0019 §3 为准，不新增第二套方法。
+- **B6/B7**：`PerAgentTerminalDispositionCollector` → `collectTerminalDispositions`
+  函数；`InvocationRegistry` → `InvocationCredentialStore`。能力保留，命名按上表。
+- **B9 `InvocationQueue`/`QueueLedgerStore`**：v1 **intentional merge（store-as-service）**。
+  `QueueLedgerStore` 拥有 admission/claim/retire/release 的持久化与 CAS 边界；
+  `QueueProcessor` 拥有候选选择、Phase A/B 编排与 T3。测试边界
+  `f018-queue-ledger.test.ts` + `f018-r2a-dispatch.test.ts`；不拆薄 facade，避免第二套
+  claim 语义。
+- **F1–F4**：`runAgentTurn`/`RunAgentTurn`、`RouteInput`/`PreparedDispatch`、
+  `AgentTurnResult`、collector 函数均为显式映射；没有缺失能力。
+
 ## 8. 整改计划 / 决策点
 
 > **2026-11-27 operator 决定**：不再 ratify 当前调度，也不在 F043 补丁上继续修；

@@ -46,6 +46,8 @@ Vite 拒绝未知 Host；daemon 对非 loopback Origin 只接受单一 `hubOrigi
 | write with cookie+CSRF+tunnel Origin | 400 invalid_input（门禁通过，非 403） |
 | public `/api/session` 无凭据（operator opt-in `=1`） | 200 |
 
+![tunnel live 1440](../design/F041/tunnel-live-1440.png)
+
 ## 安全说明
 
 - Origin allowlist 严格精确匹配；空项忽略；无通配符、无 `allowedHosts: true`。

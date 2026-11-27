@@ -150,6 +150,16 @@ Clowder 深研后的映射：
 验证：daemon 519 passed / 1 skipped；新增 history 快照、并发 fan-out、并发 drain、
 auto-delivery 拒绝用例；typecheck 绿。
 
+## Live 验证（2026-11-27，3005/3014 @ f51d9f3c7）
+
+| 场景 | 证据 |
+|---|---|
+| multi-mention 并发 | A/B/C 同一时刻启动；结束于 +2.82s / +3.00s / +3.66s，全部重叠；无额外 A/B/C post_message |
+| 长 turn 不阻塞其他 agent | D 运行 60s（1795759685439 → 1795759748270）；C 的探针 1795759693274 发送，invocation 169ms 后启动，1795759696697 完成 |
+| post_message 自动投递 | multi-mention 回答后没有新的 A/B/C post_message 消息；聚合由系统自动交给发起者 |
+
+注：daemon 全量最终 520 passed / 1 skipped（delta 修复后新增 deleted trigger 用例）。
+
 ## 未验证边界
 
 - Clowder 的 Smart Window / context projection 细节未逐行复刻；本报告只采用其

@@ -72,7 +72,7 @@ operator 在 `a2a-测试` thread 做 multi-mention / post_message / 排队测试
 - [x] AC-3：post_message 唤醒的目标能在 prompt 中读到源消息；不再出现"无新消息"的空转回复。
 - [ ] AC-4：A2A 私有消息按选定设计渲染，不再与公开回复混淆；multi-mention burst 不散落成多个气泡。
   （设计已选定 A + C；前端实现待做。）
-- [ ] AC-5：daemon/web tests、typecheck、doc-index 绿；非作者 review。
+- [x] AC-5：daemon/web tests、typecheck、doc-index 绿；非作者 review。
 
 ## 风险
 
@@ -95,8 +95,16 @@ operator 在 `a2a-测试` thread 做 multi-mention / post_message / 排队测试
     per-(thread, agent) tracker 继续保证同 agent 不双启；长 turn 不再挡住其他 agent。
   - multi-mention 提问追加"回答自动汇总投递，不需要 post_message"；daemon 侧对
     target→发起者的重复 post_message 返回 `multi_mention_auto_delivery`，不创建消息/唤醒。
-  - 测试：daemon 519 passed / 1 skipped（新增 history 快照、并发 fan-out、并发 drain、
-    auto-delivery 拒绝 4 条用例）。
+  - 测试：daemon 520 passed / 1 skipped（新增 history 快照、并发 fan-out、并发 drain、
+    auto-delivery 拒绝、deleted trigger 守卫 5 条用例）。
 - 设计：operator 选定 A（无头像）+ C；B 删除，C 的附注改为"自动汇总 → agentD"。
   Pencil 稿 `docs/design/F043/a2a-message-1440.png`。
-- 剩余：非作者 review；live 验证；前端 A/C 实现。
+- 复审：墨墨 approve `f3b0e567f`，再 approve delta `c6cacb2d2`（deleted trigger 守卫 +
+  allSettled；CI 5/5）。
+- 合入：PR #235 merged `f51d9f3c7`；live 3005/3014 已部署 `f51d9f3c7` 并重建 daemon dist。
+- Live 验证（a2a-测试 thread）：
+  - multi-mention：A/B/C 同一时刻启动，结束于 +2.82s / +3.00s / +3.66s（全部重叠）；
+    没有额外的 A/B/C post_message 消息（auto-delivery 生效）。
+  - 长 turn 排队：D 运行 60s（1795759685439 → 1795759748270）；C 的探针在 D 运行中发送
+    （1795759693274），invocation 169ms 后启动并于 1795759696697 完成——未等 D 结束。
+- 剩余：前端 A/C 实现；operator 验收。

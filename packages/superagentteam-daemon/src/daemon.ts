@@ -190,10 +190,16 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 		try {
 			const a2aOptions = options.a2aControlPlane === false ? {} : (options.a2aControlPlane ?? {});
 			const injectedStream = a2aOptions.onStreamEvent;
+			const controlPlaneLog =
+				a2aOptions.log ??
+				((level, event, fields) => {
+					observability.logs?.append(level, event, fields);
+				});
 			a2aControlPlane = new A2ADaemonControlPlane({
 				...a2aOptions,
 				dataDir: paths.dataDir,
 				changeBus,
+				log: controlPlaneLog,
 				onStreamEvent: (event, threadId) => {
 					injectedStream?.(event, threadId);
 					changeBus.publishStream(threadId, event);

@@ -1,7 +1,8 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { AgentConfig, AgentSession, QueueEntry, QueueTarget } from "@superagentteam/shared/types";
 import { runInTransaction } from "../../infrastructure/db/database.ts";
-import { WORKER_CREDENTIAL_TOOL_NAMES } from "../a2a/tool-service.ts";
+import type { A2ALog } from "../a2a/log.ts";
+import { PhaseBError, type PreparedDispatch, recordPrestartFailure } from "../agent/invoke-single-agent.ts";
 import type { AgentRegistry } from "../agent/registry.ts";
 import type { AgentRouter, RouteError } from "../agent/route.ts";
 import type { InvocationCredentialStore } from "../auth/store.ts";
@@ -18,34 +19,13 @@ import type { InvocationTracker } from "./tracker.ts";
 
 // F018 R2-a QueueProcessor (0007 §3.2 + 0010 §6.1.1 steps 1-4): candidate
 // selection, dispatch preflight, Phase A single transaction (parent + all
-// claimed target attempts starting), Phase B per-target dispatch transaction
-// (processing R + TurnExecution + credential + draft + retireTargets).
-// Everything AFTER the Phase B commit (worker spawn / prompt / stream / T1)
-// is the injected route — AgentRouter owns per-target context assembly,
-// parallel/serial launch, and T2 response commit.
+// claimed target attempts starting), tracker ownership, and T3 aggregation.
+// Everything AFTER Phase A is the injected route — AgentRouter owns the
+// parallel context barrier, serial worklist, per-target T1 launch, and T2
+// response commit; invoke-single-agent owns Phase B inside the runner
+// (F044b).
 
-export interface PreparedDispatch {
-	threadId: string;
-	userId: string;
-	parentInvocationId: string;
-	queueEntryId: string;
-	sourceMessageId: string | null;
-	agentId: string;
-	agentConfig: AgentConfig;
-	provider: string;
-	model: string;
-	/** Resolves at provider time; null through the dispatch transaction. */
-	modelFamily: string | null;
-	attemptId: string;
-	turnExecutionId: string;
-	agentSessionId: string;
-	responseMessageId: string;
-	claimId: string;
-	/** Child-TurnExecution capability for the worker's A2A control channel. */
-	credentialToken: string;
-	/** Tracker-owned abort signal; operator cancel aborts this turn. */
-	signal?: AbortSignal;
-}
+export type { PreparedDispatch } from "../agent/invoke-single-agent.ts";
 
 /** Optional capacity preflight (R2-b: WorkerPool.checkCapacity). */
 export interface CapacityChecker {
@@ -60,13 +40,15 @@ export interface QueueProcessorDeps {
 	turns: TurnExecutionStore;
 	attempts: InvocationAttemptStore;
 	sessions: AgentSessionStore;
+	/** Provider-phase convergence only (Phase B is invoke-single-agent). */
 	credentials: InvocationCredentialStore;
 	drafts: ResponseDraftStore;
 	messages: MessageStore;
 	threads: ThreadStore;
 	tracker: InvocationTracker;
-	/** F044 route: context barrier + per-target T1 launch + T2 commit. */
+	/** F044 route: context barrier + Phase B/T1 launch + T2 commit. */
 	router: AgentRouter;
+	log?: A2ALog;
 	multiMention?: MultiMentionStore;
 	multiMentionOrchestrator?: MultiMentionOrchestrator;
 	capacity?: CapacityChecker;
@@ -338,7 +320,7 @@ export class QueueProcessor {
 		return { targets };
 	}
 
-	/** 0007 §3.2 processEntry: Phase A → tracker → Phase B per target. */
+	/** 0007 §3.2 processEntry: Phase A → tracker → route (Phase B + T1 within). */
 	async processEntry(entry: QueueEntry, claimId: string, userId: string): Promise<ProcessEntryResult> {
 		const now = this.now();
 		const invocationId = `inv:${entry.threadId}:${entry.payload.sourceRecordId}`;
@@ -346,7 +328,6 @@ export class QueueProcessor {
 			agentId: string;
 			turnExecutionId: string;
 			attemptId: string;
-			credentialToken?: string;
 		}> = [];
 		let startable: Array<Extract<PreflightTarget, { kind: "startable" }>> = [];
 		let invalid: Array<Extract<PreflightTarget, { kind: "invalid" }>> = [];
@@ -546,188 +527,29 @@ export class QueueProcessor {
 		const dispatched: string[] = [];
 		const convergenceFailed: string[] = [];
 		try {
-			// Phase B (§3.2 step 6): per-target independent dispatch transaction.
-			// A failing target writes delivery_failure and stays pending; healthy
-			// siblings keep going (per-target isolation, not entry-level abort).
-			for (const prepared of phaseA) {
+			// Phase B is no longer the processor's transaction (F044b). It runs
+			// inside each route runner via invoke-single-agent.begin(); the route
+			// assembles every context at the batch boundary first, then launches
+			// Phase B + provider per target. A typed PhaseBError already recorded
+			// its prestart failure; route setup failures are recorded here.
+			const routedTargets: PreparedDispatch[] = phaseA.map((prepared) => {
 				const target = startable.find((t) => t.agentId === prepared.agentId)!;
-				const session = this.deps.sessions.getActive(entry.threadId, prepared.agentId);
-				if (!session) {
-					throw new Error(`phase_b_session_lost: ${prepared.agentId}`);
-				}
-				const responseMessageId = `resp:${prepared.turnExecutionId}`;
-				try {
-					runInTransaction(this.deps.db, () => {
-						this.deps.messages.append({
-							id: responseMessageId,
-							threadId: entry.threadId,
-							from: { kind: "agent", agentId: prepared.agentId },
-							content: "",
-							lifecycle: {
-								kind: "response",
-								parentInvocationId: invocationId,
-								turnExecutionId: prepared.turnExecutionId,
-								target: { kind: "agent", id: prepared.agentId },
-								status: "processing",
-								startedAt: now,
-							},
-							now,
-						});
-						const turn = this.deps.turns.createRunning({
-							turnExecutionId: prepared.turnExecutionId,
-							parentInvocationId: invocationId,
-							threadId: entry.threadId,
-							userId,
-							agentId: prepared.agentId,
-							executionKind: "ordinary",
-							causal: {
-								triggerMessageId: entry.payload.messageId ?? entry.payload.sourceRecordId,
-								...(entry.execution.a2aParentTurnExecutionId
-									? { a2aParentTurnExecutionId: entry.execution.a2aParentTurnExecutionId }
-									: {}),
-								...(entry.execution.a2aTriggerMessageId
-									? { a2aTriggerMessageId: entry.execution.a2aTriggerMessageId }
-									: {}),
-								a2aDepth: entry.execution.a2aDepth,
-								...(entry.execution.multiMentionRequestId
-									? { multiMentionRequestId: entry.execution.multiMentionRequestId }
-									: {}),
-								...(entry.execution.multiMentionCallbackDepth !== null
-									? { multiMentionCallbackDepth: entry.execution.multiMentionCallbackDepth }
-									: {}),
-							},
-							startedAt: now,
-						});
-						if (turn.outcome === "conflict") throw new Error("phase_b_turn_conflict");
-						this.deps.attempts.bindAppended(prepared.attemptId, {
-							turnExecutionId: prepared.turnExecutionId,
-							agentSessionId: session.id,
-							workerId: null,
-							provider: target.provider,
-							model: target.model,
-							modelFamily: null,
-							responseMessageId,
-							now,
-						});
-						const minted = this.deps.credentials.create({
-							turnExecutionId: prepared.turnExecutionId,
-							parentInvocationId: invocationId,
-							threadId: entry.threadId,
-							agentId: prepared.agentId,
-							agentSessionId: session.id,
-							userId,
-							allowedTools: [...WORKER_CREDENTIAL_TOOL_NAMES],
-							now,
-						});
-						if (!minted.token) throw new Error("phase_b_credential_token_missing");
-						prepared.credentialToken = minted.token;
-						this.deps.drafts.create({
-							attemptId: prepared.attemptId,
-							turnExecutionId: prepared.turnExecutionId,
-							parentInvocationId: invocationId,
-							threadId: entry.threadId,
-							agentId: prepared.agentId,
-							content: "",
-							toolEvents: [],
-							thinking: null,
-							richBlocks: [],
-							createdAt: now,
-							updatedAt: now,
-						});
-						if (entry.payload.messageId) {
-							// Callback deliveries use the multi_mention_callbacks row,
-							// not dispatchRefs; only input messages carry refs.
-							const sourceMessage = this.deps.messages.get(entry.payload.messageId, { includeDeleted: true });
-							if (sourceMessage?.lifecycle?.kind === "input") {
-								this.deps.messages.appendDispatchRef(
-									entry.payload.messageId,
-									{
-										target: { kind: "agent", id: prepared.agentId },
-										queueEntryId: entry.queueEntryId,
-										attempt: this.deps.attempts.get(prepared.attemptId)?.attempt ?? 1,
-										turnExecutionId: prepared.turnExecutionId,
-										at: now,
-									},
-									now,
-								);
-							}
-						}
-						// P2: a lost claim must NOT commit R/child/credential for a
-						// still-pending target (double-dispatch risk) — the whole
-						// Phase B transaction rolls back instead.
-						const retired = this.deps.queue.retireTargets(entry.threadId, entry.queueEntryId, claimId, {
-							targetKeys: [`agent:${prepared.agentId}`],
-							now,
-						});
-						if (retired.outcome !== "updated" && retired.outcome !== "retired_all") {
-							throw new Error("phase_b_retire_state_changed");
-						}
-					});
-					dispatched.push(prepared.agentId);
-					this.deferrals.reset(entry.threadId, prepared.agentId);
-				} catch (error) {
-					// Phase B tx rolled back: no R/child for this target; attempt
-					// starting→failed + delivery_failure in ONE transaction (a
-					// failing append must not leave the attempt marked failed
-					// without its receipt); target stays pending (retryable);
-					// sibling targets continue (§3.2 step 6).
-					const nowF = this.now();
-					runInTransaction(this.deps.db, () => {
-						const terminal = this.deps.attempts.markPrestartTerminal(prepared.attemptId, {
-							status: "failed",
-							terminalReason: "phase_b_failed",
-							endedAt: nowF,
-						});
-						if (!terminal || terminal.deliveryState !== "failed") {
-							throw new Error(`phase_b_terminal_failed: ${prepared.agentId}`);
-						}
-						this.deps.messages.append({
-							id: `df:${prepared.attemptId}`,
-							threadId: entry.threadId,
-							from: { kind: "system", service: "queue" },
-							content: `delivery_failure (phase_b_failed): ${String(error)}`,
-							lifecycle: {
-								kind: "delivery_failure",
-								status: "failed",
-								sourceEntryId: entry.queueEntryId,
-								inputMessageId: entry.payload.messageId ?? entry.payload.sourceRecordId,
-								requestedTargets: [{ kind: "agent", id: prepared.agentId }],
-								reason: "phase_b_failed",
-								createdAt: nowF,
-							},
-							now: nowF,
-						});
-					});
-					this.deferrals.defer(entry.threadId, prepared.agentId, nowF);
-				}
-			}
-
-			// Post-Phase-B route (§3.2 step 7 / F044): QueueProcessor prepares
-			// the per-target input; AgentRouter owns the parallel context barrier,
-			// serial worklist, per-target launch, and T2 response commit. Provider
-			// failures return as per-target errors and are converged here so T3
-			// stays processor-owned.
-			const routedTargets: PreparedDispatch[] = dispatched.map((agentId) => {
-				const prepared = phaseA.find((p) => p.agentId === agentId)!;
-				const target = startable.find((t) => t.agentId === prepared.agentId)!;
-				const session = this.deps.sessions.getActive(entry.threadId, prepared.agentId)!;
 				return {
 					threadId: entry.threadId,
 					userId,
 					parentInvocationId: invocationId,
 					queueEntryId: entry.queueEntryId,
+					sourceRecordId: entry.payload.sourceRecordId,
 					sourceMessageId: entry.payload.messageId ?? null,
 					agentId: prepared.agentId,
 					agentConfig: target.agentConfig,
 					provider: target.provider,
 					model: target.model,
-					modelFamily: null,
 					attemptId: prepared.attemptId,
 					turnExecutionId: prepared.turnExecutionId,
-					agentSessionId: session.id,
-					responseMessageId: `resp:${prepared.turnExecutionId}`,
+					agentSessionId: target.agentSessionId,
 					claimId,
-					credentialToken: prepared.credentialToken ?? "",
+					execution: entry.execution,
 					signal: this.deps.tracker.getController(entry.threadId, prepared.agentId)?.signal,
 				};
 			});
@@ -736,14 +558,51 @@ export class QueueProcessor {
 			try {
 				routeErrors = (await this.deps.router.routeAgents(routedTargets, routeMode)).errors;
 			} catch (error) {
-				// Defensive: route setup isolates per-target failures itself; if
-				// the router throws, converge every routed target instead of
-				// stranding their Phase-B commitments.
-				routeErrors = routedTargets.map((prepared) => ({ agentId: prepared.agentId, error }));
+				// Defensive: route setup isolates per-target failures itself; if the
+				// router throws, converge every routed target instead of stranding
+				// their Phase A reservations.
+				routeErrors = routedTargets.map((prepared) => ({ agentId: prepared.agentId, error, stage: "run" }));
+			}
+			// Reset on Phase B success BEFORE processing route errors: provider-phase
+			// convergence sets its own backoff, and a later reset would erase it and
+			// hot-retry a failing provider.
+			for (const prepared of phaseA) {
+				if (this.deps.attempts.get(prepared.attemptId)?.turnExecutionId) {
+					dispatched.push(prepared.agentId);
+					this.deferrals.reset(entry.threadId, prepared.agentId);
+				}
 			}
 			for (const failure of routeErrors) {
 				const prepared = phaseA.find((p) => p.agentId === failure.agentId);
-				if (prepared) this.convergeProviderFailure(entry, claimId, invocationId, prepared, convergenceFailed);
+				if (!prepared) continue;
+				const routed = routedTargets.find((p) => p.agentId === failure.agentId);
+				if (failure.error instanceof PhaseBError) {
+					if (!failure.error.failureRecorded && routed) {
+						// invoke-single-agent could not record its own cleanup (DB
+						// failure mid-failure). Retry the shared prestart bookkeeping
+						// once before leaving the attempt for recovery.
+						const recorded = recordPrestartFailure(this.deps, routed, {
+							terminalReason: "phase_b_failed",
+							reason: failure.error.reason,
+							detail: String(failure.error.cause ?? failure.error),
+							now: this.now(),
+						});
+						if (!recorded) convergenceFailed.push(prepared.agentId);
+					}
+					this.deferrals.defer(entry.threadId, prepared.agentId, this.now());
+					continue;
+				}
+				// No bound TurnExecution means Phase B never committed (assemble
+				// failure or a runner throw before begin). Those are prestart
+				// failures, not provider-phase convergence: never send them to T2
+				// convergence, which owns an existing R/child chain.
+				if (!this.deps.attempts.get(prepared.attemptId)?.turnExecutionId) {
+					if (!this.failRouteSetup(entry, prepared, routed, failure.error)) {
+						convergenceFailed.push(prepared.agentId);
+					}
+					continue;
+				}
+				this.convergeProviderFailure(entry, claimId, invocationId, prepared, convergenceFailed);
 			}
 		} finally {
 			// T3 slot release (§3.2 step 8): per-target ownership-fenced complete
@@ -781,6 +640,36 @@ export class QueueProcessor {
 			invalid: invalid.map((t) => t.agentId),
 			convergenceFailed: convergenceFailed.length > 0 ? convergenceFailed : undefined,
 		};
+	}
+
+	/**
+	 * Route setup (context/history/prompt assembly) failed before Phase B.
+	 * The attempt is still `starting`, so record the same prestart failure the
+	 * Phase B owner would have written and leave the target pending for retry.
+	 */
+	private failRouteSetup(
+		entry: QueueEntry,
+		prepared: { agentId: string; attemptId: string; turnExecutionId: string },
+		routed: PreparedDispatch | undefined,
+		error: unknown,
+	): boolean {
+		const recorded = routed
+			? recordPrestartFailure(this.deps, routed, {
+					terminalReason: "phase_b_failed",
+					reason: "phase_b_failed",
+					detail: `route_setup_failed: ${error instanceof Error ? error.message : String(error)}`,
+					now: this.now(),
+				})
+			: false;
+		this.deps.log?.("warn", "queue_route_setup_failed", {
+			thread_id: entry.threadId,
+			queue_entry_id: entry.queueEntryId,
+			attempt: this.deps.attempts.get(prepared.attemptId)?.attempt,
+			error_code: "route_setup_failed",
+			phase: "phase_b",
+		});
+		this.deferrals.defer(entry.threadId, prepared.agentId, this.now());
+		return recorded;
 	}
 
 	/**

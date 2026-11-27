@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import type { AgentStreamEvent } from "@superagentteam/shared/types";
 import { defaultA2AControlSocketPath } from "./domains/a2a/control.ts";
+import type { A2ALog } from "./domains/a2a/log.ts";
 import { type A2ARuntime, buildA2ARuntime } from "./domains/a2a/runtime.ts";
 import { AccountStore } from "./domains/account/store.ts";
 import type { AgentRegistry } from "./domains/agent/registry.ts";
@@ -49,6 +50,8 @@ export interface A2ADaemonControlPlaneOptions {
 	readonly processStartedAt?: number;
 	readonly onStreamEvent?: (event: AgentStreamEvent, threadId: string) => void;
 	readonly changeBus?: ChangeBus;
+	/** Local JSONL lifecycle log; omitted in tests that only assert stores. */
+	readonly log?: A2ALog;
 }
 
 export interface A2ADaemonControlPlaneReady {
@@ -151,6 +154,7 @@ export class A2ADaemonControlPlane {
 				promptTimeoutMs: options.promptTimeoutMs,
 				onStreamEvent: options.onStreamEvent,
 				changeBus: options.changeBus,
+				...(options.log ? { log: options.log } : {}),
 			});
 		} catch (error) {
 			if (this.ownsDatabase) this.database.close();

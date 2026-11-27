@@ -10,6 +10,7 @@ import type {
 } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it } from "vitest";
 import { OperatorMessageIngress } from "../src/domains/a2a/router.ts";
+import { InvokeSingleAgent } from "../src/domains/agent/invoke-single-agent.ts";
 import type { AgentRegistry } from "../src/domains/agent/registry.ts";
 import { buildRegistry } from "../src/domains/agent/registry.ts";
 import { AgentRouter, createContextAssembler } from "../src/domains/agent/route.ts";
@@ -38,12 +39,37 @@ import type { RpcEvent } from "../src/workers/rpc-client.ts";
 
 const dirs: string[] = [];
 
-function noopRouter(): AgentRouter {
+/**
+ * Test-only runner that stops right after Phase B (crash shape): R stays
+ * processing, child running, draft present, attempt appended.
+ */
+function noopRouter(w: ReturnType<typeof makeWorld>): AgentRouter {
+	const invoker = new InvokeSingleAgent({
+		db: w.db,
+		attempts: w.attempts,
+		turns: w.turns,
+		credentials: w.credentials,
+		drafts: w.drafts,
+		messages: w.messages,
+		queue: w.queue,
+		sessions: w.sessions,
+		clock: () => 1000,
+	});
 	return new AgentRouter({
 		assemble: () => ({ window: { mode: "bootstrap", rows: [], boundarySeq: 0 }, prompt: "" }),
 		runner: {
-			async run() {
-				return null;
+			async run({ prepared }) {
+				const phaseB = invoker.begin(prepared);
+				return {
+					result: {
+						agentId: prepared.agentId,
+						turnExecutionId: prepared.turnExecutionId,
+						responseMessageId: phaseB.responseMessageId,
+						status: "completed",
+						responseText: "",
+					},
+					release: async () => {},
+				};
 			},
 		},
 		committer: { commit() {} },
@@ -158,6 +184,17 @@ function makeWorld(agents: AgentConfig[] = [agentConfig("a1"), agentConfig("a2")
 	const assembler = new HistoryAssembler({ messages, readState });
 	const ingress = new OperatorMessageIngress({ db: db.db, registry, threads, messages, queue });
 	const streamEvents: AgentStreamEvent[] = [];
+	const invokeSingleAgent = new InvokeSingleAgent({
+		db: db.db,
+		attempts,
+		turns,
+		credentials,
+		drafts,
+		messages,
+		queue,
+		sessions,
+		clock,
+	});
 	const runAgentTurn = new RunAgentTurn({
 		db: db.db,
 		pool,
@@ -169,6 +206,7 @@ function makeWorld(agents: AgentConfig[] = [agentConfig("a1"), agentConfig("a2")
 		credentials,
 		readState,
 		messages,
+		invokeSingleAgent,
 		onStreamEvent: (event) => streamEvents.push(event),
 		clock,
 	});
@@ -309,7 +347,7 @@ describe("T1/T2 full flow (0007 §3.6/§3.9)", () => {
 
 		// Round-1 P2: re-commit after settle is idempotent — the settling tail
 		// (refs + draft + pending) runs without rewriting the terminal R.
-		const again = w.committer.commit({ turnExecutionId: turnId, content: "should not overwrite" });
+		const again = w.committer.commit({ turnExecutionId: turnId, responseText: "should not overwrite" });
 		expect(again.outcome).toBe("already_terminal");
 		expect(w.messages.get(attempt.responseMessageId!)?.content).toBe("Final answer.");
 		// Input dispatchRef settled.
@@ -470,10 +508,19 @@ describe("T2 RouteResponseCommitter", () => {
 		const w = makeWorld();
 		const card: RichBlock = { id: "card-1", kind: "card", v: 1, title: "Result", bodyMarkdown: "ok" };
 		seedRichResponse(w, [card]);
-		const outcome = w.committer.commit({ turnExecutionId: "te-rich", content: "body" });
+		const outcome = w.committer.commit({ turnExecutionId: "te-rich", responseText: "body" });
 		expect(outcome.outcome).toBe("committed");
 		expect(w.messages.get("rm-rich")?.extra?.rich).toEqual({ v: 1, blocks: [card] });
 		expect(w.drafts.getByTurn("te-rich")).toBeNull();
+	});
+
+	it("uses responseText as the fallback body when the draft is gone (P3-b)", () => {
+		const w = makeWorld();
+		seedRichResponse(w, []);
+		w.drafts.delete("te-rich");
+		const outcome = w.committer.commit({ turnExecutionId: "te-rich", responseText: "fallback body" });
+		expect(outcome.outcome).toBe("committed");
+		expect(w.messages.get("rm-rich")?.content).toBe("fallback body");
 	});
 
 	it("T4 recovery preserves draft rich blocks when T2 did not run", () => {
@@ -508,13 +555,13 @@ describe("T2 RouteResponseCommitter", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			router: noopRouter(),
+			router: noopRouter(w),
 			clock: () => 1000,
 		});
 		await noopProcessor.drain("t1", "u1");
 		const invocationId = `inv:t1:${submitted.message.id}`;
 		const attempt = w.attempts.getLatest(invocationId, "a1")!;
-		const outcome = w.committer.commit({ turnExecutionId: attempt.turnExecutionId!, content: "early" });
+		const outcome = w.committer.commit({ turnExecutionId: attempt.turnExecutionId!, responseText: "early" });
 		expect(outcome.outcome).toBe("child_running");
 		const response = w.messages.get(attempt.responseMessageId!)!;
 		if (response.lifecycle?.kind === "response") {
@@ -615,7 +662,7 @@ describe("T4 ResponseRecoveryService", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			router: noopRouter(),
+			router: noopRouter(w),
 			clock: () => 1000,
 		});
 		await noopProcessor.drain("t1", "u1");

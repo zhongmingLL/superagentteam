@@ -5,6 +5,7 @@ import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/s
 import { afterEach, describe, expect, it } from "vitest";
 
 import { type A2ARuntime, buildA2ARuntime } from "../src/domains/a2a/runtime.ts";
+import { InvokeSingleAgent } from "../src/domains/agent/invoke-single-agent.ts";
 import { buildRegistry } from "../src/domains/agent/registry.ts";
 import { AgentRouter } from "../src/domains/agent/route.ts";
 import { QueueProcessor } from "../src/domains/queue/processor.ts";
@@ -79,11 +80,32 @@ function makeNoopProcessor(
 	db: F018Database["db"],
 	now: number,
 ): QueueProcessor {
+	const invoker = new InvokeSingleAgent({
+		db,
+		attempts: runtime.attempts,
+		turns: runtime.turns,
+		credentials: runtime.credentials,
+		drafts: runtime.drafts,
+		messages: runtime.messages,
+		queue: runtime.queue,
+		sessions: runtime.sessions,
+		clock: () => now,
+	});
 	const router = new AgentRouter({
 		assemble: () => ({ window: { mode: "bootstrap", rows: [], boundarySeq: 0 }, prompt: "" }),
 		runner: {
-			async run() {
-				return null;
+			async run({ prepared }) {
+				const phaseB = invoker.begin(prepared);
+				return {
+					result: {
+						agentId: prepared.agentId,
+						turnExecutionId: prepared.turnExecutionId,
+						responseMessageId: phaseB.responseMessageId,
+						status: "completed",
+						responseText: "",
+					},
+					release: async () => {},
+				};
 			},
 		},
 		committer: { commit() {} },

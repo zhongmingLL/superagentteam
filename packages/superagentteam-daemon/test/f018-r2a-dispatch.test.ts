@@ -4,6 +4,7 @@ import { join } from "node:path";
 import type { AccountConfig, AgentCatalog, AgentConfig } from "@superagentteam/shared/types";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { OperatorMessageIngress } from "../src/domains/a2a/router.ts";
+import { InvokeSingleAgent } from "../src/domains/agent/invoke-single-agent.ts";
 import type { AgentRegistry } from "../src/domains/agent/registry.ts";
 import { buildRegistry } from "../src/domains/agent/registry.ts";
 import { AgentRouter } from "../src/domains/agent/route.ts";
@@ -41,13 +42,26 @@ function agentConfig(overrides: Partial<AgentConfig> = {}): AgentConfig {
 
 const ACCOUNT: AccountConfig = { ref: "main", provider: "pi", apiKeyRef: "KEY", models: ["m1"] };
 
-function dispatchRouter(dispatch: (prepared: PreparedDispatch) => Promise<void>): AgentRouter {
+function dispatchRouter(
+	invoker: InvokeSingleAgent,
+	dispatch: (prepared: PreparedDispatch) => Promise<void>,
+): AgentRouter {
 	return new AgentRouter({
 		assemble: () => ({ window: { mode: "bootstrap", rows: [], boundarySeq: 0 }, prompt: "" }),
 		runner: {
 			async run({ prepared }) {
+				const phaseB = invoker.begin(prepared);
 				await dispatch(prepared);
-				return null;
+				return {
+					result: {
+						agentId: prepared.agentId,
+						turnExecutionId: prepared.turnExecutionId,
+						responseMessageId: phaseB.responseMessageId,
+						status: "completed",
+						responseText: "",
+					},
+					release: async () => {},
+				};
 			},
 		},
 		committer: { commit() {} },
@@ -94,16 +108,18 @@ function makeWorld(
 			dispatched.push(prepared);
 		},
 	};
-	const router = new AgentRouter({
-		assemble: () => ({ window: { mode: "bootstrap", rows: [], boundarySeq: 0 }, prompt: "" }),
-		runner: {
-			async run({ prepared }) {
-				await dispatchTargetPort.dispatch(prepared);
-				return null;
-			},
-		},
-		committer: { commit() {} },
+	const invoker = new InvokeSingleAgent({
+		db: db.db,
+		attempts,
+		turns,
+		credentials,
+		drafts,
+		messages,
+		queue,
+		sessions,
+		clock: () => 1000,
 	});
+	const router = dispatchRouter(invoker, (prepared) => dispatchTargetPort.dispatch(prepared));
 	const processor = new QueueProcessor({
 		db: db.db,
 		registry,
@@ -137,6 +153,7 @@ function makeWorld(
 		tracker,
 		ingress,
 		processor,
+		invoker,
 		dispatched,
 	};
 }
@@ -415,7 +432,7 @@ describe("QueueProcessor (0007 §3.2)", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			router: dispatchRouter(async (prepared) => {
+			router: dispatchRouter(w.invoker, async (prepared) => {
 				w.dispatched.push(prepared);
 			}),
 			clock: () => 1000,
@@ -489,7 +506,7 @@ describe("QueueProcessor (0007 §3.2)", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			router: dispatchRouter(async () => {}),
+			router: dispatchRouter(w.invoker, async () => {}),
 			capacity: { check: () => ({ ok: false, reason: "worker_capacity" }) },
 			clock: () => 1000,
 		});
@@ -547,7 +564,7 @@ describe("QueueProcessor (0007 §3.2)", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			router: dispatchRouter(async () => {
+			router: dispatchRouter(w.invoker, async () => {
 				throw new Error("provider exploded");
 			}),
 			clock: () => 1000,
@@ -630,7 +647,7 @@ describe("QueueProcessor (0007 §3.2)", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			router: dispatchRouter(async (prepared) => {
+			router: dispatchRouter(w.invoker, async (prepared) => {
 				// Sabotage: the claim changes hands (e.g. TTL expiry + re-claim)
 				// before the port throws → restoreTargets will hit state_changed
 				// inside the convergence transaction.
@@ -709,7 +726,7 @@ describe("QueueProcessor (0007 §3.2)", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			router: dispatchRouter(async () => {
+			router: dispatchRouter(w.invoker, async () => {
 				calls += 1;
 				throw new Error("provider exploded");
 			}),
@@ -750,7 +767,7 @@ describe("QueueProcessor (0007 §3.2)", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			router: dispatchRouter(async () => {
+			router: dispatchRouter(w.invoker, async () => {
 				if (fail) throw new Error("provider exploded");
 			}),
 			clock: () => now,
@@ -785,7 +802,7 @@ describe("QueueProcessor (0007 §3.2)", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			router: dispatchRouter(async (prepared) => {
+			router: dispatchRouter(w.invoker, async (prepared) => {
 				await new Promise<void>((_resolve, reject) => {
 					const signal = prepared.signal;
 					if (!signal) {

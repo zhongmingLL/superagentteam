@@ -1,6 +1,7 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { AgentStreamEvent } from "@superagentteam/shared/types";
 import { runInTransaction } from "../../infrastructure/db/database.ts";
+import type { A2ALog } from "../a2a/log.ts";
 import type { InvocationCredentialStore } from "../auth/store.ts";
 import { TurnExecutionLifecycle } from "../invocation/settlement.ts";
 import type { InvocationAttemptStore, TurnExecutionStore } from "../invocation/store.ts";
@@ -11,14 +12,15 @@ import type { AgentSessionStore } from "../session/store.ts";
 import type { ThreadStore } from "../thread/store.ts";
 import type { WorkerPool } from "../worker/pool.ts";
 import type { WorkerPoolKey } from "../worker/store.ts";
+import type { InvokeSingleAgent } from "./invoke-single-agent.ts";
 import type { AgentTurnCompletion, AgentTurnInput, AgentTurnResult, TurnRunner } from "./route.ts";
 
 // F018 R2-b runAgentTurn (0007 §3.5 / 0010 §6.1.1 steps 2-8): the real
 // TurnRunner. The route owns context assembly (batch-barrier snapshot + prompt)
-// and T2 settlement; this class acquires the worker, prompts it, streams into
-// response_drafts + ephemeral AgentStreamEvents, records usage, and owns T1.
-// On failure before T1 it throws CLEAN (QueueProcessor convergence owns
-// turn/attempt/credential/R).
+// and T2 settlement; invoke-single-agent owns Phase B; this class acquires the
+// worker, prompts it, streams into response_drafts + ephemeral AgentStreamEvents,
+// records usage, and owns T1. On failure before T1 it throws CLEAN
+// (QueueProcessor convergence owns turn/attempt/credential/R).
 
 export class TurnCanceledError extends Error {
 	constructor() {
@@ -39,7 +41,10 @@ export interface RunAgentTurnDeps {
 	credentials: InvocationCredentialStore;
 	readState: AgentReadStateStore;
 	messages: MessageStore;
+	/** Phase B owner (0007 §3.6): R + TurnExecution + credential + draft + retire. */
+	invokeSingleAgent: InvokeSingleAgent;
 	onStreamEvent?: (event: AgentStreamEvent, threadId: string) => void;
+	log?: A2ALog;
 	clock?: () => number;
 	promptTimeoutMs?: number;
 }
@@ -70,6 +75,9 @@ export class RunAgentTurn implements TurnRunner {
 
 	async run(input: AgentTurnInput): Promise<AgentTurnCompletion> {
 		const { prepared, context } = input;
+		// Phase B comes first: if it fails, invoke-single-agent already recorded
+		// the typed prestart failure and this runner must not touch the provider.
+		const phaseB = this.deps.invokeSingleAgent.begin(prepared);
 		const now = this.clock();
 		const session = this.deps.sessions.get(prepared.agentSessionId);
 		if (!session || session.status !== "active") {
@@ -101,6 +109,14 @@ export class RunAgentTurn implements TurnRunner {
 		let released = false;
 		const completion = (result: AgentTurnResult): AgentTurnCompletion => {
 			handedOff = true;
+			this.deps.log?.("info", "turn_terminal", {
+				thread_id: prepared.threadId,
+				invocation_id: prepared.parentInvocationId,
+				queue_entry_id: prepared.queueEntryId,
+				attempt: attempt.attempt,
+				status: result.status,
+				phase: "t1",
+			});
 			return {
 				result,
 				release: async () => {
@@ -116,8 +132,19 @@ export class RunAgentTurn implements TurnRunner {
 			};
 		};
 		try {
-			handle = await this.deps.pool.ensure(poolKey, session, prepared.credentialToken);
+			handle = await this.deps.pool.ensure(poolKey, session, phaseB.credentialToken);
 			this.deps.attempts.bindWorker(prepared.attemptId, handle.workerId);
+			this.deps.log?.("info", "turn_worker_bound", {
+				thread_id: prepared.threadId,
+				invocation_id: prepared.parentInvocationId,
+				queue_entry_id: prepared.queueEntryId,
+				attempt: attempt.attempt,
+				provider: prepared.provider,
+				model: prepared.model,
+				session_id: handle.piSessionId,
+				duration_ms: Math.round(handle.spawnMs),
+				phase: "t1",
+			});
 			const onAbort = (): void => {
 				void handle?.connection.finish("operator-canceled").catch(() => {});
 			};
@@ -206,7 +233,7 @@ export class RunAgentTurn implements TurnRunner {
 					return completion({
 						agentId: prepared.agentId,
 						turnExecutionId: prepared.turnExecutionId,
-						responseMessageId: prepared.responseMessageId,
+						responseMessageId: phaseB.responseMessageId,
 						status: "failed",
 						responseText: summary.content,
 					});
@@ -234,7 +261,7 @@ export class RunAgentTurn implements TurnRunner {
 			return completion({
 				agentId: prepared.agentId,
 				turnExecutionId: prepared.turnExecutionId,
-				responseMessageId: prepared.responseMessageId,
+				responseMessageId: phaseB.responseMessageId,
 				status: "completed",
 				responseText: summary.content,
 			});

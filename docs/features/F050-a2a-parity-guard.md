@@ -70,6 +70,9 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
   callback；记录 revision/URL/结果。
 - [ ] AC-5：runtime 部署需 operator 授权；0019 更新为最终 as-built；F043 标 superseded；
   operator 验收。
+- 注意（P3-b，#240 review）：`workspace_unavailable` 当前是 target-contract 预留名，
+  daemon src 无抛出点、测试零覆盖；F050 只能标 “contract-reserved, no runtime path”，
+  不能标成 “verified”。
 
 ## 证据
 

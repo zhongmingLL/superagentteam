@@ -55,6 +55,9 @@ recovery 的 API 和并发语义正式对齐，并补 backpressure/read model。
   补测试。
 - `DaemonA2A.tick`/drain：有界并发，而不是全局 single-flight；per-agent slot 保序。
 - capacity/backpressure；queue/live 读模型等待 vs running 准确。
+- P3-c（#240 review）：`processEntry` catch 的 `permanent:` defer 只 releaseClaim +
+  defer，不调用 `RetryDeferrals`；未来任何逃逸错误会每 tick 空转。给 permanent defer
+  登记 bounded backoff，或证明所有 permanent 错误都已 typed invalid。
 - 回归 F043 AC-2。
 
 ## 非目标

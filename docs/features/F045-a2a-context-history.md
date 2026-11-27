@@ -56,6 +56,9 @@ F043 用 `upToSeq` + `includeSourceMessageId` 修了表面症状，但这两个�
   invocation（与 F044 route 结构联合）。
 - preflight invalid reasons 的验收/回归：`session_workspace_changed` /
   `workspace_unavailable`（D4 代码已修，补文档/测试）。
+- P3-a（#240 review）：`invalidSessionReason` 以 error.message 精确匹配；
+  `ensureActive` 其余 3 个 reject 当前不可达但脆弱。后续改 typed session error 或在
+  preflight 显式分类；不在本 feature 静默忽略。
 - 回归 F043 Q1/Q2 的 context 部分。
 
 ## 非目标

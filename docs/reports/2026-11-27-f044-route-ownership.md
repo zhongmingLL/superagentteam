@@ -17,7 +17,7 @@ restore the route layer and move T2 ownership out of `RunAgentTurn`. Phase B
 stays in `QueueProcessor` until F044b; this report does not claim F044 complete.
 
 Branch: `feat/f044-route-ownership`, base `superagentteam-work` @ `c4d1c13a`;
-code commit `8c144a894`.
+code commit `8c144a894`; E2E/docs commit `e59f8065d`.
 
 ## Delivered
 

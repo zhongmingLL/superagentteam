@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F042]
 related_features: [superagentteam/F037, superagentteam/F041]
 title: "F042: Session/CSRF recovery after daemon restart"
-status: in_progress
+status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -51,7 +51,7 @@ Hub 页面还持有旧会话的 CSRF token；下一次写请求到达 daemon 时
 - [x] AC-2：refresh 返回 false 时抛原始 403，不发出第二次请求。
 - [x] AC-3：最多重试一次；重试后仍 403 直接抛出。
 - [x] AC-4：web tests / typecheck / build 绿。
-- [ ] AC-5：live 穿透页面在模拟会话丢失（清 cookie）后，无需手动刷新即可恢复写入。
+- [x] AC-5：live 穿透页面在模拟会话丢失（清 cookie）后，无需手动刷新即可恢复写入。
 
 ## 风险
 
@@ -65,4 +65,9 @@ Hub 页面还持有旧会话的 CSRF token；下一次写请求到达 daemon 时
   刷新一次并用新 token 重试一次。singleton 通过 `GET /api/session` 刷新 token。
 - 测试：api-client 7 passed（新增 3 条：刷新后重试成功、刷新失败抛原始错误、只重试一次）。
 - 全量 web tests 通过；typecheck 通过。
-- 剩余：合并部署后做 live 恢复验证（清 cookie 后直接发送，不手动刷新）。
+- 复审：墨墨 approve `2c9dc4436`（CI 5/5）。
+- 合入：PR #232 merged `79f06685a`；runtime web 已部署 `79f06685a`（daemon 未重启，会话保留）。
+- Live AC-5（`https://agentteam.hn.takin.cc`，Playwright）：打开 thread 后清空 cookie，
+  直接发送消息；网络序列 `POST /api/messages 403 → GET /api/session 200 →
+  POST /api/messages 202`，消息出现在 thread，全程未手动刷新。
+- 剩余：operator 验收。

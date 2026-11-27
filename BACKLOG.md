@@ -54,7 +54,7 @@ created: 2026-10-25
 | F039 | Conversation layout polish — thread 顶部分隔线、agent/operator 名字时间移到气泡上方 | implemented — PR #218 landed `9e005c416`; reviewed HEAD `791c54c7a`; 墨墨 approve; CI 5/5; web 114; F040 follow-up | 宪宪 | [F039](docs/features/F039-conversation-layout-polish.md) |
 | F040 | Thread row actions & header divider placement — Clowder 式更多操作菜单、重命名移入列表、分隔线下移到项目路径下方 | implemented — PR #219 landed `5ebfdc56a`; post-merge fixes #222/#224/#226/#227 (`abda22e5f`/`85bdb7e1e`/`01cab562a`/`f345786d1`); reviewed HEAD `e0ec43fda`; 墨墨 approve; CI 5/5; web 116; live 3005 `f345786d1`; operator 验收 pending | 宪宪 | [F040](docs/features/F040-thread-actions-divider.md) |
 | F041 | Tunnel access for the Hub — Vite allowedHosts + daemon extra browser origins | implemented — PR #229 merged `25dab74ff`; reviewed HEAD `f19728715`; 墨墨 approve; CI 5/5; daemon 515 / web 116; live 3005/3014 `25dab74ff`; tunnel console login + write verified; operator 决策私有穿透，live env 显式 `DEV_AUTO_LOGIN=1`，免登录实测 200；operator 验收 pending | 宪宪 | [F041](docs/features/F041-tunnel-hub-access.md) |
-| F042 | Session/CSRF recovery — daemon 重启后已打开页面自动刷新 CSRF 并重试一次 | in_progress — operator 2026-11-27 穿透发消息报 invalid CSRF token | 宪宪 | [F042](docs/features/F042-session-csrf-recovery.md) |
+| F042 | Session/CSRF recovery — daemon 重启后已打开页面自动刷新 CSRF 并重试一次 | implemented — PR #232 merged `79f06685a`; reviewed HEAD `2c9dc4436`; 墨墨 approve; CI 5/5; web 119; live web 3005 `79f06685a`; 清 cookie 后免刷新发送实测通过（403→200→202）；operator 验收 pending | 宪宪 | [F042](docs/features/F042-session-csrf-recovery.md) |
 
 > F030.5 account/provider catalog design: [plan 0045](docs/plans/0045-f030.5-account-provider-catalog.md)
 > （design only；固定 v1 vendor catalog 不再继续打补丁）。

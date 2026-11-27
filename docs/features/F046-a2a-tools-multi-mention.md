@@ -2,12 +2,12 @@
 feature_ids: [superagentteam/F046]
 related_features: [superagentteam/F018, superagentteam/F031, superagentteam/F043, superagentteam/F044, superagentteam/F045, superagentteam/F050]
 title: "F046: A2A tools & multi-mention parity"
-status: planned
+status: in-progress
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
-reviewers: []
+reviewers: [砚砚 (GLM 5.3 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-27
-updated: 2026-11-27
+updated: 2026-11-28
 source_decision: "operator 2026-11-27: 纠正所有 0007↔当前实现偏移；tool surface/multi_mention 按 0007 §3.8 对齐，F043 行为作为回归"
 ---
 
@@ -69,15 +69,17 @@ F043 又加了 auto-delivery 拒绝和 prompt 提示。F046 把这些工具面/�
 
 ## 验收
 
-- [ ] AC-1（A9）：multi-mention terminal 产生一次 aggregate system message + 一次
+- [x] AC-1（A9）：multi-mention terminal 产生一次 aggregate system message + 一次
   callback delivery 给 `callbackTo`；status read 反映 request/target/callback 状态。
-- [ ] AC-2（A9）：target 向 initiator 的重复 `post_message` 返回
+- [x] AC-2（A9）：target 向 initiator 的重复 `post_message` 返回
   `multi_mention_auto_delivery`，没有新增 message/queue/parent/wake。
-- [ ] AC-3（D1）：0007 工具面记录 rich block producer tool；不改变四工具输入/输出。
-- [ ] AC-4（D6/F5）：`MessageDispatchSummary` 有实现或明确 deferred 决策 + 证据。
-- [ ] AC-5：F043 Q1 auto-delivery 回归；tests/typecheck/review 绿。
+- [x] AC-3（D1）：0007 工具面记录 rich block producer tool；不改变四工具输入/输出。
+- [x] AC-4（D6/F5）：`MessageDispatchSummary` 有实现或明确 deferred 决策 + 证据。
+- [x] AC-5：F043 Q1 auto-delivery 回归；tests/typecheck/review 绿。
+- [ ] AC-6（A6 / F044 AC-3）：A2A successor 只在 response durable commit 后 admission；
+  当前仍是 tool-time `post_message`，作为 F046b 单独切片处理，不声明 pass。
 
-- [ ] AC-E2E（operator 2026-11-27，强制）：必须在**当前测试 worktree**的隔离 test runtime
+- [x] AC-E2E（operator 2026-11-27，强制，F046a）：必须在**当前测试 worktree**的隔离 test runtime
   跑真实端到端链路；**Clowder 是 golden**，先按其 multi-mention/tool 参考实现/测试
   构建用例与断言，再在本仓复现；执行时观察并输出 daemon/worker/queue 日志关键行；
   unit/targeted test 只能补充，不能替代。证据须含 worktree/HEAD、隔离端口/data dir、
@@ -86,6 +88,24 @@ F043 又加了 auto-delivery 拒绝和 prompt 提示。F046 把这些工具面/�
   （F044 方法）；R5 multi_mention + callback 必须有真实 provider 成功路径。
 
 ## 证据
+
+### 执行（2026-11-28，F046a）
+
+- **B 层 R5**：`f044-route-fullstack-e2e.test.ts` F046 用例（真实 daemon + 真实 pi
+  worker + mock provider）：A 调 `multi_mention` → B/C 回复、B 的重复 `post_message`
+  被 `multi_mention_auto_delivery` 拒绝（无 message/queue/parent）→ 一条 aggregate
+  system message + 一次 callback → A 的 callback turn 完成。断言 request done、
+  responses 2 received、statusView、aggregate 唯一、两个 parent completed、queue 空。
+- **P 层真实 provider**：`f046-multi-mention-live.e2e.test.ts`（hybrid：A mock 确定性
+  触发工具，B/C 真实 Kimi）：B/C 都回复 “4”；aggregate + callback 完成；5.2s。
+  命令（key 只从 0600 env 注入，不打印）：
+  `SUPERAGENTTEAM_LIVE_PROVIDER=1 SUPERAGENTTEAM_LIVE_PROVIDER_ID=kimi-coding SUPERAGENTTEAM_LIVE_API_KEY_REF=KIMI_API_KEY SUPERAGENTTEAM_LIVE_MODEL=kimi-for-coding npx vitest --run test/f046-multi-mention-live.e2e.test.ts`
+  → 1 passed。默认 skip，不进 CI。
+- **文档**：0007 §3.8 补 rich block producer tool、prompt template、auto-delivery；
+  §3.10.5 明确 `MessageDispatchSummary` deferred（F016c S0/0019 R8）；0019 R9 补
+  F8 `statusView` 映射与 callback `queueEntryId` ON DELETE SET NULL 语义。
+- **已知缺口**：A2A successor 仍是 tool-time `post_message`（AC-6 / R8），F046b 处理；
+  因此本 feature 保持 `in-progress`，不声明完成。
 
 - **Clowder 参考路径**（相对参考仓根目录）：
   - `packages/mcp-server/src/tools/callback-tools.ts`（post/cross_post/multi_mention tool schemas/handlers）

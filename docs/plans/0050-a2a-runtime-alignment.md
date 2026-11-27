@@ -107,12 +107,12 @@ QueueProcessor（Phase A / claim / tracker / T3）
 | D3 | F043 multi_mention prompt 模板未进 0007 | F046 | 文档补模板 |
 | D6 | `MessageDispatchSummary` 文档声称 F018 拥有，代码没有 | F046 | 实现或明确 deferred |
 | E1 | `sourceRecordId` unique 验收措辞不一致 | F047 | §9.2 改为 thread-scoped |
-| E2 | preflight invalid reasons 缺 workspace/session | F045 | D4 已修代码；补验收/回归 |
+| E2 | preflight invalid reasons 缺 workspace/session | F048 | 0019 §8 D4 已修代码；补验收/回归 |
 | E3 | routeAgents parallel/serial 验收按字面不可执行 | F044 | 按恢复后的 route 重写验收 |
 | E4 | T2 contentBlocks/richBlocks/A2A successor 描述与实现不一致 | F044/F047 | route commit + 0007 文档对齐 |
 | F1–F4 | InvocationRegistry / collector / runAgentTurn / RouteInput 等命名 | F047 | 0019 映射或代码命名对齐 |
 | F5 | MessageDispatchSummary 无实现 | F046 | 同 D6 |
-| F9 | `MultiMentionStatusReader` → `statusView` 命名/接口映射 | F046/F047 | 验证 status read 语义并记录映射 |
+| F8 | `MultiMentionStatusReader` → `statusView` 命名/接口映射 | F046/F047 | 验证 status read 语义并记录映射 |
 | F6–F7 | routing_guard / a2a_requests legacy 不对齐 | F050 | 记录为 aligned/no action |
 
 **已核对对齐、不进入整改的项**：C5/C6（attempts/credential/read state/workers DDL）、
@@ -141,10 +141,10 @@ F6–F7（legacy no-action）。由 F050 在 parity/验收记录中确认。
 | Feature | 覆盖 audit | 交付 | 依赖 |
 |---|---|---|---|
 | F044 | A1–A8, B1/B2/B8, E3/E4 | Route & execution ownership：AgentRouter/routeParallel/routeSerial、parallel barrier、单 target serial 前后处理、Phase B/T1/T2 ownership、QueueProcessor route deps/methods | 无（第一棒） |
-| F045 | A9(context), E2 | Context/history parity：delivery cursor、`upToSeq`、`includeSourceMessageId`、preflight invalid 验收、post_message 源消息 | F044 |
+| F045 | A9(context) | Context/history parity：delivery cursor、`upToSeq`、`includeSourceMessageId`、post_message 源消息 | F044 |
 | F046 | A9(auto-delivery), D1–D3, D6/F5 | A2A tools & multi-mention：rich block tool 文档、multi_mention aggregate/callback/status、auto-delivery、MessageDispatchSummary 决策 | F044/F045 |
 | F047 | B3, B6/B7, B9, C1–C4, E1, E4(doc), F1–F4 | Data/API/naming parity：public contract 改代码，DDL/验收改文档，纯命名显式映射，B9 记录 decision | 可并行（部分依赖 F044/F048） |
-| F048 | B2(methods), B4/B5, A8(concurrency), E3(concurrency) | Queue/concurrency/recovery：bounded concurrent drain、tracker API/抢占、长 turn 不阻塞、recovery 边界 | F044 |
+| F048 | B2(methods), B4/B5, A8(concurrency), E2, E3(concurrency) | Queue/concurrency/recovery：bounded concurrent drain、tracker API/抢占、preflight invalid 验收、长 turn 不阻塞、recovery 边界 | F044 |
 | F049 | F043 AC-4 | Message surface：A2A 私有气泡、multi-mention 汇总卡、桌面/移动/光暗 | F045/F046 |
 | F050 | 全表 + E1/E4 验收 | Parity guard & live：Clowder parity suite、architecture delta guard、隔离 live E2E、0019 收口 | F044–F049 |
 | F051 | 目录/组件落点 | Daemon module layout refactor：按 0020 移动/拆分目录，纯 mechanical，不改语义 | F044–F048 |
@@ -157,14 +157,14 @@ serial 契约由 F044，daemon 并发验收由 F048；E4 的 T2 实现由 F044�
 
 - **F044**：parallel barrier 无 sibling 泄漏；单 target routeSerial 前后处理；T2 只由
   route 写；T1–T4 matrix；A2A successor after durable commit。
-- **F045**：cursor 已越过源 seq 时 post_message 仍能读源消息；preflight workspace/session
-  typed invalid 回归；history snapshot 不把 sibling response 带进来。
+- **F045**：cursor 已越过源 seq 时 post_message 仍能读源消息；history snapshot 不把
+  sibling response 带进来。
 - **F046**：multi-mention 一次 aggregate + callback；target 重复 post_message 被拒；
   rich block tool 与 MessageDispatchSummary 的文档/实现处置明确。
 - **F047**：DDL 与 live 对齐；store/命名 API 的 0007↔0019 映射完整；§9.2/§9.3 验收措辞
   不再自相矛盾。
 - **F048**：A 长跑时 B 独立 entry 可启动；同 agent 顺序；queue/live 只显示真实等待；
-  tracker 抢占/恢复边界有测试。
+  tracker 抢占/恢复边界有测试；preflight workspace/session typed invalid 回归。
 - **F049**：A2A 私有气泡/汇总卡；1440/390、光暗；operator 视觉验收。
 - **F050**：parity suite 覆盖 A–F 整改项；PR/quality-gate guard；隔离 live + runtime
   验收；0019 最终 as-built。
@@ -222,7 +222,7 @@ F043 文档加 superseded banner；不再在其上追加补丁。F043 的代码�
 - **复用卡**：`docs/reuse/dispatch.md` 的 P1 风险（只复用 Queue、重写 route 会丢
   A2A chain/worklist/response 聚合）必须在 F044 关闭。
 - **组件齐全性**：`docs/reports/2026-11-27-0007-component-completeness.md` 逐项列出
-  present/mapped/missing；B9/F9 已补入覆盖矩阵。
+  present/mapped/missing；B9/F8 已补入覆盖矩阵。
 
 ## 9. 风险
 

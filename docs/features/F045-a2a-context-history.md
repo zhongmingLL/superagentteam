@@ -23,12 +23,10 @@ source_decision: "operator 2026-11-27: 纠正所有 0007↔当前实现偏移；
 
 ## 覆盖的 audit 偏移
 
-**A9（context 部分）、E2**：
+**A9（context 部分）**：
 
 - A9：F043 的 trigger snapshot/`upToSeq`/`includeSourceMessageId` 未进入 0007
   §3.5.1/§6/§9，当前靠 per-turn 参数补。
-- E2：§9.1 preflight invalid reasons 缺 `session_workspace_changed` /
-  `workspace_unavailable`；D4 已修代码，本 feature 补验收/回归。
 
 ## Why
 
@@ -46,7 +44,6 @@ F043 用 `upToSeq` + `includeSourceMessageId` 修了表面症状，但这两个�
 - 并行 multi-target 的每个 target 从同一触发边界装配 context；先完成的 sibling
   不会出现在其他 target 的 prompt。
 - `post_message` 目标在 cursor 已越过源 seq 时仍能读到源消息，不出现“无新消息”空转。
-- preflight 的 workspace/session 永久失效按 invalid target 终态化，不无限 defer。
 
 ## 范围
 
@@ -54,11 +51,6 @@ F043 用 `upToSeq` + `includeSourceMessageId` 修了表面症状，但这两个�
   `includeSourceMessageId` 保证 post_message 源消息进入 prompt。
 - Parallel barrier 的 context 部分：所有 target 的 context 在批次边界装配完成后再启动
   invocation（与 F044 route 结构联合）。
-- preflight invalid reasons 的验收/回归：`session_workspace_changed` /
-  `workspace_unavailable`（D4 代码已修，补文档/测试）。
-- P3-a（#240 review）：`invalidSessionReason` 以 error.message 精确匹配；
-  `ensureActive` 其余 3 个 reject 当前不可达但脆弱。后续改 typed session error 或在
-  preflight 显式分类；不在本 feature 静默忽略。
 - 回归 F043 Q1/Q2 的 context 部分。
 
 ## 非目标
@@ -67,6 +59,7 @@ F043 用 `upToSeq` + `includeSourceMessageId` 修了表面症状，但这两个�
 - 不改 multi-mention orchestrator/auto-delivery（F046）。
 - 不改 DDL/命名（F047）。
 - 不改 daemon 并发（F048）。
+- preflight invalid reasons / session reject 分类归 F048，不在本 feature 重复。
 
 ## 验收
 
@@ -74,16 +67,13 @@ F043 用 `upToSeq` + `includeSourceMessageId` 修了表面症状，但这两个�
   并写入 response 时，sibling 的 prompt 不包含它。
 - [ ] AC-2（A9）：`post_message` 目标在 cursor 已越过源 seq 时仍能在 prompt 读到源消息；
   不出现空窗口。
-- [ ] AC-3（E2）：`session_workspace_changed` / `workspace_unavailable` 走 invalid target
-  终态化 + typed delivery_failure；无限 defer 回归不存在。
-- [ ] AC-4：F043 Q1/Q2 context 部分回归；tests/typecheck/review 绿。
+- [ ] AC-3：F043 Q1/Q2 context 部分回归；tests/typecheck/review 绿。
 
 ## 证据
 
-- 0007 §3.5.1 history/cursor、§6.1.1 preflight、§9.1 验收。
-- 0019 §3.5/§7 R8、audit A9/E2。
+- 0007 §3.5.1 history/cursor、§9.1 context 验收。
+- 0019 §3.5/§7 R8、audit A9。
 - `docs/reports/2026-11-27-a2a-parallel-investigation.md`：Q1/Q2 时间线。
-- D4 回归：`packages/superagentteam-daemon/test/f018-r2a-dispatch.test.ts`。
 
 ## 风险 / 回滚
 

@@ -302,7 +302,7 @@ OperatorMessageIngress（domains/a2a/router.ts）
 - **Known fragility（P3-a，#240 review）**：`invalidSessionReason` 以 error.message
   精确字符串匹配；`ensureActive` 另有 3 个 reject（`session_thread_not_found`/
   `session_user_not_thread_owner`/`session_workspace_not_thread_project`）当前在
-  preflight 路径不可达，但未来出现非 owner drain 时会逃逸成零退避循环。F045 记录
+  preflight 路径不可达，但未来出现非 owner drain 时会逃逸成零退避循环。F048 记录
   typed session error 的后续方向；当前不阻塞。
 - **§9.1 routeAgents 验收**：target-only；实际验收应按 0019 §3.2 的 QueueProcessor
   行为重写。**disposition: doc rewrite**。
@@ -315,7 +315,7 @@ OperatorMessageIngress（domains/a2a/router.ts）
 - `RouteInput`/`PreparedTarget`/`AgentTurnResult` → `PreparedDispatch`/
   `DispatchTargetPort`/void；
 - `InvocationQueue` → `QueueLedgerStore`（服务与 store 合并；B9/F047）；
-- `MultiMentionStatusReader` → `MultiMentionStore.statusView`（F9/F046）；
+- `MultiMentionStatusReader` → `MultiMentionStore.statusView`（F8/F046）；
 - `MessageDispatchSummary` → deferred（R8）。
 - **classification**：naming；doc-only。
 

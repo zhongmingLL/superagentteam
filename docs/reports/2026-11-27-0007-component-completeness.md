@@ -32,7 +32,7 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
   collector function、`MultiMentionStatusReader`/`statusView`。
 - **“不是能力缺失”不等于“不整改”**：F047 的判据是 public contract 改代码、DDL/验收
   改文档、纯命名显式映射；每项都要有 disposition，见 F047「整改策略」。
-- 本轮新增识别：**B9 `InvocationQueue` 服务与 store 合并**、**F9
+- 本轮新增识别：**B9 `InvocationQueue` 服务与 store 合并**、**F8
   `MultiMentionStatusReader` 命名/接口映射**。audit A–F 其余项已覆盖。
 
 ## 组件清单
@@ -67,7 +67,7 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 | 26 | `A2AToolService` | §3.8 | `domains/a2a/tool-service.ts` | present | aligned |
 | 27 | `ThreadContextService` | §3.8 | `domains/a2a/thread-context.ts` | present | aligned |
 | 28 | `MultiMentionOrchestrator` | §3.8 | `domains/multi-mention/orchestrator.ts` | present / needs parity check | A9/D2/D3 / F046 |
-| 29 | `MultiMentionStatusReader` | §3.8 | `MultiMentionStore.statusView` | mapped / naming | **F9** / F046/F047 |
+| 29 | `MultiMentionStatusReader` | §3.8 | `MultiMentionStore.statusView` | mapped / naming | **F8** / F046/F047 |
 | 30 | `PerAgentTerminalDispositionCollector` | §3.9 | `collectTerminalDispositions`（`domains/invocation/collector.ts`） | mapped / naming | B6 / F047 |
 | 31 | `transitionTerminal` | §3.9 | `TurnExecutionStore` | present | aligned |
 | 32 | `TurnExecutionStartupReconciler` | §3.10 | `domains/invocation/recovery.ts` | present | aligned |
@@ -89,7 +89,7 @@ store 作为持久层；当前 `QueueLedgerStore` 同时承担两者。能力齐
 测试边界混在一起。处置：F047 决定“拆薄服务层”或“明确 store-as-service 映射”，
 不能让 0007 的 `InvocationQueue` 看起来像缺失。
 
-### F9 · `MultiMentionStatusReader` 映射到 `statusView`
+### F8 · `MultiMentionStatusReader` 映射到 `statusView`
 
 0007 §3.8 的 status read 是 `MultiMentionStatusReader.get(requestId)`；当前是
 `MultiMentionStore.statusView(requestId)`。能力存在，但接口/命名未记录。处置：
@@ -97,8 +97,8 @@ F046 验证 status/read 语义，F047 记录映射或抽 reader。
 
 ## 与 audit A–F 的关系
 
-本报告不替代 audit；它补的是「组件是否存在/叫什么」这一层。audit A–F 的 36 行
-仍是偏移处置底稿。新增 B9/F9 已补进 0050 覆盖矩阵；其余组件没有发现新的缺失，
+本报告不替代 audit；它补的是「组件是否存在/叫什么」这一层。audit A–F 的 44 行
+仍是偏移处置底稿。新增 B9/F8 已补进 0050 覆盖矩阵；其余组件没有发现新的缺失，
 只是 owner/API/DDL/命名漂移。
 
 [宪宪/deepseek-flash🐾]

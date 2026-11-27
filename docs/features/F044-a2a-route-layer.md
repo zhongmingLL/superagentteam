@@ -62,7 +62,7 @@ source_decision: "operator 2026-11-27: 纠正所有 0007↔当前实现偏移；
 single-target serial / priorResponses / T2 failure 留给 T4）；daemon full suite
 528 passed / 1 skipped；daemon build 通过；full-stack E2E 2 passed。
 
-### F044b（2026-11-27，本切片）
+### F044b（2026-11-27，已合入 `695f85b3f`）
 
 分支 `feat/f044b-phase-b`（base `superagentteam-work` @ `49658c23d`）。
 
@@ -94,6 +94,11 @@ single-target serial / priorResponses / T2 failure 留给 T4）；daemon full su
   backoff 不热重试、carrier release 失败隔离、P3-a、P3-c）；
   `f018-r2c-settlement.test.ts` 增加 P3-b fallback 用例。daemon full suite
   537 passed / 1 skipped；daemon build 通过；full-stack E2E 2 passed。
+- **Review**：砚砚 approve @ `0062a35ae`（最终实质 HEAD；merge commit
+  `695f85b3f` 与该 HEAD 零树差异），CI 5/5。P3-a–d 关闭。
+- **P3-e 处置**：reviewer 认为 `failRouteSetup` 缺 `deferrals.defer()`；作者复核
+  `0062a35ae:671` 已调用 defer，并附代码证据 push back。最终以 reviewer 复核为准，
+  不阻塞本 feature；若确认误读则关闭，不挂 F048。
 
 仍属后续 feature（F044 本切片不声称全部完成）：
 
@@ -161,11 +166,12 @@ target，也保留 worklist、context、T2、A2A successor、cleanup。
   §9.1/§9.3.1 验收按恢复后的 route 重写。
 - [x] AC-5：单 target routeSerial 仍执行 worklist/context/T2/A2A successor/cleanup；
   多 target operator message 走 routeParallel，不误用 serial 产品路径。
-- [ ] AC-6：F043 AC-1 回归；T1–T4 ownership matrix 通过；daemon/web tests、typecheck、
-  doc-index 绿；非作者 review 覆盖最终 HEAD。
-  F043 AC-1 回归、daemon tests、typecheck、full-stack E2E 已绿；非作者 review 待最终 HEAD。
+- [x] AC-6：F043 AC-1 回归（`f044-route-ownership` barrier + `f037-fullstack-e2e`
+  multi-target B prompt 不含 A 回复）；T1–T4 ownership matrix 见下；daemon
+  537 passed / 1 skipped、web 120 passed、typecheck、doc-index 绿；非作者 review
+  approve @ `0062a35ae`（merge tree `695f85b3f` 零差异）。
 
-- [x] AC-E2E（operator 2026-11-27，强制，F044a slice）：必须在**当前测试 worktree**的隔离 test runtime
+- [x] AC-E2E（operator 2026-11-27，强制，F044a/F044b slice）：必须在**当前测试 worktree**的隔离 test runtime
   跑真实端到端链路；**Clowder 是 golden**，先按其 route 参考实现/测试构建用例与断言，
   再在本仓复现；执行时观察并输出 daemon/worker/queue 日志关键行；unit/targeted test
   只能补充，不能替代。证据须含 worktree/HEAD、隔离端口/data dir、用例、日志/输出、
@@ -175,6 +181,37 @@ target，也保留 worklist、context、T2、A2A successor、cleanup。
   P3-d：测试输出 worktree cwd、隔离 dataDir、实际 base URL，以及
   `phase_b_appended` / `turn_worker_bound`（真实 pi session id + spawn duration）/
   `turn_terminal` 日志行；断言每个 target 都有 Phase B 与 T1 日志。
+
+## T1–T4 ownership matrix（F044b）
+
+> 目标：每个 owner 的写入/不写入边界可核对；重点 **T2 不双写**、**T3 不提前
+> aggregate**、Phase B 失败不进入 provider convergence。证据以现有测试为准。
+
+| 层 | Owner（代码） | 必须写 | 必须不写 | 证据 |
+|---|---|---|---|---|
+| Phase A | `QueueProcessor.processEntry` | parent create/reuse + `markRunning`；每 target `appendQueued → markStarting`；invalid target attempt failed + `delivery_failure` + retire | R / TurnExecution / credential / draft / provider | `f018-r2a`: happy path / invalid target / capacity defer / tracker failure；`f044b`: route assemble failure 不影响 healthy sibling 的 Phase B |
+| Phase B | `InvokeSingleAgent.begin`（`RunAgentTurn.run` 调用） | processing R；`TurnExecution.createRunning`；`bindAppended`；credential；draft；input dispatchRef；`retireTargets`（同一事务） | provider/worker；T2 R terminal / draft delete；parent aggregate；成功路径的 `delivery_failure` | `f044b`: Phase B 全链 / typed failure 不二次收敛 / 失败后 attempt 2 / provider backoff；`f018-r2a`: happy path |
+| T1 | `RunAgentTurn` + `TurnExecutionLifecycle` | child terminal；attempt `projectChildTerminal`；settlement `response_pending`；credential terminalize；`recordTurnTerminal` / cursor ack；completed participant | R body/status；draft delete；parent aggregate | `f018-r2b`: full flow / accepted-then-failed / before-accept clean throw / cancel；`f018-r2c`: 全流程 T1 |
+| T2 | `AgentRouter` → `RouteResponseCommitter` | R terminal（draft body + thinking + toolEvents + richBlocks）；input refs settle；draft delete；`clearResponsePending`；multi-mention response terminal | child/credential rewrite；parent aggregate；同一 R 的第二次 terminal 写 | `f018-r2c`: T2 guards / 全流程 / idempotent re-commit / rich blocks / P3-b fallback；`f044-route`: T2 在 runner 之后；`f044b`: T2 失败日志 |
+| T3 | `QueueProcessor.aggregateParent` | parent status / successfulAgentIds / terminalReason；queue anchor delete/retain；tracker slot；retry 账本 | child / credential / R | `f018-r2a`: Phase B 失败后 parent 仍 running（retryable pending）；`f018-r2c`: collector 矩阵；`f018-r2d`: recovery aggregate |
+| T4 | `ResponseRecoveryService` | `response_pending` / `response_missing` R settlement；clear pending；draft cleanup | child/credential rewrite；重跑 T3 | `f018-r2c`: crash window / T4；`f018-r2d`: restart |
+| Provider 失败收敛（异常路径） | `QueueProcessor.convergeProviderFailure` | child failed/canceled；attempt failed；credential terminal；R terminal；settlement `settled`；target restore | pre-handoff `delivery_failure`；第二次 T2 写 | `f018-r2a`: P1-2 / F034 retry budget；`f044b`: provider backoff 回归 |
+
+**关键不变量**
+
+- **T2 单写者**：`RunAgentTurn` 只返回 `AgentTurnCompletion`（T1 后
+  `response_pending`），R terminal 只由 route/`RouteResponseCommitter` 写；
+  `f018-r2b` 全流程与 `f018-r2c` idempotent re-commit 覆盖。
+- **T3 不提前 aggregate**：collector 把 `retryablePending` 视为 non-terminal；
+  Phase B 失败后 parent 保持 running，provider 失败先 restore target 再聚合
+  （`f044b` retry / `f018-r2a` P1-2 / `f018-r2c` collector）。
+- **Phase B 与 provider 失败 typed 区分**：`PhaseBError` 无 TurnExecution，processor
+  不再 converge；有 bound TurnExecution 才走 provider convergence
+  （`f044b` tests；`f018-r2a` P1-2）。
+- **F043 AC-1 回归**：routeParallel 在所有 context 装配完成后才启动 runner；真实
+  E2E 中 B prompt 不含同批 A 回复（`f044-route` barrier + `f037-fullstack-e2e`）。
+- **退避互不踩踏**：Phase B/assemble/provider 三条失败路径各自 defer；只有 Phase B
+  成功在 convergence 之前 reset（`f044b` provider backoff 回归用例）。
 
 ## 证据
 

@@ -17,6 +17,8 @@ evidence_baseline: "code f51d9f3c7; docs 23298eeab; live 3005/3014 f51d9f3c7"
   “当前实现了什么”的真相源。
 - **0019（本文）** = 当前实现的 as-built 真相。所有“当前 owner / 实际调用 / 实际 API /
   实际 DDL”以本文为准。
+- **编号别名**：本文原文件名是 `0008-a2a-runtime-chain-as-built.md`（operator 所说的
+  “0008 as-built”）；因与已有 `0008-agent-config.md` 撞号，改为 0019。
 - 逐项偏移证据见 `docs/reports/2026-11-27-0007-as-built-audit.md`。
 - 本文不是把 0007 的设计目标判死：每个偏离点在 §8 标明 **ratified / implementation
   decision / unratified deviation / code gap**，并在 §9 给出整改选项。
@@ -312,7 +314,16 @@ OperatorMessageIngress（domains/a2a/router.ts）
 
 ## 8. 整改计划 / 决策点
 
-### D1（必须先决定）· route 层：ratify 还是补实现
+> **2026-11-27 operator 决定**：不再 ratify 当前调度，也不在 F043 补丁上继续修；
+> 按 0007 的 Clowder 整体设计恢复 route 层。执行计划见
+> [`docs/plans/0050-a2a-runtime-alignment.md`](../plans/0050-a2a-runtime-alignment.md)；
+> feature 拆分 F044–F048。以下 A/B 选项保留为决策历史。
+
+### D1（已决定 2026-11-27）· route 层：ratify 还是补实现
+
+**Decision: Option B — 恢复 route 层**。`AgentRouter`/`routeAgents`/`routeParallel`/
+`routeSerial`/`priorResponses`/`RouteResponseCommitter` 按 0007 实现；Phase B/T1
+回到 `runAgentTurn`，T2 由 route 拥有，T3 留 `QueueProcessor`。Option A 不采用。
 
 **Option A · ratify 当前调度（推荐用于 v1）**
 
@@ -344,13 +355,21 @@ OperatorMessageIngress（domains/a2a/router.ts）
 **建议**：v1 选 A（行为已验证、风险最低），把 B 作为结构对齐的独立后续；
 如果 operator 认为“route 层复用”是 v1 硬门槛，则选 B，并按上述范围重做。
 
-### D2 · T2 / Phase B ownership
+### D2（已决定 2026-11-27）· T2 / Phase B ownership
+
+**Decision**：按 0007——Phase B/T1 在 `runAgentTurn`/`invokeSingleAgent`；T2 在
+route/`RouteResponseCommitter`；T3 在 `QueueProcessor`。不再保留 QueueProcessor/
+RunAgentTurn 的 T2 写路径。
 
 - 若选 A：T2 留在 `RunAgentTurn.dispatch`，Phase B 留在 QueueProcessor；更新
   0016/0024 的 owner 表，0019 作为实际 API。
 - 若选 B：T2 移到 route wrapper；Phase B 按 0007 或 0024 二选一并写死，不再两处矛盾。
 
-### D3 · routeSerial / priorResponses
+### D3（已决定 2026-11-27）· routeSerial / priorResponses
+
+**Decision: 实现 routeSerial，不 retire**。即使退化为一个 target，也必须保留
+worklist、context、T2、A2A successor、cleanup 等前后处理；multi-target 的
+`priorResponses` 按 0007 实现。见 F044。
 
 - 推荐 v1 retire：没有 serial 产品路径；multi-target 恒 parallel；F043 已按
   Clowder `route_parallel` 行为验证。若保留，必须定义真实 consumer 和测试。
@@ -369,10 +388,9 @@ daemon 521 passed / 1 skipped。
 
 ### D5 · 文档 / 验收
 
-- 0007 标 `target-design` + banner；0019 为当前真相。
-- §9.1 的 routeAgents 验收按 0019 的 QueueProcessor 行为重写；§9.2 的唯一性措辞改为
-  `(threadId, sourceRecordId)`；§9.3.1 去掉 T2 “A2A successor”，改为 post_message
-  tool-time successor + T2 settling tail。
+- 0007 标 `target-design` + banner；0019 为当前真相；F044 cutover 后更新 0019。
+- 0007 §9.1/§9.2/§9.3 的验收随 F044/F048 收口；不再按 QueueProcessor inline 行为
+  反向改写 target。
 - `MessageDispatchSummary` 保持 deferred（F016c S0）；需要时再立 feature。
 
 ### D6 · 流程防复发
@@ -382,6 +400,7 @@ daemon 521 passed / 1 skipped。
 - 架构文档加 status legend：`target-design` / `as-built` / `deferred`；禁止 `accepted`
   同时承载未实现的 target 和已实现行为。
 - 每个 phase close 记录“设计 vs as-built”差异，不能只在 commit body 里写。
+- 由 F048 落地；feature 文档强制先读 0007/0019 并回链计划 0050。
 
 ## 9. 证据索引
 

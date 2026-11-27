@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F043]
 related_features: [superagentteam/F037, superagentteam/F041]
 title: "F043: A2A parallel dispatch & post_message surface"
-status: in_progress
+status: superseded
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -12,6 +12,12 @@ source_decision: "operator 2026-11-27: a2a-测试 暴露 multi-mention 串行/�
 ---
 
 # F043: A2A parallel dispatch & post_message surface
+
+> **Superseded as design (2026-11-27, operator direction).** F043 是在 architecture
+> drift 上做的缝补，不再作为设计基线；holistic 设计与 feature 拆分见
+> [`docs/plans/0050-a2a-runtime-alignment.md`](../plans/0050-a2a-runtime-alignment.md)。
+> F043 的 live 验证行为保留为 F044–F048 的回归要求；AC-4（消息表面）移到 F047。
+> 不在本 feature 上追加新补丁。
 
 ## Why
 
@@ -70,7 +76,7 @@ operator 在 `a2a-测试` thread 做 multi-mention / post_message / 排队测试
   其他 target 的 response（按触发 seq 快照）。
 - [x] AC-2：agent A 长跑期间 @agent B，B 在 A 结束前开始执行；队列面板只在 B 真正等待时显示。
 - [x] AC-3：post_message 唤醒的目标能在 prompt 中读到源消息；不再出现"无新消息"的空转回复。
-- [ ] AC-4：A2A 私有消息按选定设计渲染，不再与公开回复混淆；multi-mention burst 不散落成多个气泡。
+- [ ] AC-4（carried to F047）：A2A 私有消息按选定设计渲染，不再与公开回复混淆；multi-mention burst 不散落成多个气泡。
   （设计已选定 A + C；前端实现待做。）
 - [x] AC-5：daemon/web tests、typecheck、doc-index 绿；非作者 review。
 

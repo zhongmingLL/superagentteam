@@ -225,6 +225,11 @@ target，也保留 worklist、context、T2、A2A successor、cleanup。
   - `.../invocation/stream-merge.ts`
 - 0007 §0/§2/§3.2/§3.5/§3.6/§3.9/§9.1/§9.3.1。
 - 0019 §3/§5/§7/§8、audit A1–A8/B1/B2/B8/E3/E4。
+- **Route-first E2E v2**：`docs/plans/0052-route-first-e2e-v2.md` +
+  `docs/reports/2026-11-28-f044-route-e2e-v2.md`；
+  `packages/superagentteam-daemon/test/f044-route-fullstack-e2e.test.ts` 4/4
+  （parallel skew/独立结算、delivered failure+手动 retry、cancel、cross-post）；
+  真实 Hub U2/U3/U4 截图见 `docs/design/F044/`。
 - `docs/reuse/dispatch.md`：R0 直接复用契约；P1 风险明确“只复用 Queue、重写
   routeSerial/routeParallel 会丢掉 A2A chain/worklist/response 聚合”。
 - Clowder 参考实现的 route-parallel setup barrier、route-serial worklist/commit

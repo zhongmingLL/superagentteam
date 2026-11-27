@@ -77,6 +77,7 @@ W0b upstream/CI 治理：与 W1–W4 并行，W5 前完成
 | [`0045-f030.5-account-provider-catalog.md`](0045-f030.5-account-provider-catalog.md) | F030.5：account/provider catalog 架构：protocol/client vs vendor、从 pi catalog 派生 provider/model、custom gateway、迁移 | 砚砚（契约/安全）+ 墨墨（account UI/可发现性） |
 | [`0046-f037-thread-first-e2e.md`](0046-f037-thread-first-e2e.md) | F037：thread-first 全特性 E2E：矩阵、真实 provider、确定性全栈测试、bug 修复 | 墨墨（Hub/测试 review） |
 | [`0047-f038-hub-ui-polish.md`](0047-f038-hub-ui-polish.md) | F038：Hub UI acceptance polish：plus 去重、thread 头部、停止位置、Settings 统一 | 墨墨（视觉/UX） |
+| [`0052-route-first-e2e-v2.md`](0052-route-first-e2e-v2.md) | Route-first E2E v2：按 0007 + F044 ownership 重设计真实前后端用例；并行 barrier、Phase B/T2/T3、cancel/retry、cross-post、真实 Hub | 砚砚（contract/security）+ 墨墨（Hub/vision） |
 | [`0050-a2a-runtime-alignment.md`](0050-a2a-runtime-alignment.md) | A2A runtime alignment：0007 target / 0019 as-built；F044–F051 feature 拆分、audit A–F 全量覆盖、route/context/data/queue/surface/guard/layout | 墨墨（vision/UX）+ 砚砚（contract/security） |
 
 ## W0–W8 一览

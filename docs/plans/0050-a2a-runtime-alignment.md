@@ -130,7 +130,9 @@ F6–F7（legacy no-action）。由 F050 在 parity/验收记录中确认。
 4. **T2 只在 route/RouteResponseCommitter**：禁止 RunAgentTurn 和 QueueProcessor
    双写 R terminal。
 5. **A2A successor 必须在 response durable commit 之后** admission。
-6. **每个 audit A–F 行都有处置**：修复、文档对齐或明确 no-action 证据；不能漏。
+6. **每个 audit A–F 行都有处置**：修复、文档对齐、显式映射或 no-action 证据；不能漏。
+   owner/API/DDL/naming 不是“只记录”：public contract 漂移改代码，DDL/验收改文档，
+   纯命名做显式映射；不做无价值全仓 cosmetic rename。
 7. **F043 的行为是回归要求，不是设计来源**：它的四项行为分别并入 F045/F046/F048/F049。
 8. **每个 feature 先读 0007/0019/audit 并回链本计划**；缺这个块视为 review blocker。
 
@@ -141,7 +143,7 @@ F6–F7（legacy no-action）。由 F050 在 parity/验收记录中确认。
 | F044 | A1–A8, B1/B2/B8, E3/E4 | Route & execution ownership：AgentRouter/routeParallel/routeSerial、parallel barrier、单 target serial 前后处理、Phase B/T1/T2 ownership、QueueProcessor route deps/methods | 无（第一棒） |
 | F045 | A9(context), E2 | Context/history parity：delivery cursor、`upToSeq`、`includeSourceMessageId`、preflight invalid 验收、post_message 源消息 | F044 |
 | F046 | A9(auto-delivery), D1–D3, D6/F5 | A2A tools & multi-mention：rich block tool 文档、multi_mention aggregate/callback/status、auto-delivery、MessageDispatchSummary 决策 | F044/F045 |
-| F047 | B3, B6/B7, C1–C4, E1, E4(doc), F1–F4 | Data/API/naming parity：DDL、store API、命名映射、验收措辞 | 可并行（部分依赖 F044/F048） |
+| F047 | B3, B6/B7, B9, C1–C4, E1, E4(doc), F1–F4 | Data/API/naming parity：public contract 改代码，DDL/验收改文档，纯命名显式映射，B9 记录 decision | 可并行（部分依赖 F044/F048） |
 | F048 | B2(methods), B4/B5, A8(concurrency), E3(concurrency) | Queue/concurrency/recovery：bounded concurrent drain、tracker API/抢占、长 turn 不阻塞、recovery 边界 | F044 |
 | F049 | F043 AC-4 | Message surface：A2A 私有气泡、multi-mention 汇总卡、桌面/移动/光暗 | F045/F046 |
 | F050 | 全表 + E1/E4 验收 | Parity guard & live：Clowder parity suite、architecture delta guard、隔离 live E2E、0019 收口 | F044–F049 |

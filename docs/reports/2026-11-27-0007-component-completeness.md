@@ -30,6 +30,8 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
   InvocationRecordStore/Tracker 方法面、`InvocationQueue` 与 `QueueLedgerStore` 合并、
   `InvocationRegistry`/`InvocationCredentialStore`、`PerAgentTerminalDispositionCollector`/
   collector function、`MultiMentionStatusReader`/`statusView`。
+- **“不是能力缺失”不等于“不整改”**：F047 的判据是 public contract 改代码、DDL/验收
+  改文档、纯命名显式映射；每项都要有 disposition，见 F047「整改策略」。
 - 本轮新增识别：**B9 `InvocationQueue` 服务与 store 合并**、**F9
   `MultiMentionStatusReader` 命名/接口映射**。audit A–F 其余项已覆盖。
 

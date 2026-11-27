@@ -44,6 +44,25 @@ audit 显示，除了 route/context，0007 与 as-built 还有一批数据模型
 F047 用 live `sqlite_master`/代码签名逐项对账，修 DDL 文档、API 映射和命名；
 无法对齐的实现差异在 0019 记录为有证据的 decision，不留“文档说有、代码没有”。
 
+## 整改策略（本 feature 的判据）
+
+“不是能力缺失”不等于“不用整改”。F047 对每类漂移给明确处置，不允许静默：
+
+1. **public contract / consumer-facing API 漂移 → 改代码**：例如
+   `InvocationRecordStore` 方法面、`RouteResponseCommitter.commit` 签名（与 F044 联合）、
+   被其它 domain 直接依赖的 store/service 接口。消费者依赖的契约不能只写映射。
+2. **DDL / 验收措辞 → 改文档/迁移**：C1–C3 以 live `sqlite_master` 为准修 0007；
+   E1/E4 改验收措辞。不做无意义的数据迁移。
+3. **纯命名漂移 → 显式映射，按需改名**：`InvocationRegistry`、
+   `PerAgentTerminalDispositionCollector`、`runAgentTurn`、`RouteInput` 等历史名，
+   在 0019 建映射表；只有“改名能减少真实歧义/缺陷”或文件本来就要动时才改代码，
+   不做全仓 cosmetic rename。
+4. **服务/store 合并（B9）→ 明确 decision**：`InvocationQueue` 与
+   `QueueLedgerStore` 默认做一个薄 facade（服务层调用 store），或明确记录
+   “v1 intentional merge + ownership/test boundary”；二选一必须写进 0019。
+5. **每个 audit 行都有 disposition**：fixed / doc-aligned / documented mapping /
+   no-action（with evidence）。没有“留着不管”。
+
 ## 用户结果
 
 - 0007 的 DDL/验收与 live schema 一致：`rich_blocks_json`、`(thread_id,
@@ -80,6 +99,10 @@ F047 用 live `sqlite_master`/代码签名逐项对账，修 DDL 文档、API �
 - [ ] AC-3（B3/B6/B7/F1–F4）：store/组件/接口命名映射完整；0019 与 0007 不再互相矛盾。
 - [ ] AC-4（E1/E4）：§9.2/§9.3 验收措辞与实现一致；richBlocks/T2 描述准确。
 - [ ] AC-5：doc-index、typecheck、相关测试绿；非作者 review。
+- [ ] AC-6：0019/0007 的 B/F 映射表覆盖每一行；纯命名漂移都有显式 disposition，
+  不出现静默漂移。
+- [ ] AC-7：B9 的 `InvocationQueue`/`QueueLedgerStore` decision 已记录（facade 或
+  intentional merge），并有对应测试/ownership 说明。
 
 ## 证据
 

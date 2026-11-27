@@ -75,6 +75,14 @@ single-target serial / priorResponses / T2 failure 留给 T4）；daemon full su
   commit 之后。
 - `0019` as-built 的 route 描述在 F044 全部完成后更新；当前 `0019` 仍描述 F044a 之前的
   QueueProcessor inline fan-out。
+- 砚砚 review P3（非阻塞，全部挂 F044b）：
+  - P3-a：`TurnRunner` 契约去掉 `| null`，或 route 把 null 视为 error，避免理论上
+    attempt 已 appended 但被静默跳过。
+  - P3-b：`RouteCommitter` 字段名与 `AgentTurnResult.responseText` 对齐，去掉
+    `content`/`responseText` 的语义误导。
+  - P3-c：T2 commit 失败至少写一条可观测日志，再留给 T4。
+  - P3-d：E2E 证据补 daemon/worker/queue 日志关键行与固定端口/HEAD 坐标；F044b 重跑时
+    一并补齐。
 
 ## Why
 
@@ -145,7 +153,8 @@ target，也保留 worklist、context、T2、A2A successor、cleanup。
   只能补充，不能替代。证据须含 worktree/HEAD、隔离端口/data dir、用例、日志/输出、
   结果；无 E2E 证据不得声明 verified。F044a 证据：`f037-fullstack-e2e.test.ts` 真实
   daemon + 真实 pi worker + mock provider 两条（A→B A2A 链、multi-target `@a1 @b1`
-  同批 fan-out，B prompt 不含 A 回复，parent completed）；F044b 搬迁 Phase B 后必须重跑。
+  同批 fan-out，B prompt 不含 A 回复，parent completed）；daemon/worker/queue 日志关键行
+  与固定端口坐标留 F044b 重跑补齐（P3-d）。
 
 ## 证据
 

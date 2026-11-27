@@ -74,6 +74,9 @@ F043 用 `upToSeq` + `includeSourceMessageId` 修了表面症状，但这两个�
   用例与断言，再在本仓复现；执行时观察并输出 daemon/worker/queue 日志关键行；
   unit/targeted test 只能补充，不能替代。证据须含 worktree/HEAD、隔离端口/data dir、
   用例、日志/输出、结果；无 E2E 证据不得声明 verified。
+  方式基线：[`0021-e2e-acceptance-standard.md`](../architecture/0021-e2e-acceptance-standard.md)
+  （F044 方法）。本 feature 已补 B 层 `f045-context-history-e2e.test.ts` 与 P 层真实
+  Kimi `f045-context-history-live.e2e.test.ts`。
 
 ## 证据
 
@@ -100,6 +103,20 @@ F043 用 `upToSeq` + `includeSourceMessageId` 修了表面症状，但这两个�
   0007 措辞三点均核过）。CI 5/5，headSha 与 review HEAD 逐字一致。
 - 合入：PR #249，merge commit `6b3ca58e8`（与 review HEAD 零树差异）。合后基线
   daemon 543/1、web 120、doc-index。
+
+### 真实 provider（P 层，2026-11-28 追加）
+
+- 按 F044 标准补真实链路：`f045-context-history-live.e2e.test.ts`，真实 pi worker +
+  runtime `kimi` account（provider `kimi-coding` / model `kimi-for-coding`）。key 只从
+  `~/.config/superagentteam/runtime.env`（0600）注入，不打印；测试用 `mkdtemp` data dir。
+- C1 真实并行：`trigger_seq=1`，a1 回复 `a1_LIVE_OK`、b1 回复 `b1_LIVE_OK`（2.5s）；
+  两 attempt `deliveryBoundarySeq=1`、route log 两 agent boundary 都=1；回复互不含
+  sibling token。
+- C2 真实 `post_message` 源越界：`source_seq=1`、cursor/boundary=3，b1 真实回复
+  `LIVE_SOURCE_BELOW_CURSOR`（2.8s）；route log `row_count=1`、`source_record_id=S`。
+- 命令（key 不落盘/不打印）：
+  `set -a; source ~/.config/superagentteam/runtime.env; set +a; SUPERAGENTTEAM_LIVE_PROVIDER=1 SUPERAGENTTEAM_LIVE_PROVIDER_ID=kimi-coding SUPERAGENTTEAM_LIVE_API_KEY_REF=KIMI_API_KEY SUPERAGENTTEAM_LIVE_MODEL=kimi-for-coding npx vitest --run test/f045-context-history-live.e2e.test.ts`
+  → **2 passed**（2.5s + 2.8s）。该 live test 由环境变量 gate，不进默认 CI。
 
 - **Clowder 参考路径**（相对参考仓根目录）：
   - `packages/api/src/domains/cats/services/context/ContextAssembler.ts`

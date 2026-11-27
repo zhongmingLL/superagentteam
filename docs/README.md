@@ -135,6 +135,7 @@ updated: 2026-11-24
 | [`architecture/0017-response-draft-store.md`](architecture/0017-response-draft-store.md) | ResponseDraftStore 契约：单 `DraftRecord`、全量 snapshot、单 writer 串行 flush、T2/T4 删除与恢复、Hub 重连读取、orphan 清理、测试矩阵 |
 | [`architecture/0018-v1-global-design-review.md`](architecture/0018-v1-global-design-review.md) | A2A v1 全局设计 review（2026-11-14）：已修复的 22 项冲突、R1/R2/R3 gate、D-0/D-1/D-2/D-3 已按 `BBBA` 拍板 |
 | [`architecture/0019-a2a-runtime-chain-as-built.md`](architecture/0019-a2a-runtime-chain-as-built.md) | A2A runtime as-built：QueueProcessor + RunAgentTurn（T1/T2）、F043 并发/快照/auto-delivery、deviation register + 整改决策 |
+| [`architecture/0021-e2e-acceptance-standard.md`](architecture/0021-e2e-acceptance-standard.md) | **E2E 验收标准（F044 方法）**：真实前后端/真实 provider、B/U/P 分层、隔离与证据包；F037 后续与 F044–F051 的 `AC-E2E` 强制引用 |
 | [`architecture/0020-daemon-module-layout.md`](architecture/0020-daemon-module-layout.md) | Daemon module layout（proposed）：Clowder-aligned domain-first 目录、composition root 外置、F051 迁移映射 |
 | [`plans/0005-plan-review-resolutions.md`](plans/0005-plan-review-resolutions.md) | 三猫计划评审 P1/P2 处置与已修正项 |
 | [`plans/0007-architecture-plan-coverage.md`](plans/0007-architecture-plan-coverage.md) | 架构卡 / Decision Packet → W 任务/验收/风险覆盖矩阵与缺口修复记录；三猫 accept，冻结为 DP→plans 唯一对账索引 |

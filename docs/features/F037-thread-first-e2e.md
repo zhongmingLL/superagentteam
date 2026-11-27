@@ -157,6 +157,8 @@ test runtime 跑真实端到端链路；**Clowder 是 golden**，按 Clowder 参
   sibling 不可见、C2 `post_message` 源消息低于 cursor 仍可见；2/2，且 C2 有
   `includeSourceMessageId` RED 反证。0007 §3.5.1 trigger snapshot 契约同步。
   PR #249 merged `6b3ca58e8`（砚砚 approve @ `f96f9f733`，CI 5/5）。
+- R7 Phase B fault injection（2026-11-28）：`f044-route-fullstack-e2e.test.ts` 增
+  draft/credential/retire 三例，全部 prestart 隔离、target 保持 pending；fullstack 7/7。
 - 剩余：operator 验收；F034/F035/F036 的正式栈签收项不变。
 
 [宪宪/deepseek-flash🐾]

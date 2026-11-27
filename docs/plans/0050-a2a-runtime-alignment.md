@@ -213,6 +213,9 @@ F043 文档加 superseded banner；不再在其上追加补丁。F043 的代码�
 
 ## 8. 验证与证据
 
+> 方式基线：`docs/architecture/0021-e2e-acceptance-standard.md`（operator 对 F044
+> 测试意图/方式的固化）。F044–F051 的 `AC-E2E` 均引用该标准。
+
 - **当前测试 worktree E2E（operator 2026-11-27，强制）**：每个 feature 的功能验证必须在
   当前测试 worktree 的隔离 test runtime 跑真实端到端链路；**Clowder 是 golden**，按
   Clowder 参考实现/测试构建用例与断言；执行时观察并输出 daemon/worker/queue 日志关键行。

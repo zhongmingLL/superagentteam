@@ -67,6 +67,9 @@
 - Read the relevant docs and the current task or backlog item.
 - Read `docs/SOP.md` in full before planning or editing. It is the project-local,
   generic Clowder AI development SOP baseline.
+- For any feature validation, read `docs/architecture/0021-e2e-acceptance-standard.md`
+  (the operator's F044 testing intent and method). It is mandatory for F037's
+  remaining matrix and F044–F051; `AC-E2E` in a feature doc means this standard.
 - Load the matching Clowder skill when its trigger applies: `feat-lifecycle`,
   `writing-plans`, `worktree`, `tdd`, `debugging`, `quality-gate`,
   `request-review`, `receive-review`, `merge-gate`.
@@ -91,3 +94,20 @@
 - Do not commit unless the task authorizes it. Do not bypass hooks.
 - Every review finding must state severity and stance.
 - Docs changes may go direct to `superagentteam-work` when reversible and branch protection permits. Once W0a protection is active, use a short-lived PR unless the operator explicitly authorizes a direct docs push. Code changes need risk-matched verification and non-author review.
+
+## E2E acceptance (F044 method)
+
+- Design every case from the current 0007/F044 ownership, not from the pre-F044
+  F037 matrix. Old cases/screenshots are history, never fresh evidence.
+- Run the real daemon + real pi worker; use the real Hub for UI cases; prove
+  success paths with the real account/provider. Mock providers are only for
+  deterministic control-plane/timing/fault injection, and evidence must label
+  `real` vs `mock`.
+- Isolate the runtime (test ports 3007/3016 or `mkdtemp` + ephemeral ports).
+  Never touch runtime 3005/3014 or `~/.superagentteam-runtime/data`. Keys come
+  from 0600 env files and are never printed or committed.
+- Record command, worktree/HEAD, data dir/ports, case ID, daemon/worker/queue
+  log lines, DB coordinates, and screenshots where applicable.
+- Unit/targeted tests supplement E2E; they never replace it. No fresh E2E at the
+  final HEAD means the feature is not verified. CI headSha must match the
+  reviewed HEAD; run the post-merge baseline and record the merge SHA.

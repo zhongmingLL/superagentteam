@@ -88,6 +88,8 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
   再在本仓复现；执行时观察并输出 daemon/worker/queue 日志关键行；unit/targeted test
   只能补充，不能替代 AC-4/AC-4b 的隔离 runtime/Hub 验收。证据须含 worktree/HEAD、
   隔离端口/data dir、用例、日志/输出、结果；无 E2E 证据不得声明 verified/live。
+  方式基线：[`0021-e2e-acceptance-standard.md`](../architecture/0021-e2e-acceptance-standard.md)
+  （F044 方法）；F050 是把该标准落到 parity suite + 真实 Hub 验收的收口 feature。
 
 ## 证据
 

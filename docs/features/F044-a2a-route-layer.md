@@ -181,6 +181,8 @@ target，也保留 worklist、context、T2、A2A successor、cleanup。
   P3-d：测试输出 worktree cwd、隔离 dataDir、实际 base URL，以及
   `phase_b_appended` / `turn_worker_bound`（真实 pi session id + spawn duration）/
   `turn_terminal` 日志行；断言每个 target 都有 Phase B 与 T1 日志。
+  方式基线：[`0021-e2e-acceptance-standard.md`](../architecture/0021-e2e-acceptance-standard.md)
+  （本 feature 是该方法的标准参考实现）。
 
 ## T1–T4 ownership matrix（F044b）
 

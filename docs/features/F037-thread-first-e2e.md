@@ -102,6 +102,11 @@ test runtime 跑真实端到端链路；**Clowder 是 golden**，按 Clowder 参
 用例与断言，观察并输出 daemon/worker/queue 日志关键行。unit/targeted test 只能补充，
 不能替代。没有 fresh E2E 证据不得声明 verified/complete。
 
+该纪律已固化为
+[`docs/architecture/0021-e2e-acceptance-standard.md`](../architecture/0021-e2e-acceptance-standard.md)
+（F044 方法）：真实前后端 + 真实 provider 成功路径；mock 只做确定性控制面；隔离
+3007/3016 或 mkdtemp；日志/DB/截图证据包。
+
 ## 分阶段
 
 | Phase | 内容 | 出口 |
@@ -159,6 +164,9 @@ test runtime 跑真实端到端链路；**Clowder 是 golden**，按 Clowder 参
   PR #249 merged `6b3ca58e8`（砚砚 approve @ `f96f9f733`，CI 5/5）。
 - R7 Phase B fault injection（2026-11-28）：`f044-route-fullstack-e2e.test.ts` 增
   draft/credential/retire 三例，全部 prestart 隔离、target 保持 pending；fullstack 7/7。
+- F045 P 层真实 provider（2026-11-28）：`f045-context-history-live.e2e.test.ts` 用真实
+  Kimi 跑 C1 并行快照（`a1_LIVE_OK`/`b1_LIVE_OK`，boundary=trigger seq）与 C2 源消息
+  越 cursor（回复 `LIVE_SOURCE_BELOW_CURSOR`，boundary=later tail）；2/2。
 - 剩余：operator 验收；F034/F035/F036 的正式栈签收项不变。
 
 [宪宪/deepseek-flash🐾]

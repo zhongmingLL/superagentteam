@@ -82,6 +82,8 @@ F043 又加了 auto-delivery 拒绝和 prompt 提示。F046 把这些工具面/�
   构建用例与断言，再在本仓复现；执行时观察并输出 daemon/worker/queue 日志关键行；
   unit/targeted test 只能补充，不能替代。证据须含 worktree/HEAD、隔离端口/data dir、
   用例、日志/输出、结果；无 E2E 证据不得声明 verified。
+  方式基线：[`0021-e2e-acceptance-standard.md`](../architecture/0021-e2e-acceptance-standard.md)
+  （F044 方法）；R5 multi_mention + callback 必须有真实 provider 成功路径。
 
 ## 证据
 

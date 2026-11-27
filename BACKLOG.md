@@ -63,6 +63,7 @@ created: 2026-10-25
 | F048 | A2A queue/concurrency/recovery parity — bounded concurrent drain、tracker API/抢占、长 turn 不阻塞、recovery 边界 | planned — depends on F044; covers audit B2/B4/B5/A8/E3; must read 0007/0019/audit first | 宪宪 | [F048](docs/features/F048-a2a-queue-concurrency.md) |
 | F049 | A2A message surface parity — A2A 私有气泡、multi-mention 汇总卡、桌面/移动/光暗 | planned — depends on F045/F046; covers F043 AC-4; must read 0007/0019/audit first | 墨墨 | [F049](docs/features/F049-a2a-message-surface.md) |
 | F050 | A2A parity guard & live acceptance — Clowder parity suite、architecture delta guard、audit A–F 收口、隔离 live E2E | planned — depends on F044–F049; must read 0007/0019/audit first | 宪宪 | [F050](docs/features/F050-a2a-parity-guard.md) |
+| F051 | Daemon module layout refactor — 按 0020 移动/拆分目录、composition root 外置、layout guard | planned — after F044–F048; mechanical move/rename; must read 0020/0007/0019 first | 宪宪 | [F051](docs/features/F051-daemon-module-layout.md) |
 
 > F030.5 account/provider catalog design: [plan 0045](docs/plans/0045-f030.5-account-provider-catalog.md)
 > （design only；固定 v1 vendor catalog 不再继续打补丁）。

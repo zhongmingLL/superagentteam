@@ -107,6 +107,7 @@ updated: 2026-11-24
 | [`features/F048-a2a-queue-concurrency.md`](features/F048-a2a-queue-concurrency.md) | F048：A2A queue/concurrency/recovery parity（bounded concurrent drain、tracker API/抢占、长 turn 不阻塞） |
 | [`features/F049-a2a-message-surface.md`](features/F049-a2a-message-surface.md) | F049：A2A message surface parity（私有气泡、multi-mention 汇总卡） |
 | [`features/F050-a2a-parity-guard.md`](features/F050-a2a-parity-guard.md) | F050：A2A parity guard & live acceptance（parity suite、architecture delta guard、audit A–F 收口、隔离 live） |
+| [`features/F051-daemon-module-layout.md`](features/F051-daemon-module-layout.md) | F051：Daemon module layout refactor（按 0020 移动/拆分目录、composition root 外置、layout guard） |
 | [`plans/0015-w6c-observability-trajectory.md`](plans/0015-w6c-observability-trajectory.md) | W6c observability/trajectory 实施计划与 AC 映射 |
 | [`plans/0018-f016a-a2a-ingress-e2e.md`](plans/0018-f016a-a2a-ingress-e2e.md) | F016a：8 类 ingress × scenario real RPC E2E、P0 工具面、withdraw/parallel/loop guard |
 | [`plans/0020-f018-thread-first-runtime.md`](plans/0020-f018-thread-first-runtime.md) | F018：A2A runtime v1 R0-R5、AgentConfig/Registry、schema/migration、same/cross-thread post、multi_mention fan-out、验收与回滚 |
@@ -134,6 +135,7 @@ updated: 2026-11-24
 | [`architecture/0017-response-draft-store.md`](architecture/0017-response-draft-store.md) | ResponseDraftStore 契约：单 `DraftRecord`、全量 snapshot、单 writer 串行 flush、T2/T4 删除与恢复、Hub 重连读取、orphan 清理、测试矩阵 |
 | [`architecture/0018-v1-global-design-review.md`](architecture/0018-v1-global-design-review.md) | A2A v1 全局设计 review（2026-11-14）：已修复的 22 项冲突、R1/R2/R3 gate、D-0/D-1/D-2/D-3 已按 `BBBA` 拍板 |
 | [`architecture/0019-a2a-runtime-chain-as-built.md`](architecture/0019-a2a-runtime-chain-as-built.md) | A2A runtime as-built：QueueProcessor + RunAgentTurn（T1/T2）、F043 并发/快照/auto-delivery、deviation register + 整改决策 |
+| [`architecture/0020-daemon-module-layout.md`](architecture/0020-daemon-module-layout.md) | Daemon module layout（proposed）：Clowder-aligned domain-first 目录、composition root 外置、F051 迁移映射 |
 | [`plans/0005-plan-review-resolutions.md`](plans/0005-plan-review-resolutions.md) | 三猫计划评审 P1/P2 处置与已修正项 |
 | [`plans/0007-architecture-plan-coverage.md`](plans/0007-architecture-plan-coverage.md) | 架构卡 / Decision Packet → W 任务/验收/风险覆盖矩阵与缺口修复记录；三猫 accept，冻结为 DP→plans 唯一对账索引 |
 | [`architecture/decision-packets/README.md`](architecture/decision-packets/README.md) | Decision Packet 索引与签字结论 |

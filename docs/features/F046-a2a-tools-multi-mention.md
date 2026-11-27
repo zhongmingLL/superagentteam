@@ -23,13 +23,14 @@ source_decision: "operator 2026-11-27: 纠正所有 0007↔当前实现偏移；
 
 ## 覆盖的 audit 偏移
 
-**A9（auto-delivery 部分）、D1–D3、D6/F5**：
+**A9（auto-delivery 部分）、D1–D3、D6/F5、F9**：
 
 - A9：F043 的 `multi_mention_auto_delivery` 与 prompt 提示未进入 0007。
 - D1：F031 rich block producer tool 未进入 0007 的 tool surface 记录。
 - D2：`multi_mention_auto_delivery` 语义未进入 0007。
 - D3：multi_mention prompt 模板未进入 0007。
 - D6/F5：`MessageDispatchSummary` 文档声称 F018 拥有，代码没有；需要实现或明确 deferred。
+- F9：`MultiMentionStatusReader` → `MultiMentionStore.statusView` 的命名/接口映射。
 
 ## Why
 
@@ -57,6 +58,7 @@ F043 又加了 auto-delivery 拒绝和 prompt 提示。F046 把这些工具面/�
   不创建消息/queue/parent。
 - 0007 工具面补记 `superagentteam_create_rich_block`（F031）与四工具的关系。
 - `MessageDispatchSummary`：实现或明确写为 deferred（0019/F016c S0 证据）。
+- `MultiMentionStatusReader`/`statusView`：验证 status read 语义，记录映射或抽 reader。
 
 ## 非目标
 

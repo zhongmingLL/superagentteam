@@ -309,6 +309,8 @@ OperatorMessageIngress（domains/a2a/router.ts）
 - `runAgentTurn` → `RunAgentTurn`；
 - `RouteInput`/`PreparedTarget`/`AgentTurnResult` → `PreparedDispatch`/
   `DispatchTargetPort`/void；
+- `InvocationQueue` → `QueueLedgerStore`（服务与 store 合并；B9/F047）；
+- `MultiMentionStatusReader` → `MultiMentionStore.statusView`（F9/F046）；
 - `MessageDispatchSummary` → deferred（R8）。
 - **classification**：naming；doc-only。
 
@@ -317,7 +319,7 @@ OperatorMessageIngress（domains/a2a/router.ts）
 > **2026-11-27 operator 决定**：不再 ratify 当前调度，也不在 F043 补丁上继续修；
 > 按 0007 的 Clowder 整体设计恢复 route 层。执行计划见
 > [`docs/plans/0050-a2a-runtime-alignment.md`](../plans/0050-a2a-runtime-alignment.md)；
-> feature 拆分 F044–F050。以下 A/B 选项保留为决策历史。
+> feature 拆分 F044–F051。以下 A/B 选项保留为决策历史。
 
 ### D1（已决定 2026-11-27）· route 层：ratify 还是补实现
 
@@ -416,6 +418,8 @@ daemon 521 passed / 1 skipped。
 - F043：`docs/features/F043-a2a-parallel-dispatch.md`、`docs/reports/2026-11-27-a2a-parallel-investigation.md`、
   PR #235（merged `f51d9f3c7`）；live 3005/3014。
 - 逐项偏移：`docs/reports/2026-11-27-0007-as-built-audit.md`。
+- 组件齐全性/命名映射：`docs/reports/2026-11-27-0007-component-completeness.md`。
+- daemon 目录重设计：`docs/architecture/0020-daemon-module-layout.md`（F051）。
 
 ### 关键 commit
 

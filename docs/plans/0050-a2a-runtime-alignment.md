@@ -6,7 +6,7 @@ created: 2026-11-27
 updated: 2026-11-27
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [墨墨 (Qwen 3.8 Flash), 砚砚 (GLM 5.3 Flash)]
-related_features: [superagentteam/F044, superagentteam/F045, superagentteam/F046, superagentteam/F047, superagentteam/F048, superagentteam/F049, superagentteam/F050]
+related_features: [superagentteam/F044, superagentteam/F045, superagentteam/F046, superagentteam/F047, superagentteam/F048, superagentteam/F049, superagentteam/F050, superagentteam/F051]
 source_decision: "operator 2026-11-27: 纠正所有当前实现与 0007 的偏移，不只修 F043；按 0007/0019 建计划、拆 feature；每个 feature 先读 0007/0019，避免逐 feature 偏移"
 ---
 
@@ -14,12 +14,13 @@ source_decision: "operator 2026-11-27: 纠正所有当前实现与 0007 的偏�
 
 ## 0. 强制前置阅读
 
-本计划下的每个 feature（F044–F050）在写设计、改代码、发 review 之前必须先读：
+本计划下的每个 feature（F044–F051）在写设计、改代码、发 review 之前必须先读：
 
 1. [`0007-a2a-runtime-chain.md`](../architecture/0007-a2a-runtime-chain.md)：Clowder-aligned **target contract**。
 2. [`0019-a2a-runtime-chain-as-built.md`](../architecture/0019-a2a-runtime-chain-as-built.md)：当前 **as-built 真相**、deviation register、整改决策。
 3. [`2026-11-27-0007-as-built-audit.md`](../reports/2026-11-27-0007-as-built-audit.md)：A–F 全量偏移证据。
-4. 本计划：feature 切片与覆盖矩阵。
+4. [`2026-11-27-0007-component-completeness.md`](../reports/2026-11-27-0007-component-completeness.md)：组件齐全性/命名映射复核。
+5. 本计划：feature 切片与覆盖矩阵。
 
 > **编号说明**：operator 所指的 “0008 as-built” 原文件名为
 > `0008-a2a-runtime-chain-as-built.md`；因与已有 `0008-agent-config.md` 撞号，已改为
@@ -96,6 +97,7 @@ QueueProcessor（Phase A / claim / tracker / T3）
 | B6 | `PerAgentTerminalDispositionCollector` class → function | F047 | 命名/接口映射 |
 | B7 | `InvocationRegistry` → `InvocationCredentialStore` | F047 | 命名映射 |
 | B8 | RouteResponseCommitter.commit 签名不一致 | F044 | 按 route result 契约对齐 |
+| B9 | `InvocationQueue` 服务与 `QueueLedgerStore` 合并 | F047 | 拆薄服务层或明确 store-as-service 映射 |
 | C1 | `response_drafts.rich_blocks_json` 未进 0007 | F047 | 0007 DDL 补列 + 0019 记录 |
 | C2 | `source_record_id` 唯一约束写错 | F047 | 0007 SQL/验收改为 `(thread_id, source_record_id)` |
 | C3 | `owner_json`/`from_json` CHECK 缺 `json_type='object'` | F047 | 0007 DDL 对齐 |
@@ -110,6 +112,7 @@ QueueProcessor（Phase A / claim / tracker / T3）
 | E4 | T2 contentBlocks/richBlocks/A2A successor 描述与实现不一致 | F044/F047 | route commit + 0007 文档对齐 |
 | F1–F4 | InvocationRegistry / collector / runAgentTurn / RouteInput 等命名 | F047 | 0019 映射或代码命名对齐 |
 | F5 | MessageDispatchSummary 无实现 | F046 | 同 D6 |
+| F9 | `MultiMentionStatusReader` → `statusView` 命名/接口映射 | F046/F047 | 验证 status read 语义并记录映射 |
 | F6–F7 | routing_guard / a2a_requests legacy 不对齐 | F050 | 记录为 aligned/no action |
 
 **已核对对齐、不进入整改的项**：C5/C6（attempts/credential/read state/workers DDL）、
@@ -142,6 +145,7 @@ F6–F7（legacy no-action）。由 F050 在 parity/验收记录中确认。
 | F048 | B2(methods), B4/B5, A8(concurrency), E3(concurrency) | Queue/concurrency/recovery：bounded concurrent drain、tracker API/抢占、长 turn 不阻塞、recovery 边界 | F044 |
 | F049 | F043 AC-4 | Message surface：A2A 私有气泡、multi-mention 汇总卡、桌面/移动/光暗 | F045/F046 |
 | F050 | 全表 + E1/E4 验收 | Parity guard & live：Clowder parity suite、architecture delta guard、隔离 live E2E、0019 收口 | F044–F049 |
+| F051 | 目录/组件落点 | Daemon module layout refactor：按 0020 移动/拆分目录，纯 mechanical，不改语义 | F044–F048 |
 
 **共享项归属**：B2 的 `processEntry` 签名/route deps 由 F044，`requestDrain`/
 `processNext`/`recoverStartup`/`onInvocationComplete` 由 F048；A8/E3 的 route signal/
@@ -162,6 +166,8 @@ serial 契约由 F044，daemon 并发验收由 F048；E4 的 T2 实现由 F044�
 - **F049**：A2A 私有气泡/汇总卡；1440/390、光暗；operator 视觉验收。
 - **F050**：parity suite 覆盖 A–F 整改项；PR/quality-gate guard；隔离 live + runtime
   验收；0019 最终 as-built。
+- **F051**：target tree 落地、import 更新、layout guard；daemon full tests/typecheck
+  通过；无行为/DDL/API 变化。
 
 ## 6. 执行顺序与切换
 
@@ -176,7 +182,9 @@ P3 F046 tools & multi-mention（依赖 F044/F045）
   ↓
 P4 F049 message surface（依赖 F045/F046）
   ↓
-P5 F050 parity guard + 隔离 live + operator 验收 + 0019 收口
+P5 F051 daemon module layout（F044–F048 语义稳定后；纯 move/rename）
+  ↓
+P6 F050 parity guard + 隔离 live + operator 验收 + 0019 收口
 ```
 
 - **原子切换**：F044 完成前不切 live；切换时一次性移除旧 inline fan-out/RunAgentTurn
@@ -211,6 +219,8 @@ F043 文档加 superseded banner；不再在其上追加补丁。F043 的代码�
 - **Live**：隔离 test runtime 先跑；runtime 需 operator 授权；记录 revision/URL/结果。
 - **复用卡**：`docs/reuse/dispatch.md` 的 P1 风险（只复用 Queue、重写 route 会丢
   A2A chain/worklist/response 聚合）必须在 F044 关闭。
+- **组件齐全性**：`docs/reports/2026-11-27-0007-component-completeness.md` 逐项列出
+  present/mapped/missing；B9/F9 已补入覆盖矩阵。
 
 ## 9. 风险
 
@@ -225,7 +235,7 @@ F043 文档加 superseded banner；不再在其上追加补丁。F043 的代码�
 
 ## 10. 待 operator 确认
 
-- Feature owner/reviewer 分工（默认：F044/F045/F046/F048/F050 宪宪；F047 宪宪+砚砚；
+- Feature owner/reviewer 分工（默认：F044/F045/F046/F048/F050/F051 宪宪；F047 宪宪+砚砚；
   F049 墨墨；review 按风险找非作者）。
 - F044 完成后是否允许直接切 runtime，还是先在隔离 test runtime 跑一轮再切。
 

@@ -23,11 +23,12 @@ source_decision: "operator 2026-11-27: 纠正所有 0007↔当前实现偏移；
 
 ## 覆盖的 audit 偏移
 
-**B3、B6/B7、C1–C4、E1、E4（doc 部分）、F1–F4**：
+**B3、B6/B7、B9、C1–C4、E1、E4（doc 部分）、F1–F4**：
 
 - B3：`InvocationRecordStore` 方法面与 0007 不一致。
 - B6：`PerAgentTerminalDispositionCollector` class → function。
 - B7：`InvocationRegistry` → `InvocationCredentialStore`。
+- B9：`InvocationQueue` 服务与 `QueueLedgerStore` 持久层合并。
 - C1：`response_drafts.rich_blocks_json` 未进 0007 DDL。
 - C2：`source_record_id` 唯一约束 SQL 写错。
 - C3：`owner_json`/`from_json` CHECK 缺 `json_type='object'`。
@@ -59,6 +60,8 @@ F047 用 live `sqlite_master`/代码签名逐项对账，修 DDL 文档、API �
 - `InvocationRecordStore` 方法面与 0007 对齐或写明确映射；`InvocationRegistry`/
   `InvocationCredentialStore`、`PerAgentTerminalDispositionCollector`/collector function、
   `runAgentTurn`/`RunAgentTurn`、`RouteInput`/`PreparedDispatch` 等命名映射。
+- `InvocationQueue` vs `QueueLedgerStore`：拆薄服务层或明确 store-as-service 映射，
+  记录 ownership/测试边界。
 - §9.3.1 T2 contentBlocks/richBlocks 描述对齐。
 
 ## 非目标

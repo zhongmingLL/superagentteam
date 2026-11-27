@@ -54,9 +54,9 @@ durable-commit admission，归 F046）显式标 known-gap。不使用 unit/targe
 | U2 | U | 真实 Hub：`@agentA @agentB` 多 target fan-out | 同一触发边界、两个回复、thread 成员 2 位 | `f044-ui-real-kimi-multi-target.png`；两个真实 `REAL_MULTI_OK` | pass（真实 Kimi） |
 | U3 | U | 真实 Hub：运行中停止 | LivePill 停止 → “已取消”，queue 不 restore | `docs/design/F044/f044-ui-stop-canceled.png`；DB canceled | pass |
 | U4 | U | 真实 Hub：provider 失败 + 重试 | 失败气泡 + retry；attempt 2；无假成功 | `docs/design/F044/f044-ui-provider-401-retry.png`；真实 Kimi 401 | pass（失败路径）；success path 未验证 |
-| U5 | U | rich block / execution record | 最终消息保留 rich/tool/thinking | 旧 F037 截图仍是视觉证据，本轮未重跑 | todo |
-| U6 | U | Settings 创建 account/agent | 无需重启、secret 不回显 | 旧 F037 证据；本轮未重跑 | todo |
-| U7 | U | 1440/390 light/dark | 无横向滚动、键盘发送 | 旧 F037 截图；本轮未重拍 | todo |
+| U5 | U | rich block / execution record | 最终消息保留 rich/tool/thinking | 真实 Kimi 回合：contentBlocks + toolEvents + thinking + extra.rich；截图 `docs/design/F037/f037-rich-block-*-2026-11-28.png` | pass（2026-11-28） |
+| U6 | U | Settings 创建 account/agent | 无需重启、secret 不回显 | Settings 新建 U6 Account/Agent；页面 `hasSecret=false`；Agents 4→5；截图 `f037-settings-1440-2026-11-28.png` | pass（2026-11-28） |
+| U7 | U | 1440/390 light/dark | 无横向滚动、键盘发送 | 390 light/dark `scrollWidth=innerWidth`；Enter 发送消息可见；截图 `f037-rich-block-390-*-2026-11-28.png`、`f037-keyboard-send-390-light-2026-11-28.png` | pass（2026-11-28） |
 
 ## 执行纪律
 

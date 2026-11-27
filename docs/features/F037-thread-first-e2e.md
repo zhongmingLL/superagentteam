@@ -7,7 +7,7 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-26
-updated: 2026-11-26
+updated: 2026-11-27
 source_decision: "operator 2026-11-25/26: thread-first 当前实现的所有大特性（A2A 等）做前后端端到端测试；先构造用例，再逐项执行，记录 bug，然后逐一修复"
 ---
 
@@ -149,6 +149,10 @@ test runtime 跑真实端到端链路；**Clowder 是 golden**，按 Clowder 参
   daemon 507 / web 109 / `npm run check` / CI 5/5。
 - PR #211 landed `2db3f3b79135ea13bfd9692c06b31ab5af1c3c5a`；F037 实现与 E2E
   已进入 `superagentteam-work`。
+- Post-F044 架构复验（2026-11-27 @ `889a495bd`）：daemon 537/1、fullstack E2E 2、
+  web 120 + typecheck；后端 F037-01–17 与 F043 AC-1 复验通过；Hub 前端未改
+  （web 套件当前，截图未重拍）；真实 provider 成功路径因本机 OpenRouter key 无效
+  （401）未复跑，F037-31–36 不声明 verified。详见报告。
 - 剩余：operator 验收；F034/F035/F036 的正式栈签收项不变。
 
 [宪宪/deepseek-flash🐾]

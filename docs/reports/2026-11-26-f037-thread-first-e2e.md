@@ -93,6 +93,53 @@ reviewed HEAD `e7b27af5b`；墨墨非作者 approve；GitHub CI 5/5 绿。F037 �
 | F037-35 | 运行中停止（真实 provider） | pass | provider 在飞时停止；canceled 终态 |
 | F037-36 | 重启动后继续 | pass | 重启动后 `RESTART_OK` 新回合完成 |
 
+## Post-F044 revalidation（2026-11-27）
+
+背景：F044a（route/T2 ownership）与 F044b（Phase B → `invoke-single-agent`）改动了
+同一条执行链；按 operator 2026-11-27 的强制 E2E 要求，用当前 worktree 对 F037
+矩阵做一次架构后复验。
+
+**隔离与坐标**
+
+| 项 | 值 |
+|---|---|
+| 代码基线 | `origin/superagentteam-work` @ `889a495bd`（含 PR #245 F044b、PR #246 AC-6 matrix） |
+| worktree | `/home/ming/agent/codeteam-f037` |
+| test runtime | fullstack E2E 在测试内 `mkdtemp` 数据目录 + ephemeral port；daemon/web 测试同样每用例独立临时目录 |
+| 正式栈边界 | 未读写 runtime 3005/3014、`~/.superagentteam-runtime/data` |
+| 真实 provider | 本机 `OPENROUTER_API_KEY` 存在但不是有效 OpenRouter key（401）；未打印 key |
+
+**Fresh commands**
+
+| 命令 | 结果 |
+|---|---|
+| `NODE_ENV=development npm test --workspace=@superagentteam/daemon` | **537 passed / 1 skipped**（79 files） |
+| `NODE_ENV=development npx vitest run packages/superagentteam-daemon/test/f037-fullstack-e2e.test.ts` | **2 passed**（真实 daemon + 真实 pi worker + mock provider） |
+| `NODE_ENV=development npm test --workspace=@superagentteam/web` | **120 passed**（25 files） |
+| `npm run typecheck --workspace=@superagentteam/web` | pass |
+| `npm run check:doc-index` | 61 feature docs / 51 BACKLOG rows |
+
+**矩阵复验**
+
+| 行 | 结果 | 证据 |
+|---|---|---|
+| F037-01–17（后端 A2A） | pass | daemon full suite 537/1；其中 `f018-r2a/b/c/d`、`f018-r3-*`、`f018-r4-d2`、`f018-r5-*`、`api-*` 覆盖发送/执行/A2A/队列/取消/重试/恢复/SSE；fullstack E2E 覆盖 F037-03/06；F043 AC-1 barrier 在 multi-target 用例中复验 |
+| F037-18–30（Hub 操作面） | pass（前端未改，web 套件当前） | web 120/120 + typecheck；F044a/b 只改 daemon 执行链，未改前端消息表面；2026-11-26 的 16 张截图仍是视觉证据，本轮**未重新截图**（明确不声称 fresh visual run） |
+| F037-31–36（真实 provider） | **未成功复跑**（环境 key 无效） | OpenRouter 401 原文：`this is not an OpenRouter API key`；2026-11-26 Kimi 证据仍有效但不在本 HEAD。负面运行证明真实 worker + provider 失败路径正确：parent/attempt/turn/R 均 failed、无 `delivery_failure`、worker retired。成功路径在 889a495bd 未验证，不写成 pass |
+
+**Bug Log（本轮）**
+
+- 未发现新的产品缺陷。
+- F044b 自查发现并修复了一条跨分支回归：provider 失败后的 bounded backoff 被
+  Phase B 成功路径的 `deferrals.reset` 清掉（热 retry）。修复 `0062a35ae` / PR #245；
+  回归用例在 `f044b-phase-b-ownership.test.ts`。这是 F044b 的修复，不记作新 F037 bug。
+
+**边界**
+
+- F037-31–36 的成功路径本轮没有 fresh 证据；不把 2026-11-26 的 Kimi 结果外推到
+  `889a495bd`。需要有效 provider key 时再补一次。
+- Operator 验收仍是 F037 的唯一未闭合外部门槛；F034/F035/F036 的正式栈签收项不变。
+
 ## Bug Log
 
 ### BUG-F037-001（P2，Hub）— 移动端没有 Settings 入口，进入设置后无法返回

@@ -3,7 +3,7 @@ title: "SuperAgentTeam A2A runtime chain v1 — Clowder-aligned"
 doc_kind: architecture
 status: accepted
 created: 2026-11-06
-updated: 2026-11-18
+updated: 2026-11-27
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [烁烁 (Kimi K3), 砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 operator_signoff: "confirmed 2026-11-06"
@@ -36,6 +36,9 @@ related_features: [codeteam/F018, codeteam/F017]
 ## 0. 结论先行
 
 1. **10 个组件按 Clowder 结构复用**，只做 v1 轻量化；`routeSerial` 单体实现去掉，per-agent pipeline 抽成 `runAgentTurn`，`routeAgents` 保留 parallel/serial 调度。
+   > As-built 2026-11-27：当前实现没有 `AgentRouter`/`routeAgents`/`routeSerial`；
+   > 多 target 并发 fan-out 在 `QueueProcessor.processEntry`，T2 在
+   > `RunAgentTurn.dispatch`。见 §0.1。
 2. **父/子/认证三层固定**：
    - `InvocationRecord`（parent）管消息生命周期；
    - `TurnExecution`（child）管单 agent 执行；
@@ -48,6 +51,59 @@ related_features: [codeteam/F018, codeteam/F017]
    credential terminalize；T2 R/draft commit；T3 collector + parent aggregate；
    T4 `response_pending` / `response_missing` recovery。
 7. **v1 不做**：MCP、task/role/run 字段、custody/action/wait、compaction、full session seal/transcript/digest/restore、outputFence/coveredMessageIds、trajectory projector、Clowder action successor 的 `idempotencyKey`/`intent`。
+
+> **As-built note（2026-11-27）**：本文是 Clowder-aligned 的 target contract；当前实现
+> 已把 `AgentRouter`/route 层折叠进 `QueueProcessor` + `RunAgentTurn`，且 F043 后
+> 多 target 是并发 fan-out。§0.1 是 as-built 链路与 ownership；§2/§3.9 的
+> `AgentRouter`/`routeParallel`/`routeSerial`/`priorResponses` 是 target design，
+> 当前代码中不存在。
+
+## 0.1 As-built implementation（2026-11-27）
+
+当前实际链路（以代码为准）：
+
+```text
+OperatorMessageIngress（domains/a2a/router.ts）
+  → invocation_queue（QueueLedgerStore）
+  → QueueProcessor.processEntry（domains/queue/processor.ts）
+      Phase A 单事务：parent InvocationRecord + 每个 target attempt starting
+      InvocationTracker.startAll(thread, claimed targets)
+      Phase B 每 target：TurnExecution.createRunning + credential + draft + retireTargets
+      对已 dispatch 的 target 并发 fan-out（F043：Promise.allSettled；单 target 错误隔离）
+  → RunAgentTurn.dispatch（domains/agent/turn.ts）
+      loadHistory（queue source 作为 upToSeq；显式包含源消息）
+      workerPool.ensure + prompt + stream → ResponseEventSink → onStreamEvent
+      T1 TurnExecutionLifecycle.invokeTerminal
+      T2 RouteResponseCommitter.commit
+  → QueueProcessor finally：aggregateParent → collectTerminalDispositions +
+      applyTerminalAggregate；tracker.complete；releaseClaim
+  → ResponseRecoveryService（T4）
+```
+
+| 面 | 当前 owner |
+|---|---|
+| `@` 解析 / target resolution | `OperatorMessageIngress` |
+| parent / attempts / Phase A | `QueueProcessor.processEntry` |
+| Phase B（R + TurnExecution + credential + draft + retire） | `QueueProcessor.processEntry` |
+| `tracker.startAll` | `QueueProcessor` |
+| per-target context / worker / prompt / T1 | `RunAgentTurn.dispatch` |
+| T2 response commit | `RunAgentTurn.dispatch`（`RouteResponseCommitter`） |
+| T3 collector + parent aggregate | `QueueProcessor`（`aggregateParent`；`collectTerminalDispositions` + `applyTerminalAggregate`） |
+| T4 recovery | `ResponseRecoveryService` |
+
+当前代码中不存在、仅属于 target design 的组件/接口：
+
+- `AgentRouter`、`routeAgents`、`routeParallel`、`routeSerial`、`priorResponses`、
+  `mergeStreams`；
+- `runAgentTurn` 的 async-generator / `AgentTurnResult` 接口（实际是
+  `RunAgentTurn.dispatch(prepared): Promise<void>`）；
+- `invoke-single-agent` 作为独立组件（T1 在 `TurnExecutionLifecycle` 内）；
+- `RouteResponseCommitter.commit(result)`（实际签名是
+  `commit({ turnExecutionId, content, thinking? })`）。
+
+当前没有 serial mode；F043 之前的“串行”只是 `processEntry` 的 `for ... await` 隐式行为，
+没有 `priorResponses`。F043 起同一 entry 的 target 并发 fan-out，context 固定在 queue
+source（`upToSeq` + `includeSourceMessageId`）。
 
 ## 1. 设计原则
 
@@ -65,6 +121,10 @@ related_features: [codeteam/F018, codeteam/F017]
 - **A2A hop 是消息级递归**：新 message + 新 queue entry + 新 parent，不在同一 route 内递归 push target。
 
 ## 2. 全链路
+
+> **As-built note（2026-11-27）**：下图是 target design，包含当前代码中不存在的
+> `AgentRouter.routeAgents`。实际链路见 §0.1；F043 的并发 fan-out 在
+> `QueueProcessor.processEntry`，T2 在 `RunAgentTurn.dispatch`。
 
 ```text
 Message
@@ -1275,6 +1335,10 @@ runAgentTurn
 
 **定位与边界**
 
+> **As-built note（2026-11-27）**：下表是 target ownership；当前实现中 Phase B 与
+> T2 分别落在 `QueueProcessor.processEntry` 和 `RunAgentTurn.dispatch`。
+> 以 §0.1 的 as-built 表为准。
+
 | 组件 | 拥有 | 不拥有 |
 |---|---|---|
 | OperatorMessageIngress | 用户消息显式 @ 解析、隐式路由、`StoredMessage.targetAgentIds`、message+queue 事务 | child/execution |
@@ -1356,6 +1420,11 @@ async function* runAgentTurn(
 ```
 
 **route-parallel 形态**
+
+> **As-built note（2026-11-27）**：本节及下面的 route-serial 是 target design。
+> 当前代码没有 `AgentRouter`/`routeParallel`/`routeSerial`/`priorResponses`；
+> 并发 fan-out 由 `QueueProcessor.processEntry` 的 `Promise.allSettled` 完成，
+> context 用 queue source 快照。见 §0.1。
 
 ```ts
 async function* routeParallel(input: RouteInput): AsyncIterable<AgentStreamEvent> {

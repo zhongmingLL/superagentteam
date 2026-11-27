@@ -416,6 +416,40 @@ describe("QueueProcessor (0007 §3.2)", () => {
 		expect(healthy?.deliveryState).toBe("appended");
 	});
 
+	it("session workspace drift is a terminal target_invalid, not an endless defer", async () => {
+		const w = makeWorld();
+		// Create the active session at the thread's original project path.
+		w.sessions.ensureActive({
+			threadId: "t1",
+			agentId: "a1",
+			userId: "u1",
+			workingDirectory: "/p",
+			now: 1,
+		});
+		// 0010 keeps workingDirectory immutable: moving the thread project path
+		// makes ensureActive throw session_workspace_changed.
+		w.db.prepare("UPDATE threads SET project_path = '/p2' WHERE id = 't1'").run();
+		const submitted = w.ingress.submit({ threadId: "t1", userId: "u1", body: "go @a1", now: 10 });
+
+		const result = await w.processor.drain("t1", "u1");
+		expect(result.processed).toBe(1);
+		expect(result.deferred).toBe(0);
+
+		const invocationId = `inv:t1:${submitted.message.id}`;
+		const failed = w.attempts.getLatest(invocationId, "a1");
+		expect(failed?.deliveryState).toBe("failed");
+		expect(failed?.terminalReason).toBe("target_invalid");
+
+		const failures = w.messages.getByThread("t1", 50).filter((m) => m.lifecycle?.kind === "delivery_failure");
+		expect(failures).toHaveLength(1);
+		expect(failures[0]!.content).toContain("session_workspace_changed");
+		expect(failures[0]!.lifecycle).toMatchObject({ kind: "delivery_failure", reason: "target_invalid" });
+
+		// Target retired, nothing left queued, and no provider dispatch happened.
+		expect(w.queue.listQueued("t1")).toHaveLength(0);
+		expect(w.dispatched).toHaveLength(0);
+	});
+
 	it("capacity shortage defers the whole entry; nothing is created", async () => {
 		const w = makeWorld();
 		w.ingress.submit({ threadId: "t1", userId: "u1", body: "go @a1", now: 10 });

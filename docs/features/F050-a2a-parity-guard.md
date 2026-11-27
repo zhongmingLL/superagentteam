@@ -53,6 +53,8 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
 - Audit 收口表：A–F 每行状态 + 证据；aligned/no-action 也要写原因。
 - 隔离 live：test runtime（3007/3016）跑 F043 四场景 + 单 target serial +
   multi-mention callback；operator 授权后 runtime（3005/3014）。
+- F043 AC-4 实机视觉验收：真实 Hub 框架（topbar/sidebar/composer）+ 真实 thread 的
+  私有气泡/汇总卡，1440/390、光暗各一组；没有这组图不把 AC-4 标成 live complete。
 - 0019 最终 as-built 更新；F043 superseded 状态收口。
 
 ## 非目标
@@ -68,6 +70,8 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
 - [ ] AC-3：audit A–F 每行有 fixed / doc-aligned / no-action 证据。
 - [ ] AC-4：隔离 test runtime 跑通 F043 四场景 + 单 target serial + multi-mention
   callback；记录 revision/URL/结果。
+- [ ] AC-4b：F043 AC-4 实机截图（1440/390、光暗、真实 Hub 框架）齐备；否则 AC-4
+  只算 implemented，不算 live complete。
 - [ ] AC-5：runtime 部署需 operator 授权；0019 更新为最终 as-built；F043 标 superseded；
   operator 验收。
 - 注意（P3-b，#240 review）：`workspace_unavailable` 当前是 target-contract 预留名，

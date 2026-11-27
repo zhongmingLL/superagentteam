@@ -168,7 +168,7 @@ serial 契约由 F044，daemon 并发验收由 F048；E4 的 T2 实现由 F044�
   tracker 抢占/恢复边界有测试；preflight workspace/session typed invalid 回归。
 - **F049（superseded）**：已由 F043 AC-4 实现 A+C；F049 不再单独实施，视觉验收归 F043。
 - **F050**：parity suite 覆盖 A–F 整改项；PR/quality-gate guard；隔离 live + runtime
-  验收；0019 最终 as-built。
+  验收；F043 AC-4 真实 Hub 截图（1440/390、光暗）；0019 最终 as-built。
 - **F051**：target tree 落地、import 更新、layout guard；daemon full tests/typecheck
   通过；无行为/DDL/API 变化。
 

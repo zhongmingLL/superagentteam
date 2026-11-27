@@ -80,6 +80,8 @@ operator 在 `a2a-测试` thread 做 multi-mention / post_message / 排队测试
 - [x] AC-4：A2A 私有消息按选定设计渲染（A：无头像私有气泡 + recipient pill + A2A 标记）；
   multi-mention burst 收进 C 汇总卡，不再散落成多个气泡。实现于
   `packages/superagentteam-web/src/components/chat/MessageList.tsx`；web 120 tests + build 绿。
+  **live 视觉完成待 F050**：需带 topbar/sidebar/composer 的真实 Hub 截图（1440/390、光暗），
+  当前不把 AC-4 标成 live complete。
   （设计已选定 A + C；前端实现待做。）
 - [x] AC-5：daemon/web tests、typecheck、doc-index 绿；非作者 review。
 

@@ -4,7 +4,7 @@ related_features: [superagentteam/F018, superagentteam/F043, superagentteam/F044
 title: "F045: A2A context/history parity"
 status: implemented
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
-reviewers: []
+reviewers: [砚砚 (GLM 5.3 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-27
 updated: 2026-11-28
@@ -96,6 +96,10 @@ F043 用 `upToSeq` + `includeSourceMessageId` 修了表面症状，但这两个�
 - 命令：`NODE_ENV=development npm test --workspace=@superagentteam/daemon -- f045-context-history-e2e.test.ts`
   → 2 passed。
 - 契约落点：0007 §3.5.1 Trigger snapshot、§6 step 6、§9.1；0019 §6/R7。
+- 非作者 review：砚砚 approve @ `f96f9f733`（无 P1/P2；C2 建模诚实性、日志/redaction、
+  0007 措辞三点均核过）。CI 5/5，headSha 与 review HEAD 逐字一致。
+- 合入：PR #249，merge commit `6b3ca58e8`（与 review HEAD 零树差异）。合后基线
+  daemon 543/1、web 120、doc-index。
 
 - **Clowder 参考路径**（相对参考仓根目录）：
   - `packages/api/src/domains/cats/services/context/ContextAssembler.ts`

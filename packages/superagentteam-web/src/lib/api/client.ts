@@ -28,6 +28,8 @@ export interface ApiClientOptions {
 	baseUrl?: string;
 	fetchImpl?: typeof fetch;
 	getCsrfToken?: () => string | undefined;
+	/** Called once when a write is rejected with 403 `csrf_failed`; retry only if it returns true. */
+	refreshCsrfToken?: () => Promise<boolean>;
 }
 
 export interface ApiClient {
@@ -40,7 +42,7 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
 	const baseUrl = options.baseUrl ?? "";
 	const fetchImpl = options.fetchImpl ?? fetch;
 
-	async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+	async function request<T>(path: string, init: RequestInit = {}, retried = false): Promise<T> {
 		const headers = new Headers(init.headers);
 		const method = (init.method ?? "GET").toUpperCase();
 		if (init.body !== undefined && !headers.has("content-type")) headers.set("content-type", "application/json");
@@ -61,9 +63,21 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
 		if (!response.ok) {
 			if (response.status === 401) unauthorizedHandler?.();
 			const errorBody = typeof body === "object" && body !== null ? (body as ApiErrorBody) : undefined;
+			const code = typeof errorBody?.error === "string" ? errorBody.error : `http_${response.status}`;
+			const refresh = options.refreshCsrfToken;
+			const canRetry =
+				response.status === 403 &&
+				code === "csrf_failed" &&
+				!retried &&
+				refresh !== undefined &&
+				(init.body === undefined || typeof init.body === "string");
+			if (canRetry) {
+				const refreshed = await refresh().catch(() => false);
+				if (refreshed) return request<T>(path, init, true);
+			}
 			throw new ApiError(
 				response.status,
-				typeof errorBody?.error === "string" ? errorBody.error : `http_${response.status}`,
+				code,
 				typeof errorBody?.message === "string" ? errorBody.message : response.statusText,
 				body,
 			);

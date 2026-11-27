@@ -317,7 +317,7 @@ OperatorMessageIngress（domains/a2a/router.ts）
 > **2026-11-27 operator 决定**：不再 ratify 当前调度，也不在 F043 补丁上继续修；
 > 按 0007 的 Clowder 整体设计恢复 route 层。执行计划见
 > [`docs/plans/0050-a2a-runtime-alignment.md`](../plans/0050-a2a-runtime-alignment.md)；
-> feature 拆分 F044–F048。以下 A/B 选项保留为决策历史。
+> feature 拆分 F044–F050。以下 A/B 选项保留为决策历史。
 
 ### D1（已决定 2026-11-27）· route 层：ratify 还是补实现
 
@@ -389,7 +389,7 @@ daemon 521 passed / 1 skipped。
 ### D5 · 文档 / 验收
 
 - 0007 标 `target-design` + banner；0019 为当前真相；F044 cutover 后更新 0019。
-- 0007 §9.1/§9.2/§9.3 的验收随 F044/F048 收口；不再按 QueueProcessor inline 行为
+- 0007 §9.1/§9.2/§9.3 的验收随 F044/F047/F050 收口；不再按 QueueProcessor inline 行为
   反向改写 target。
 - `MessageDispatchSummary` 保持 deferred（F016c S0）；需要时再立 feature。
 
@@ -400,7 +400,7 @@ daemon 521 passed / 1 skipped。
 - 架构文档加 status legend：`target-design` / `as-built` / `deferred`；禁止 `accepted`
   同时承载未实现的 target 和已实现行为。
 - 每个 phase close 记录“设计 vs as-built”差异，不能只在 commit body 里写。
-- 由 F048 落地；feature 文档强制先读 0007/0019 并回链计划 0050。
+- 由 F050 落地；feature 文档强制先读 0007/0019/audit 并回链计划 0050。
 
 ## 9. 证据索引
 

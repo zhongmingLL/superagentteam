@@ -67,7 +67,7 @@ related_features: [codeteam/F018, codeteam/F017]
 > **Alignment plan（2026-11-27 operator direction）**：不再 ratify 折叠实现；
 > 按本文 target 恢复 route 层。执行计划见
 > [`docs/plans/0050-a2a-runtime-alignment.md`](../plans/0050-a2a-runtime-alignment.md)
-> （F044–F048）。本文仍是 target-design；0019 是 cutover 前的 as-built。
+> （F044–F050）。本文仍是 target-design；0019 是 cutover 前的 as-built。
 
 ## 0.1 As-built implementation（2026-11-27）
 

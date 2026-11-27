@@ -6,42 +6,40 @@ created: 2026-11-27
 updated: 2026-11-27
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [墨墨 (Qwen 3.8 Flash), 砚砚 (GLM 5.3 Flash)]
-related_features: [superagentteam/F044, superagentteam/F045, superagentteam/F046, superagentteam/F047, superagentteam/F048]
-source_decision: "operator 2026-11-27: F043 是架构偏移上的补丁；按 0007/0019 的 Clowder 整体设计建计划、拆 feature；每个 feature 先读 0007/0019，避免逐 feature 偏移"
+related_features: [superagentteam/F044, superagentteam/F045, superagentteam/F046, superagentteam/F047, superagentteam/F048, superagentteam/F049, superagentteam/F050]
+source_decision: "operator 2026-11-27: 纠正所有当前实现与 0007 的偏移，不只修 F043；按 0007/0019 建计划、拆 feature；每个 feature 先读 0007/0019，避免逐 feature 偏移"
 ---
 
 # A2A runtime alignment plan
 
 ## 0. 强制前置阅读
 
-本计划下的每个 feature（F044–F048）在写设计、改代码、发 review 之前必须先读：
+本计划下的每个 feature（F044–F050）在写设计、改代码、发 review 之前必须先读：
 
-1. [`0007-a2a-runtime-chain.md`](../architecture/0007-a2a-runtime-chain.md)：Clowder-aligned **target contract**（route 层、T1–T4、multi_mention、验收）。
+1. [`0007-a2a-runtime-chain.md`](../architecture/0007-a2a-runtime-chain.md)：Clowder-aligned **target contract**。
 2. [`0019-a2a-runtime-chain-as-built.md`](../architecture/0019-a2a-runtime-chain-as-built.md)：当前 **as-built 真相**、deviation register、整改决策。
-3. 本计划：feature 切片、依赖、禁止事项。
+3. [`2026-11-27-0007-as-built-audit.md`](../reports/2026-11-27-0007-as-built-audit.md)：A–F 全量偏移证据。
+4. 本计划：feature 切片与覆盖矩阵。
 
 > **编号说明**：operator 所指的 “0008 as-built” 原文件名为
 > `0008-a2a-runtime-chain-as-built.md`；因与已有 `0008-agent-config.md` 撞号，已改为
-> `0019-a2a-runtime-chain-as-built.md`。本计划及后续 feature 统一引用 0007 + 0019。
+> `0019-a2a-runtime-chain-as-built.md`。本计划统一引用 0007 + 0019 + audit。
 
 每个 feature 文档顶部必须带同样的“先读”块；只允许实现本计划定义的切片，不允许在
-feature 内另造一套与 0007 冲突的调度/上下文/多 mention 设计。发现 0007 确实需要
-偏离时，先更新本计划与 0019，并拿到 operator/owner 决定，再进实现。
+feature 内另造与 0007 冲突的调度/上下文/工具/数据设计。发现 0007 确实需要偏离时，
+先更新本计划与 0019，并拿到 operator/owner 决定，再进实现。
 
 ## 1. 为什么重做
 
-F043 是在 architecture drift 上做的缝补：它把 multi-target 并发、context 快照、
-post_message 自动投递和 UI 收敛分别补在 `QueueProcessor` / `RunAgentTurn` /
-`DaemonA2A.tick` / 前端上。每一处单独看有理，但没有恢复 0007 的整体 ownership，
-所以会继续产生“补一个点、另一个点又偏”的问题。
+上一版拆分把“修 F043”当成了组织轴，这是错的。operator 2026-11-27 明确：
 
-operator 2026-11-27 的方向：
+- 目标是纠正 **所有当前实现与 0007 的偏移**，不是只修 F043 暴露的四个问题。
+- F043 是 architecture drift 上的缝补；它的行为要保留为回归要求，但不能作为设计轴。
+- Clowder 的整体 route 设计要复用：并行 route 在批次边界先完成所有 target 的 context
+  装配，再启动任何 provider invocation；`routeSerial` 即使只有一个 target，也保留
+  worklist、context、response commit、A2A successor、cleanup。
 
-- 回到 Clowder 的整体设计复用，不再在 drift 上继续打补丁。
-- Clowder 的并行 route 在批次边界先完成所有 target 的 context 装配，再启动任何
-  provider invocation，所以“C 看到 A/B 的回答”在设计上不会发生，不是靠事后过滤。
-- `routeSerial` 即使退化为一个 target，也保留必要的前后处理：worklist、context、
-  response commit、A2A successor、cleanup；不能因为单 target 就绕过 route 层。
+本计划以 audit 的 A–F 表为覆盖底稿；F043 只占其中一小块。
 
 ## 2. Target architecture（来自 0007）
 
@@ -52,43 +50,71 @@ QueueProcessor（Phase A / claim / tracker / T3）
   → AgentRouter.resolveTargets(...)
   → AgentRouter.routeAgents(input, mode)
        ├─ routeParallel: 批次内所有 target 的 context 装配完成后再启动 streams
-       └─ routeSerial:   顺序 target；后一个 target 可见前一个的已提交 response
+       └─ routeSerial:   单 target operator/A2A hop；保留 route 前后处理
   → runAgentTurn（per-target composition root；Phase B + T1）
-  → RouteResponseCommitter（T2：R terminal + draft delete + attempt settled + A2A successor）
+  → RouteResponseCommitter（T2：R terminal + draft delete + attempt settled + successor）
   → QueueProcessor T3（collector / parent aggregate / queue / retry / slot）
 ```
 
 ### 2.2 关键语义
 
 1. **Parallel context barrier**：`routeParallel` 先在批次边界完成所有 target 的
-   history/context 装配（Clowder 参考实现的 setup 阶段），再启动任何 invocation
-   stream。同一批 target 的回答互相不可见；这是结构性保证，不是 per-turn 过滤。
-2. **Serial 前后处理**：`routeSerial` 是**单 target operator/A2A hop** 的 route；
-   即使只有一个 target，也保留 worklist、context、T2、A2A successor、cleanup。
-   多 target operator message 恒走 `routeParallel`；`priorResponses` 仍按 0007 实现，
-   供 route 契约/多 target 测试与未来 worklist 使用，但不是 v1 多 target 产品路径。
-   单 target operator message 不直接调用 `runAgentTurn`。
+   history/context 装配，再启动任何 invocation stream；同批 target 的回答互相不可见。
+2. **Serial 前后处理**：`routeSerial` 是单 target operator/A2A hop 的 route；即使只有
+   一个 target，也保留 worklist、context、T2、A2A successor、cleanup。多 target
+   operator message 恒走 `routeParallel`；`priorResponses` 仍按 0007 实现。
 3. **Ownership**：T1 = `runAgentTurn`/`invokeSingleAgent`；T2 = route/
    `RouteResponseCommitter`；T3 = `QueueProcessor`；T4 = `ResponseRecoveryService`。
-   `runAgentTurn` 不写 parent aggregate；QueueProcessor 不写 R terminal/draft delete。
-4. **Multi-mention**：`MultiMentionOrchestrator` 的 group lifecycle、aggregate system
-   message、callback child、status read 按 0007 §3.8；target 的回答自动汇总给
-   `callbackTo`（通常是 initiator），不靠 target 再发 `post_message`。
-5. **Daemon 并发**：独立 queue entry 不被长 turn 阻塞；per-(thread, agent) slot 仍
-   保证同 agent 顺序；并发有上界，不用全局 single-flight 换简单。
-6. **Message surface**：A2A 私有消息默认收成“投递回执行”或无头像私有气泡；
-   multi-mention burst 归入汇总卡，不与公开回复混淆。
+4. **Multi-mention**：`MultiMentionOrchestrator` 的 group lifecycle、aggregate、callback、
+   status、timeout、anti-cascade 按 0007 §3.8；target 回答自动汇总，不靠再发 `post_message`。
+5. **Daemon 并发**：独立 queue entry 不被长 turn 阻塞；per-(thread, agent) slot 保证
+   同 agent 顺序；并发有上界。
+6. **Data/API**：DDL、组件 API、命名按 0007；as-built 差异要么修实现，要么在 0019
+   记录为有证据的 decision。
+7. **Message surface**：A2A 私有消息与 multi-mention burst 不冒充公开回复。
 
-## 3. 当前偏差（0019）与处置
+## 3. 全量偏移覆盖矩阵（audit A–F）
 
-| 偏差 | 0019 记录 | 本计划处置 | Feature |
+> 每个 audit 行都必须有处置；不能只覆盖 F043 相关项。
+
+| Audit | 偏移 | Feature | 处置 |
 |---|---|---|---|
-| R1 route 层缺失 | `AgentRouter`/`routeAgents`/`routeParallel`/`routeSerial` target-only | 恢复 route 层，作为唯一调度路径 | F044 |
-| R2 Phase B/T2 ownership | Phase B 在 QueueProcessor，T2 在 RunAgentTurn | 按 0007 移回 runAgentTurn/route；T3 留 QueueProcessor | F044 |
-| R3 runAgentTurn 接口 | 实际是 `dispatch(prepared): Promise<void>`，无 `AgentTurnResult` | 引入 route 需要的 result/stream 契约 | F044 |
-| R4 routeSerial/priorResponses | 未实现 | 实现 thin routeSerial + 单 target 前后处理 | F044 |
-| R5 组件 API/deps | as-built 与 0007 接口漂移 | 以 0007 为主，0019 记录实际映射 | F044/F048 |
-| F043 补丁 | 并发/快照/auto-delivery/UI 分散 | 行为保留为回归要求，代码被 holistic 实现替换 | F044–F048 |
+| A1 | `AgentRouter`/`routeAgents`/`routeParallel`/`routeSerial`/`priorResponses` 不存在 | F044 | 恢复 route 层 |
+| A2 | Phase B 在 QueueProcessor，不在 runAgentTurn | F044 | 按 0007 移回 runAgentTurn |
+| A3 | T2 在 RunAgentTurn，不在 route/RouteResponseCommitter | F044 | T2 owner 改为 route |
+| A4 | runAgentTurn 是 `dispatch(): Promise<void>`，无 generator/AgentTurnResult | F044 | 引入 route 需要的 stream/result 契约 |
+| A5 | `invoke-single-agent` 独立组件不存在 | F044/F047 | 实现或明确映射，文档记录 |
+| A6 | T2 的 A2A successor 语义与 tool-time successor 不一致 | F044/F046 | route commit + post_message successor 统一 |
+| A7 | 实际流程 QueueProcessor Phase A/B → RunAgentTurn；无 routeAgents/invoke-single-agent | F044 | 恢复 0007 流程 |
+| A8 | 无 routeAgents per-child signal / serial acceptance | F044 | route signal + serial 契约 |
+| A9 | F043 的 trigger snapshot / 并发 fan-out / auto-delivery 未进 0007 | F045/F046/F050 | 行为进 target/acceptance，代码进 F045/F046 |
+| B1 | QueueProcessorDeps 与 0007 不一致（无 router/terminal/log，多 dispatchTarget 等） | F044/F048 | 按 route/并发拆分重建 deps |
+| B2 | QueueProcessor 方法面不一致（无 requestDrain/processNext/recoverStartup 等） | F044/F048 | 恢复方法面 |
+| B3 | InvocationRecordStore 方法面不一致 | F047 | store API 对齐或记录映射 |
+| B4 | InvocationTracker API/返回值不一致 | F048 | tracker API 对齐 |
+| B5 | tracker 抢占不写旧 TurnExecution terminal | F048 | 明确 owner 或补收敛 |
+| B6 | `PerAgentTerminalDispositionCollector` class → function | F047 | 命名/接口映射 |
+| B7 | `InvocationRegistry` → `InvocationCredentialStore` | F047 | 命名映射 |
+| B8 | RouteResponseCommitter.commit 签名不一致 | F044 | 按 route result 契约对齐 |
+| C1 | `response_drafts.rich_blocks_json` 未进 0007 | F047 | 0007 DDL 补列 + 0019 记录 |
+| C2 | `source_record_id` 唯一约束写错 | F047 | 0007 SQL/验收改为 `(thread_id, source_record_id)` |
+| C3 | `owner_json`/`from_json` CHECK 缺 `json_type='object'` | F047 | 0007 DDL 对齐 |
+| C4 | §4 不是完整 schema 清单 | F047 | 补交叉引用/边界说明 |
+| D1 | F031 rich block producer tool 未进 0007 工具面 | F046 | 文档记录独立 tool surface |
+| D2 | F043 `multi_mention_auto_delivery` 未进 0007 | F046 | 行为进 target/0019 |
+| D3 | F043 multi_mention prompt 模板未进 0007 | F046 | 文档补模板 |
+| D6 | `MessageDispatchSummary` 文档声称 F018 拥有，代码没有 | F046 | 实现或明确 deferred |
+| E1 | `sourceRecordId` unique 验收措辞不一致 | F047 | §9.2 改为 thread-scoped |
+| E2 | preflight invalid reasons 缺 workspace/session | F045 | D4 已修代码；补验收/回归 |
+| E3 | routeAgents parallel/serial 验收按字面不可执行 | F044 | 按恢复后的 route 重写验收 |
+| E4 | T2 contentBlocks/richBlocks/A2A successor 描述与实现不一致 | F044/F047 | route commit + 0007 文档对齐 |
+| F1–F4 | InvocationRegistry / collector / runAgentTurn / RouteInput 等命名 | F047 | 0019 映射或代码命名对齐 |
+| F5 | MessageDispatchSummary 无实现 | F046 | 同 D6 |
+| F6–F7 | routing_guard / a2a_requests legacy 不对齐 | F050 | 记录为 aligned/no action |
+
+**已核对对齐、不进入整改的项**：C5/C6（attempts/credential/read state/workers DDL）、
+D4/D5/D7–D9（tool targets/上限/read model）、E5（auth/recovery/userId invariants）、
+F6–F7（legacy no-action）。由 F050 在 parity/验收记录中确认。
 
 ## 4. Design invariants（不可违反）
 
@@ -100,81 +126,57 @@ QueueProcessor（Phase A / claim / tracker / T3）
    context、T2、A2A successor、cleanup。
 4. **T2 只在 route/RouteResponseCommitter**：禁止 RunAgentTurn 和 QueueProcessor
    双写 R terminal。
-5. **A2A successor 必须在 response durable commit 之后** admission；不能先 wake
-   再补 commit。
-6. **F043 的行为是回归要求，不是设计来源**：multi-target 并发、sibling 不可见、
-   长 turn 不阻塞、源消息可读、auto-delivery、UI A/C 都要在新设计里重新验证。
-7. **每个 feature 先读 0007/0019 并回链本计划**；PR/feature 文档缺这个块视为
-   review blocker。
+5. **A2A successor 必须在 response durable commit 之后** admission。
+6. **每个 audit A–F 行都有处置**：修复、文档对齐或明确 no-action 证据；不能漏。
+7. **F043 的行为是回归要求，不是设计来源**：它的四项行为分别并入 F045/F046/F048/F049。
+8. **每个 feature 先读 0007/0019/audit 并回链本计划**；缺这个块视为 review blocker。
 
 ## 5. Feature 拆分
 
-| Feature | 交付 | 依赖 | 主要验收 |
+| Feature | 覆盖 audit | 交付 | 依赖 |
 |---|---|---|---|
-| F044 | Route 层恢复：AgentRouter/routeAgents/routeParallel/routeSerial、parallel context barrier、单 target serial 前后处理、T2 ownership | 无（第一棒） | parallel 无 sibling 泄漏；serial priorResponses/单 target 前后处理；T1/T2/T3 matrix |
-| F045 | Delivery & multi-mention parity：post_message 源消息、aggregate/callback/status、auto-delivery 拒绝 | F044 | 源消息可读；一次 aggregate + callback；无额外 wake |
-| F046 | Concurrency & queue parity：bounded concurrent drain、per-agent slot、长 turn 不阻塞、queue/live 读模型 | F044 | A 长跑时 B 独立 entry 可启动；queue 只显示真实等待 |
-| F047 | Message surface parity：A2A 私有气泡、multi-mention 汇总卡、桌面/移动/光暗 | F044/F045 | AC-4 视觉验收；不散落气泡 |
-| F048 | Parity guard & live acceptance：Clowder parity suite、architecture delta guard、隔离 live E2E、0019 收口 | F044–F047 | parity 全绿；live 四场景 + serial 单 target；operator 验收 |
+| F044 | A1–A8, B1/B2/B8, E3/E4 | Route & execution ownership：AgentRouter/routeParallel/routeSerial、parallel barrier、单 target serial 前后处理、Phase B/T1/T2 ownership、QueueProcessor route deps/methods | 无（第一棒） |
+| F045 | A9(context), E2 | Context/history parity：delivery cursor、`upToSeq`、`includeSourceMessageId`、preflight invalid 验收、post_message 源消息 | F044 |
+| F046 | A9(auto-delivery), D1–D3, D6/F5 | A2A tools & multi-mention：rich block tool 文档、multi_mention aggregate/callback/status、auto-delivery、MessageDispatchSummary 决策 | F044/F045 |
+| F047 | B3, B6/B7, C1–C4, E1, E4(doc), F1–F4 | Data/API/naming parity：DDL、store API、命名映射、验收措辞 | 可并行（部分依赖 F044/F048） |
+| F048 | B2(methods), B4/B5, A8(concurrency), E3(concurrency) | Queue/concurrency/recovery：bounded concurrent drain、tracker API/抢占、长 turn 不阻塞、recovery 边界 | F044 |
+| F049 | F043 AC-4 | Message surface：A2A 私有气泡、multi-mention 汇总卡、桌面/移动/光暗 | F045/F046 |
+| F050 | 全表 + E1/E4 验收 | Parity guard & live：Clowder parity suite、architecture delta guard、隔离 live E2E、0019 收口 | F044–F049 |
 
-### F044 · Route 层恢复（核心）
+**共享项归属**：B2 的 `processEntry` 签名/route deps 由 F044，`requestDrain`/
+`processNext`/`recoverStartup`/`onInvocationComplete` 由 F048；A8/E3 的 route signal/
+serial 契约由 F044，daemon 并发验收由 F048；E4 的 T2 实现由 F044，文档措辞由 F047。
 
-- `AgentRouter` + `routeAgents(mode)`；`routeParallel` 先装配全部 target context，
-  再启动 streams；`routeSerial` 顺序执行并保留 per-target 前后处理。
-- `RouteResponseCommitter` 拥有 T2；Phase B 与 T1 回到 `runAgentTurn`；
-  QueueProcessor 只保留 Phase A/T3。
-- 删除 `processEntry` 的 inline fan-out 与 `RunAgentTurn` 内的 T2 写入；不做双写。
-- 回归 F043 AC-1（并发 + 无 sibling response）与 AC-2（独立 entry 不阻塞；后者与
-  F046 联合验收）。
+### 各 feature 的最小验收
 
-### F045 · Delivery & multi-mention parity
-
-- `post_message` 的 target prompt 必须显式包含源消息；cursor 已越过源 seq 时也不能
-  出现空窗口。
-- 按 0007 §3.8 完成/核对 `MultiMentionOrchestrator`：aggregate system message、
-  callback child、status read、timeout、anti-cascade。
-- multi-mention target 向 initiator 的重复 `post_message` 在创建 message/queue 前
-  拒绝（`multi_mention_auto_delivery`）；提示词明确“回答自动汇总，不需要 post_message”。
-- 回归 F043 AC-3。
-
-### F046 · Concurrency & queue parity
-
-- `DaemonA2A.tick` 从全局 single-flight 改为有界并发 drain；同 agent 仍由 tracker
-  slot 保证顺序。
-- 长 turn 不阻塞独立 target/entry；queue/live 读模型只显示真正等待的投递。
-- 并发上界、worker capacity、backpressure 与失败收敛按 0007/0016。
-- 回归 F043 AC-2。
-
-### F047 · Message surface parity
-
-- A2A 私有消息用无头像私有气泡/“投递回执行”收敛；multi-mention burst 用汇总卡，
-  不散落成多个公开回复气泡。
-- 复用 F043 已选设计 A + C，并消费 F044/F045 的 lifecycle/`extra.multiMention` 元数据。
-- 1440/390、浅色/深色截图；operator 视觉验收。
-
-### F048 · Parity guard & live acceptance
-
-- 建立 Clowder parity suite：parallel barrier、serial priorResponses、单 target
-  route 前后处理、T2 ownership、A2A successor、multi-mention callback/auto-delivery、
-  daemon 并发；每个测试回链 0007 章节。
-- PR 模板/quality-gate 增加 “architecture as-built delta” 检查：触及 runtime 的 PR
-  必须说明 0007/0019 的差异与处置；feature 文档必须带强制先读块。
-- 隔离 test runtime（3007/3016）跑 F043 四场景 + 单 target serial + multi-mention
-  callback；operator 授权后再上 runtime（3005/3014）。
-- 更新 0019 为最终 as-built，F043 标 superseded。
+- **F044**：parallel barrier 无 sibling 泄漏；单 target routeSerial 前后处理；T2 只由
+  route 写；T1–T4 matrix；A2A successor after durable commit。
+- **F045**：cursor 已越过源 seq 时 post_message 仍能读源消息；preflight workspace/session
+  typed invalid 回归；history snapshot 不把 sibling response 带进来。
+- **F046**：multi-mention 一次 aggregate + callback；target 重复 post_message 被拒；
+  rich block tool 与 MessageDispatchSummary 的文档/实现处置明确。
+- **F047**：DDL 与 live 对齐；store/命名 API 的 0007↔0019 映射完整；§9.2/§9.3 验收措辞
+  不再自相矛盾。
+- **F048**：A 长跑时 B 独立 entry 可启动；同 agent 顺序；queue/live 只显示真实等待；
+  tracker 抢占/恢复边界有测试。
+- **F049**：A2A 私有气泡/汇总卡；1440/390、光暗；operator 视觉验收。
+- **F050**：parity suite 覆盖 A–F 整改项；PR/quality-gate guard；隔离 live + runtime
+  验收；0019 最终 as-built。
 
 ## 6. 执行顺序与切换
 
 ```text
 P0 计划/feature/BACKLOG（本 PR）
   ↓
-P1 F044 route 层（分支；parity + T1–T4 matrix；不切 live）
+P1 F044 route & ownership（分支；parity + T1–T4 matrix；不切 live）
   ↓
-P2 F045 与 F046 并行（都基于 F044 route）
+P2 F045 context / F047 data-API-naming / F048 queue-concurrency（可并行，均以 F044 为锚）
   ↓
-P3 F047 前端（消费 F044/F045 元数据）
+P3 F046 tools & multi-mention（依赖 F044/F045）
   ↓
-P4 F048 guard + 隔离 live + operator 验收 + 0019 收口
+P4 F049 message surface（依赖 F045/F046）
+  ↓
+P5 F050 parity guard + 隔离 live + operator 验收 + 0019 收口
 ```
 
 - **原子切换**：F044 完成前不切 live；切换时一次性移除旧 inline fan-out/RunAgentTurn
@@ -185,46 +187,46 @@ P4 F048 guard + 隔离 live + operator 验收 + 0019 收口
 
 ## 7. F043 处置
 
-F043 **作为设计被本计划取代**，不再在其上追加补丁。它的 live 验证行为保留为回归要求：
+F043 **作为设计被本计划取代**；它的 live 验证行为只作为全量整改中的回归子集：
 
-1. multi-mention 多 target 并发启动，且 target 不看到同批 sibling 回答。
-2. 长 turn 不阻塞独立 agent/entry。
-3. `post_message` 目标能读到源消息，不出现“无新消息”空转。
-4. A2A 私有消息/汇总卡不冒充公开回复。
-5. daemon/web tests、typecheck、doc-index、非作者 review。
+| F043 | 行为 | 新归属 |
+|---|---|---|
+| AC-1 | multi-mention 并发 + target 不看到同批 sibling | F044（barrier）+ F046（multi-mention） |
+| AC-2 | 长 turn 不阻塞独立 entry | F048 |
+| AC-3 | post_message 目标能读源消息 | F045 |
+| AC-4 | A2A 私有气泡/汇总卡 | F049 |
+| AC-5 | tests/typecheck/review | 各 feature + F050 |
 
-F043 文档加 superseded banner；AC-4 移到 F047，AC-1/2/3/5 分别由 F044/F046/F045/F048
-覆盖。F043 的代码在 F044 切换时删除，不长期保留双路径。
+F043 文档加 superseded banner；不再在其上追加补丁。F043 的代码在 F044 切换时删除，
+不长期保留双路径。
 
 ## 8. 验证与证据
 
-- **复用卡**：`docs/reuse/dispatch.md` 是 R0 直接复用契约；其风险 P1 明确
-  “只复用 Queue、重写 routeSerial/routeParallel，会丢掉 A2A chain/worklist/
-  parallel ideate/response 聚合”。本计划正是关闭这个风险。
-- **Parity suite**：Clowder 参考实现的 route-parallel setup barrier、route-serial
-  worklist/commit 语义、single-target serial、T2/A2A successor；测试名回链 0007 章节。
+- **全量覆盖**：F050 逐行核对 audit A–F，记录 fixed / doc-aligned / no-action 证据。
+- **Clowder parity suite**：parallel barrier、serial priorResponses、单 target serial、
+  T2 ownership、A2A successor、multi-mention callback/auto-delivery、daemon 并发。
 - **T1–T4 matrix**：每个 owner 的写入/不写入边界；重点 T2 不双写、T3 不提前 aggregate。
+- **DDL/API parity**：C1–C3 与 live `sqlite_master` 对齐；B 表接口/命名映射完整。
 - **F043 regressions**：AC-1/2/3 + UI AC-4。
 - **Live**：隔离 test runtime 先跑；runtime 需 operator 授权；记录 revision/URL/结果。
-- **Docs/CI**：doc-index、typecheck、daemon/web tests、非作者 review。
+- **复用卡**：`docs/reuse/dispatch.md` 的 P1 风险（只复用 Queue、重写 route 会丢
+  A2A chain/worklist/response 聚合）必须在 F044 关闭。
 
 ## 9. 风险
 
-- **Route 重构高风险**：核心执行路径；用 parity + T1–T4 + F043 回归覆盖，分支内完成，
-  不 live 半切。
-- **T2 ownership 迁移**：最易出现双写/漏写；F044 单独矩阵验证，禁止 RunAgentTurn
-  保留 T2 写路径。
+- **Route 重构高风险**：核心执行路径；分支内完成 parity + T1–T4 + F043 回归，不 live 半切。
+- **T2 ownership 迁移**：最易双写/漏写；F044 单独矩阵验证，禁止 RunAgentTurn 保留 T2 写路径。
 - **Parallel barrier 延迟**：所有 target context 装配后才启动；测量首 token 延迟，
   但不以延迟为由退回 per-turn 过滤。
-- **并发放大**：F046 必须有上界/backpressure；per-agent slot 不放宽。
-- **multi_mention callback 递归**：按 0007 depth ≤ 2 / anti-cascade；F045 覆盖。
-- **文档漂移**：F048 guard + 每 feature 强制先读 0007/0019。
+- **Data/API 对齐**：DDL 只改文档/迁移脚本时，必须用 live schema 对账；不要用口头映射代替。
+- **并发放大**：F048 必须有上界/backpressure；per-agent slot 不放宽。
+- **multi_mention callback 递归**：按 0007 depth ≤ 2 / anti-cascade；F046 覆盖。
+- **文档漂移**：F050 guard + 每 feature 强制先读 0007/0019/audit。
 
 ## 10. 待 operator 确认
 
-- Feature owner/reviewer 分工（本计划默认：F044/F045/F046 宪宪；F047 墨墨；F048 宪宪+墨墨；
-  review 按风险找非作者）。
-- 是否允许 F044 在分支完成 parity 后直接切 runtime，还是先只在隔离 test runtime
-  跑一轮再切。
+- Feature owner/reviewer 分工（默认：F044/F045/F046/F048/F050 宪宪；F047 宪宪+砚砚；
+  F049 墨墨；review 按风险找非作者）。
+- F044 完成后是否允许直接切 runtime，还是先在隔离 test runtime 跑一轮再切。
 
 [宪宪/deepseek-flash🐾]

@@ -6,9 +6,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { OperatorMessageIngress } from "../src/domains/a2a/router.ts";
 import type { AgentRegistry } from "../src/domains/agent/registry.ts";
 import { buildRegistry } from "../src/domains/agent/registry.ts";
+import { AgentRouter, createContextAssembler } from "../src/domains/agent/route.ts";
 import { RunAgentTurn } from "../src/domains/agent/turn.ts";
 import { InvocationCredentialStore } from "../src/domains/auth/store.ts";
 import { HistoryAssembler } from "../src/domains/history/assembler.ts";
+import { RouteResponseCommitter } from "../src/domains/invocation/settlement.ts";
 import { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "../src/domains/invocation/store.ts";
 import { AgentReadStateStore, MessageStore } from "../src/domains/message/store.ts";
 import { QueueProcessor } from "../src/domains/queue/processor.ts";
@@ -154,8 +156,6 @@ function makeWorld() {
 	const streamEvents: AgentStreamEvent[] = [];
 	const runAgentTurn = new RunAgentTurn({
 		db: db.db,
-		registry,
-		assembler,
 		pool,
 		attempts,
 		sessions,
@@ -167,6 +167,22 @@ function makeWorld() {
 		messages,
 		onStreamEvent: (event) => streamEvents.push(event),
 		clock,
+	});
+	const router = new AgentRouter({
+		assemble: createContextAssembler({ assembler, registry, threads, messages }),
+		runner: runAgentTurn,
+		committer: new RouteResponseCommitter({
+			db: db.db,
+			turns,
+			attempts,
+			credentials,
+			sessions,
+			readState,
+			messages,
+			drafts,
+			threads,
+			clock,
+		}),
 	});
 	const processor = new QueueProcessor({
 		db: db.db,
@@ -181,7 +197,7 @@ function makeWorld() {
 		messages,
 		threads,
 		tracker,
-		dispatchTarget: runAgentTurn,
+		router,
 		clock,
 	});
 	return {

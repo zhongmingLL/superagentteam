@@ -3,6 +3,7 @@ import type { AgentConfig, AgentSession, QueueEntry, QueueTarget } from "@supera
 import { runInTransaction } from "../../infrastructure/db/database.ts";
 import { WORKER_CREDENTIAL_TOOL_NAMES } from "../a2a/tool-service.ts";
 import type { AgentRegistry } from "../agent/registry.ts";
+import type { AgentRouter, RouteError } from "../agent/route.ts";
 import type { InvocationCredentialStore } from "../auth/store.ts";
 import { aggregateParent } from "../invocation/aggregate.ts";
 import type { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "../invocation/store.ts";
@@ -20,7 +21,8 @@ import type { InvocationTracker } from "./tracker.ts";
 // claimed target attempts starting), Phase B per-target dispatch transaction
 // (processing R + TurnExecution + credential + draft + retireTargets).
 // Everything AFTER the Phase B commit (worker spawn / prompt / stream / T1)
-// is the injected dispatchTarget port — the real runAgentTurn lands in R2-b.
+// is the injected route — AgentRouter owns per-target context assembly,
+// parallel/serial launch, and T2 response commit.
 
 export interface PreparedDispatch {
 	threadId: string;
@@ -45,26 +47,6 @@ export interface PreparedDispatch {
 	signal?: AbortSignal;
 }
 
-/**
- * Post-Phase-B continuation port (R2-b: real worker/prompt/stream/T1).
- *
- * PORT CONTRACT (round-2 review):
- * - The port OWES terminalization: on provider-phase failure it either (a)
- *   throws WITHOUT having terminalized anything (the processor then converges
- *   turn/attempt/credential/R to failed and restores the target), or (b)
- *   performs its own T1 terminal + settlement and returns WITHOUT throwing.
- *   Terminalize-then-throw is a contract violation: the processor's
- *   convergence would hit already_terminal conflicts and surface a typed
- *   convergenceFailed instead of silently double-converging.
- * - The port must release/retire any worker it acquired before throwing
- *   (warmTtl=0); the processor does not know worker ids.
- * - The port must not touch the queue claim or targets; retirement/restore
- *   is processor-owned.
- */
-export interface DispatchTargetPort {
-	dispatch(prepared: PreparedDispatch): Promise<void>;
-}
-
 /** Optional capacity preflight (R2-b: WorkerPool.checkCapacity). */
 export interface CapacityChecker {
 	check(threadId: string, targets: readonly string[]): { ok: true } | { ok: false; reason: string };
@@ -83,7 +65,8 @@ export interface QueueProcessorDeps {
 	messages: MessageStore;
 	threads: ThreadStore;
 	tracker: InvocationTracker;
-	dispatchTarget: DispatchTargetPort;
+	/** F044 route: context barrier + per-target T1 launch + T2 commit. */
+	router: AgentRouter;
 	multiMention?: MultiMentionStore;
 	multiMentionOrchestrator?: MultiMentionOrchestrator;
 	capacity?: CapacityChecker;
@@ -719,132 +702,49 @@ export class QueueProcessor {
 				}
 			}
 
-			// Post-Phase-B port (§3.2 step 7 / R2-b: worker spawn + prompt +
-			// stream + T1) — only for targets whose Phase B committed. All
-			// targets in one multi-target entry fan out concurrently (Clowder
-			// route_parallel semantics); per-(thread, agent) tracker slots keep
-			// same-agent starts exclusive.
-			const dispatchOne = async (agentId: string): Promise<void> => {
+			// Post-Phase-B route (§3.2 step 7 / F044): QueueProcessor prepares
+			// the per-target input; AgentRouter owns the parallel context barrier,
+			// serial worklist, per-target launch, and T2 response commit. Provider
+			// failures return as per-target errors and are converged here so T3
+			// stays processor-owned.
+			const routedTargets: PreparedDispatch[] = dispatched.map((agentId) => {
 				const prepared = phaseA.find((p) => p.agentId === agentId)!;
 				const target = startable.find((t) => t.agentId === prepared.agentId)!;
 				const session = this.deps.sessions.getActive(entry.threadId, prepared.agentId)!;
-				try {
-					await this.deps.dispatchTarget.dispatch({
-						threadId: entry.threadId,
-						userId,
-						parentInvocationId: invocationId,
-						queueEntryId: entry.queueEntryId,
-						sourceMessageId: entry.payload.messageId ?? null,
-						agentId: prepared.agentId,
-						agentConfig: target.agentConfig,
-						provider: target.provider,
-						model: target.model,
-						modelFamily: null,
-						attemptId: prepared.attemptId,
-						turnExecutionId: prepared.turnExecutionId,
-						agentSessionId: session.id,
-						responseMessageId: `resp:${prepared.turnExecutionId}`,
-						claimId,
-						credentialToken: prepared.credentialToken ?? "",
-						signal: this.deps.tracker.getController(entry.threadId, prepared.agentId)?.signal,
-					});
-				} catch {
-					// P1-2: provider-phase failure must NOT strand an appended
-					// attempt / running turn / processing R with a retired target
-					// (0010 §6.1.3 row 6). Converge the chain terminal-failed and
-					// put the target back on the entry so the bounded backoff can
-					// re-dispatch (new attempt). No delivery_failure, no ack.
-					// Round-2: the convergence itself is caught — a failing
-					// convergence (port terminalized before throwing, claim
-					// changed hands) surfaces a typed convergenceFailed instead
-					// of escaping and skipping the final claim release.
-					const nowP = this.now();
-					const responseMessageId = `resp:${prepared.turnExecutionId}`;
-					const canceled =
-						this.deps.tracker.getController(entry.threadId, prepared.agentId)?.signal.aborted === true;
-					const attempt = this.deps.attempts.get(prepared.attemptId);
-					const retryKey = this.providerRetryKey(invocationId, prepared.agentId);
-					const retryStart = this.providerRetryStart.get(retryKey) ?? 1;
-					const retryBudget = retryStart + MAX_PROVIDER_ATTEMPTS - 1;
-					const retryExhausted = !canceled && (attempt?.attempt ?? 1) >= retryBudget;
-					if (retryExhausted || canceled) this.providerRetryStart.delete(retryKey);
-					const terminalStatus: "canceled" | "failed" = canceled ? "canceled" : "failed";
-					const terminalReason = canceled
-						? "operator_canceled"
-						: retryExhausted
-							? "provider_retry_exhausted"
-							: "provider_phase_failed";
-					try {
-						runInTransaction(this.deps.db, () => {
-							const terminal = this.deps.turns.transitionTerminal(prepared.turnExecutionId, {
-								status: terminalStatus,
-								endedAt: nowP,
-								terminalReason,
-							});
-							if (terminal.outcome === "not_found" || terminal.outcome === "conflict") {
-								throw new Error("provider_phase_terminal_conflict");
-							}
-							const projected = this.deps.attempts.projectChildTerminal(prepared.attemptId, {
-								turnExecutionId: prepared.turnExecutionId,
-								childStatus: terminalStatus,
-								terminalReason,
-								endedAt: nowP,
-							});
-							if (projected.outcome === "not_found" || projected.outcome === "terminal_conflict") {
-								throw new Error("provider_phase_projection_conflict");
-							}
-							// Credential follows child truth (0007 §5.3, T1
-							// same close-out): canonical-first commitTerminal.
-							const cred = this.deps.credentials.commitTerminal(prepared.turnExecutionId, terminalStatus);
-							if (cred.outcome === "not_found" || cred.outcome === "conflict") {
-								throw new Error("provider_phase_credential_conflict");
-							}
-							// The response R is terminal here (no T2 will commit it);
-							// settle the attempt so T4 has nothing dangling to recover,
-							// and drop the empty draft.
-							this.deps.attempts.setSettlement(prepared.attemptId, "settled", responseMessageId);
-							this.deps.drafts.delete(prepared.turnExecutionId);
-							const response = this.deps.messages.get(responseMessageId, { includeDeleted: true });
-							if (response?.lifecycle?.kind === "response") {
-								this.deps.messages.updateLifecycle(
-									responseMessageId,
-									{ ...response.lifecycle, status: terminalStatus, endedAt: nowP },
-									nowP,
-								);
-							}
-							if (retryExhausted) {
-								this.deps.messages.append({
-									id: `retry-exhausted:${prepared.attemptId}`,
-									threadId: entry.threadId,
-									from: { kind: "system", service: "queue" },
-									content: `自动重试 ${MAX_PROVIDER_ATTEMPTS} 次仍失败，已停止自动重试；可在失败消息上手动重试。`,
-									now: nowP,
-								});
-							}
-							if (!canceled && !retryExhausted) {
-								const restored = this.deps.queue.restoreTargets(entry.threadId, entry.queueEntryId, claimId, {
-									targets: [{ kind: "agent", id: prepared.agentId }],
-									now: nowP,
-								});
-								if (restored.outcome !== "updated") {
-									throw new Error("provider_phase_restore_state_changed");
-								}
-							}
-						});
-					} catch (convergenceError) {
-						convergenceFailed.push(prepared.agentId);
-						void convergenceError;
-					} finally {
-						if (!canceled && !retryExhausted) this.deferrals.defer(entry.threadId, prepared.agentId, nowP);
-					}
-				}
-			};
-			// dispatchOne contains provider-phase errors itself; allSettled only
-			// protects a future prelude throw from rejecting early and releasing a
-			// sibling slot that is still running.
-			const settled = await Promise.allSettled(dispatched.map((agentId) => dispatchOne(agentId)));
-			const rejected = settled.find((result): result is PromiseRejectedResult => result.status === "rejected");
-			if (rejected) throw rejected.reason;
+				return {
+					threadId: entry.threadId,
+					userId,
+					parentInvocationId: invocationId,
+					queueEntryId: entry.queueEntryId,
+					sourceMessageId: entry.payload.messageId ?? null,
+					agentId: prepared.agentId,
+					agentConfig: target.agentConfig,
+					provider: target.provider,
+					model: target.model,
+					modelFamily: null,
+					attemptId: prepared.attemptId,
+					turnExecutionId: prepared.turnExecutionId,
+					agentSessionId: session.id,
+					responseMessageId: `resp:${prepared.turnExecutionId}`,
+					claimId,
+					credentialToken: prepared.credentialToken ?? "",
+					signal: this.deps.tracker.getController(entry.threadId, prepared.agentId)?.signal,
+				};
+			});
+			const routeMode = routedTargets.length > 1 ? "parallel" : "serial";
+			let routeErrors: RouteError[];
+			try {
+				routeErrors = (await this.deps.router.routeAgents(routedTargets, routeMode)).errors;
+			} catch (error) {
+				// Defensive: route setup isolates per-target failures itself; if
+				// the router throws, converge every routed target instead of
+				// stranding their Phase-B commitments.
+				routeErrors = routedTargets.map((prepared) => ({ agentId: prepared.agentId, error }));
+			}
+			for (const failure of routeErrors) {
+				const prepared = phaseA.find((p) => p.agentId === failure.agentId);
+				if (prepared) this.convergeProviderFailure(entry, claimId, invocationId, prepared, convergenceFailed);
+			}
 		} finally {
 			// T3 slot release (§3.2 step 8): per-target ownership-fenced complete
 			// so a stale finally cannot release a replacement slot. The claim is
@@ -881,6 +781,102 @@ export class QueueProcessor {
 			invalid: invalid.map((t) => t.agentId),
 			convergenceFailed: convergenceFailed.length > 0 ? convergenceFailed : undefined,
 		};
+	}
+
+	/**
+	 * P1-2: a provider-phase failure must NOT strand an appended attempt /
+	 * running turn / processing R with a retired target (0010 §6.1.3 row 6).
+	 * Converge the chain terminal and put the target back on the entry so the
+	 * bounded backoff can re-dispatch (new attempt). No delivery_failure, no
+	 * ack. Convergence itself is caught: a failing convergence surfaces a typed
+	 * convergenceFailed instead of escaping and skipping the final claim
+	 * release.
+	 */
+	private convergeProviderFailure(
+		entry: QueueEntry,
+		claimId: string,
+		invocationId: string,
+		prepared: { agentId: string; attemptId: string; turnExecutionId: string },
+		convergenceFailed: string[],
+	): void {
+		const nowP = this.now();
+		const responseMessageId = `resp:${prepared.turnExecutionId}`;
+		const canceled = this.deps.tracker.getController(entry.threadId, prepared.agentId)?.signal.aborted === true;
+		const attempt = this.deps.attempts.get(prepared.attemptId);
+		const retryKey = this.providerRetryKey(invocationId, prepared.agentId);
+		const retryStart = this.providerRetryStart.get(retryKey) ?? 1;
+		const retryBudget = retryStart + MAX_PROVIDER_ATTEMPTS - 1;
+		const retryExhausted = !canceled && (attempt?.attempt ?? 1) >= retryBudget;
+		if (retryExhausted || canceled) this.providerRetryStart.delete(retryKey);
+		const terminalStatus: "canceled" | "failed" = canceled ? "canceled" : "failed";
+		const terminalReason = canceled
+			? "operator_canceled"
+			: retryExhausted
+				? "provider_retry_exhausted"
+				: "provider_phase_failed";
+		try {
+			runInTransaction(this.deps.db, () => {
+				const terminal = this.deps.turns.transitionTerminal(prepared.turnExecutionId, {
+					status: terminalStatus,
+					endedAt: nowP,
+					terminalReason,
+				});
+				if (terminal.outcome === "not_found" || terminal.outcome === "conflict") {
+					throw new Error("provider_phase_terminal_conflict");
+				}
+				const projected = this.deps.attempts.projectChildTerminal(prepared.attemptId, {
+					turnExecutionId: prepared.turnExecutionId,
+					childStatus: terminalStatus,
+					terminalReason,
+					endedAt: nowP,
+				});
+				if (projected.outcome === "not_found" || projected.outcome === "terminal_conflict") {
+					throw new Error("provider_phase_projection_conflict");
+				}
+				// Credential follows child truth (0007 §5.3, T1 same close-out):
+				// canonical-first commitTerminal.
+				const cred = this.deps.credentials.commitTerminal(prepared.turnExecutionId, terminalStatus);
+				if (cred.outcome === "not_found" || cred.outcome === "conflict") {
+					throw new Error("provider_phase_credential_conflict");
+				}
+				// The response R is terminal here (no T2 will commit it); settle
+				// the attempt so T4 has nothing dangling to recover, and drop the
+				// empty draft.
+				this.deps.attempts.setSettlement(prepared.attemptId, "settled", responseMessageId);
+				this.deps.drafts.delete(prepared.turnExecutionId);
+				const response = this.deps.messages.get(responseMessageId, { includeDeleted: true });
+				if (response?.lifecycle?.kind === "response") {
+					this.deps.messages.updateLifecycle(
+						responseMessageId,
+						{ ...response.lifecycle, status: terminalStatus, endedAt: nowP },
+						nowP,
+					);
+				}
+				if (retryExhausted) {
+					this.deps.messages.append({
+						id: `retry-exhausted:${prepared.attemptId}`,
+						threadId: entry.threadId,
+						from: { kind: "system", service: "queue" },
+						content: `自动重试 ${MAX_PROVIDER_ATTEMPTS} 次仍失败，已停止自动重试；可在失败消息上手动重试。`,
+						now: nowP,
+					});
+				}
+				if (!canceled && !retryExhausted) {
+					const restored = this.deps.queue.restoreTargets(entry.threadId, entry.queueEntryId, claimId, {
+						targets: [{ kind: "agent", id: prepared.agentId }],
+						now: nowP,
+					});
+					if (restored.outcome !== "updated") {
+						throw new Error("provider_phase_restore_state_changed");
+					}
+				}
+			});
+		} catch (convergenceError) {
+			convergenceFailed.push(prepared.agentId);
+			void convergenceError;
+		} finally {
+			if (!canceled && !retryExhausted) this.deferrals.defer(entry.threadId, prepared.agentId, nowP);
+		}
 	}
 
 	/**

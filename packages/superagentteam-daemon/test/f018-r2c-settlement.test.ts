@@ -12,6 +12,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { OperatorMessageIngress } from "../src/domains/a2a/router.ts";
 import type { AgentRegistry } from "../src/domains/agent/registry.ts";
 import { buildRegistry } from "../src/domains/agent/registry.ts";
+import { AgentRouter, createContextAssembler } from "../src/domains/agent/route.ts";
 import { RunAgentTurn } from "../src/domains/agent/turn.ts";
 import { InvocationCredentialStore } from "../src/domains/auth/store.ts";
 import { HistoryAssembler } from "../src/domains/history/assembler.ts";
@@ -36,6 +37,18 @@ import { F018Database } from "../src/infrastructure/db/database.ts";
 import type { RpcEvent } from "../src/workers/rpc-client.ts";
 
 const dirs: string[] = [];
+
+function noopRouter(): AgentRouter {
+	return new AgentRouter({
+		assemble: () => ({ window: { mode: "bootstrap", rows: [], boundarySeq: 0 }, prompt: "" }),
+		runner: {
+			async run() {
+				return null;
+			},
+		},
+		committer: { commit() {} },
+	});
+}
 
 function agentConfig(id: string, overrides: Partial<AgentConfig> = {}): AgentConfig {
 	return {
@@ -147,8 +160,6 @@ function makeWorld(agents: AgentConfig[] = [agentConfig("a1"), agentConfig("a2")
 	const streamEvents: AgentStreamEvent[] = [];
 	const runAgentTurn = new RunAgentTurn({
 		db: db.db,
-		registry,
-		assembler,
 		pool,
 		attempts,
 		sessions,
@@ -159,22 +170,6 @@ function makeWorld(agents: AgentConfig[] = [agentConfig("a1"), agentConfig("a2")
 		readState,
 		messages,
 		onStreamEvent: (event) => streamEvents.push(event),
-		clock,
-	});
-	const processor = new QueueProcessor({
-		db: db.db,
-		registry,
-		queue,
-		records,
-		turns,
-		attempts,
-		sessions,
-		credentials,
-		drafts,
-		messages,
-		threads,
-		tracker,
-		dispatchTarget: runAgentTurn,
 		clock,
 	});
 	const settlementDeps = {
@@ -189,6 +184,27 @@ function makeWorld(agents: AgentConfig[] = [agentConfig("a1"), agentConfig("a2")
 		threads,
 		clock,
 	};
+	const router = new AgentRouter({
+		assemble: createContextAssembler({ assembler, registry, threads, messages }),
+		runner: runAgentTurn,
+		committer: new RouteResponseCommitter(settlementDeps),
+	});
+	const processor = new QueueProcessor({
+		db: db.db,
+		registry,
+		queue,
+		records,
+		turns,
+		attempts,
+		sessions,
+		credentials,
+		drafts,
+		messages,
+		threads,
+		tracker,
+		router,
+		clock,
+	});
 	const lifecycle = new TurnExecutionLifecycle(settlementDeps);
 	const committer = new RouteResponseCommitter(settlementDeps);
 	const recovery = new ResponseRecoveryService(settlementDeps);
@@ -492,9 +508,7 @@ describe("T2 RouteResponseCommitter", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			dispatchTarget: {
-				async dispatch() {},
-			},
+			router: noopRouter(),
 			clock: () => 1000,
 		});
 		await noopProcessor.drain("t1", "u1");
@@ -601,9 +615,7 @@ describe("T4 ResponseRecoveryService", () => {
 			messages: w.messages,
 			threads: w.threads,
 			tracker: w.tracker,
-			dispatchTarget: {
-				async dispatch() {},
-			},
+			router: noopRouter(),
 			clock: () => 1000,
 		});
 		await noopProcessor.drain("t1", "u1");

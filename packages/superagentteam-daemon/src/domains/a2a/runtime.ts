@@ -2,12 +2,13 @@ import type { DatabaseSync } from "node:sqlite";
 import type { AgentStreamEvent } from "@superagentteam/shared/types";
 import { OperatorMessageIngress } from "../a2a/router.ts";
 import type { AgentRegistry } from "../agent/registry.ts";
+import { AgentRouter, createContextAssembler } from "../agent/route.ts";
 import { RunAgentTurn } from "../agent/turn.ts";
 import { InvocationCredentialStore } from "../auth/store.ts";
 import type { ChangeBus } from "../events/bus.ts";
 import { HistoryAssembler } from "../history/assembler.ts";
 import { InvocationOwnerReaper, type RecoveryDeps, TurnExecutionStartupReconciler } from "../invocation/recovery.ts";
-import { ResponseRecoveryService } from "../invocation/settlement.ts";
+import { ResponseRecoveryService, RouteResponseCommitter } from "../invocation/settlement.ts";
 import { InvocationAttemptStore, InvocationRecordStore, TurnExecutionStore } from "../invocation/store.ts";
 import { AgentReadStateStore, MessageStore } from "../message/store.ts";
 import { MultiMentionOrchestrator } from "../multi-mention/orchestrator.ts";
@@ -142,8 +143,6 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		: null;
 	const runAgentTurn = new RunAgentTurn({
 		db,
-		registry: deps.registry,
-		assembler,
 		pool,
 		attempts,
 		sessions,
@@ -156,25 +155,6 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		onStreamEvent: deps.onStreamEvent,
 		clock,
 		promptTimeoutMs: deps.promptTimeoutMs,
-	});
-	const processor = new QueueProcessor({
-		db,
-		registry: deps.registry,
-		queue,
-		records,
-		turns,
-		attempts,
-		sessions,
-		credentials,
-		drafts,
-		messages,
-		threads,
-		tracker,
-		dispatchTarget: runAgentTurn,
-		multiMention,
-		multiMentionOrchestrator,
-		capacity: { check: (threadId, targets) => pool.checkCapacityFor(threadId, targets) },
-		clock,
 	});
 	const settlementDeps = {
 		db,
@@ -189,6 +169,30 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		threads,
 		clock,
 	};
+	const router = new AgentRouter({
+		assemble: createContextAssembler({ assembler, registry: deps.registry, threads, messages }),
+		runner: runAgentTurn,
+		committer: new RouteResponseCommitter(settlementDeps),
+	});
+	const processor = new QueueProcessor({
+		db,
+		registry: deps.registry,
+		queue,
+		records,
+		turns,
+		attempts,
+		sessions,
+		credentials,
+		drafts,
+		messages,
+		threads,
+		tracker,
+		router,
+		multiMention,
+		multiMentionOrchestrator,
+		capacity: { check: (threadId, targets) => pool.checkCapacityFor(threadId, targets) },
+		clock,
+	});
 	const recoveryDeps: RecoveryDeps = {
 		...settlementDeps,
 		queue,

@@ -116,6 +116,7 @@ Operator / Hub ingress（W7a transport）
 | `0005-thread-first-runtime.md` | 方向/范围 | accepted direction |
 | `0007-a2a-runtime-chain.md` | V1 target contract（历史目标） | target-design |
 | `0019-a2a-runtime-chain-as-built.md` | V1 runtime as-built（当前真相） | as-built |
+| `0020-daemon-module-layout.md` | daemon module layout（Clowder-aligned，F051） | proposed |
 | `0008-agent-config.md` | AgentConfig 分册 | draft-for-review |
 | `0009-thread-model.md` | Thread 分册 | draft-for-review |
 | `0010-session-model.md` | Session 分册 | accepted |

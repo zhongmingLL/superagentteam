@@ -17,6 +17,8 @@ evidence_baseline: "code f51d9f3c7; docs 23298eeab; live 3005/3014 f51d9f3c7"
   “当前实现了什么”的真相源。
 - **0019（本文）** = 当前实现的 as-built 真相。所有“当前 owner / 实际调用 / 实际 API /
   实际 DDL”以本文为准。
+- **编号别名**：本文原文件名是 `0008-a2a-runtime-chain-as-built.md`（operator 所说的
+  “0008 as-built”）；因与已有 `0008-agent-config.md` 撞号，改为 0019。
 - 逐项偏移证据见 `docs/reports/2026-11-27-0007-as-built-audit.md`。
 - 本文不是把 0007 的设计目标判死：每个偏离点在 §8 标明 **ratified / implementation
   decision / unratified deviation / code gap**，并在 §9 给出整改选项。
@@ -297,6 +299,11 @@ OperatorMessageIngress（domains/a2a/router.ts）
   `failed(target_invalid)` + typed `delivery_failure` + retire；回归见
   `packages/superagentteam-daemon/test/f018-r2a-dispatch.test.ts`
   “session workspace drift is a terminal target_invalid, not an endless defer”。
+- **Known fragility（P3-a，#240 review）**：`invalidSessionReason` 以 error.message
+  精确字符串匹配；`ensureActive` 另有 3 个 reject（`session_thread_not_found`/
+  `session_user_not_thread_owner`/`session_workspace_not_thread_project`）当前在
+  preflight 路径不可达，但未来出现非 owner drain 时会逃逸成零退避循环。F048 记录
+  typed session error 的后续方向；当前不阻塞。
 - **§9.1 routeAgents 验收**：target-only；实际验收应按 0019 §3.2 的 QueueProcessor
   行为重写。**disposition: doc rewrite**。
 
@@ -307,12 +314,23 @@ OperatorMessageIngress（domains/a2a/router.ts）
 - `runAgentTurn` → `RunAgentTurn`；
 - `RouteInput`/`PreparedTarget`/`AgentTurnResult` → `PreparedDispatch`/
   `DispatchTargetPort`/void；
+- `InvocationQueue` → `QueueLedgerStore`（服务与 store 合并；B9/F047）；
+- `MultiMentionStatusReader` → `MultiMentionStore.statusView`（F8/F046）；
 - `MessageDispatchSummary` → deferred（R8）。
 - **classification**：naming；doc-only。
 
 ## 8. 整改计划 / 决策点
 
-### D1（必须先决定）· route 层：ratify 还是补实现
+> **2026-11-27 operator 决定**：不再 ratify 当前调度，也不在 F043 补丁上继续修；
+> 按 0007 的 Clowder 整体设计恢复 route 层。执行计划见
+> [`docs/plans/0050-a2a-runtime-alignment.md`](../plans/0050-a2a-runtime-alignment.md)；
+> feature 拆分 F044–F051。以下 A/B 选项保留为决策历史。
+
+### D1（已决定 2026-11-27）· route 层：ratify 还是补实现
+
+**Decision: Option B — 恢复 route 层**。`AgentRouter`/`routeAgents`/`routeParallel`/
+`routeSerial`/`priorResponses`/`RouteResponseCommitter` 按 0007 实现；Phase B/T1
+回到 `runAgentTurn`，T2 由 route 拥有，T3 留 `QueueProcessor`。Option A 不采用。
 
 **Option A · ratify 当前调度（推荐用于 v1）**
 
@@ -341,19 +359,27 @@ OperatorMessageIngress（domains/a2a/router.ts）
   当前 F043 的 queue-processor fan-out 要迁移/复用，不能出现双 scheduler。
 - 证据基线：0001 §4、0002（pi runtime 段）、0016 §5.6、0024 R2-a/R2-c。
 
-**建议**：v1 选 A（行为已验证、风险最低），把 B 作为结构对齐的独立后续；
-如果 operator 认为“route 层复用”是 v1 硬门槛，则选 B，并按上述范围重做。
+**历史建议（已被 2026-11-27 operator 决定取代）**：当时建议 v1 选 A；
+operator 现决定选 B，按 0007 恢复 route 层。
 
-### D2 · T2 / Phase B ownership
+### D2（已决定 2026-11-27）· T2 / Phase B ownership
+
+**Decision**：按 0007——Phase B/T1 在 `runAgentTurn`/`invokeSingleAgent`；T2 在
+route/`RouteResponseCommitter`；T3 在 `QueueProcessor`。不再保留 QueueProcessor/
+RunAgentTurn 的 T2 写路径。
 
 - 若选 A：T2 留在 `RunAgentTurn.dispatch`，Phase B 留在 QueueProcessor；更新
   0016/0024 的 owner 表，0019 作为实际 API。
 - 若选 B：T2 移到 route wrapper；Phase B 按 0007 或 0024 二选一并写死，不再两处矛盾。
 
-### D3 · routeSerial / priorResponses
+### D3（已决定 2026-11-27）· routeSerial / priorResponses
 
-- 推荐 v1 retire：没有 serial 产品路径；multi-target 恒 parallel；F043 已按
-  Clowder `route_parallel` 行为验证。若保留，必须定义真实 consumer 和测试。
+**Decision: 实现 routeSerial，不 retire**。即使退化为一个 target，也必须保留
+worklist、context、T2、A2A successor、cleanup 等前后处理；multi-target 的
+`priorResponses` 按 0007 实现。见 F044。
+
+- **历史建议（已被 2026-11-27 operator 决定取代）**：当时建议 v1 retire；
+  operator 现决定实现 routeSerial（单 target 仍保留前后处理）。
 
 ### D4 · 独立代码整改（不依赖 D1）· done
 
@@ -369,10 +395,9 @@ daemon 521 passed / 1 skipped。
 
 ### D5 · 文档 / 验收
 
-- 0007 标 `target-design` + banner；0019 为当前真相。
-- §9.1 的 routeAgents 验收按 0019 的 QueueProcessor 行为重写；§9.2 的唯一性措辞改为
-  `(threadId, sourceRecordId)`；§9.3.1 去掉 T2 “A2A successor”，改为 post_message
-  tool-time successor + T2 settling tail。
+- 0007 标 `target-design` + banner；0019 为当前真相；F044 cutover 后更新 0019。
+- 0007 §9.1/§9.2/§9.3 的验收随 F044/F047/F050 收口；不再按 QueueProcessor inline 行为
+  反向改写 target。
 - `MessageDispatchSummary` 保持 deferred（F016c S0）；需要时再立 feature。
 
 ### D6 · 流程防复发
@@ -382,6 +407,7 @@ daemon 521 passed / 1 skipped。
 - 架构文档加 status legend：`target-design` / `as-built` / `deferred`；禁止 `accepted`
   同时承载未实现的 target 和已实现行为。
 - 每个 phase close 记录“设计 vs as-built”差异，不能只在 commit body 里写。
+- 由 F050 落地；feature 文档强制先读 0007/0019/audit 并回链计划 0050。
 
 ## 9. 证据索引
 
@@ -397,6 +423,8 @@ daemon 521 passed / 1 skipped。
 - F043：`docs/features/F043-a2a-parallel-dispatch.md`、`docs/reports/2026-11-27-a2a-parallel-investigation.md`、
   PR #235（merged `f51d9f3c7`）；live 3005/3014。
 - 逐项偏移：`docs/reports/2026-11-27-0007-as-built-audit.md`。
+- 组件齐全性/命名映射：`docs/reports/2026-11-27-0007-component-completeness.md`。
+- daemon 目录重设计：`docs/architecture/0020-daemon-module-layout.md`（F051）。
 
 ### 关键 commit
 

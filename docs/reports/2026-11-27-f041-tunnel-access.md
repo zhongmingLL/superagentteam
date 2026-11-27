@@ -40,21 +40,25 @@ Vite 拒绝未知 Host；daemon 对非 loopback Origin 只接受单一 `hubOrigi
 | Vite：tunnel Host / evil Host | 200 / 403 |
 | daemon：tunnel Origin 无凭据 / evil Origin | 401 / 403 |
 | public page | 200 |
-| public `/api/session` 无凭据 | 401 |
+| public `/api/session` 无凭据（默认 `=0`） | 401 |
 | console exchange（public tunnel） | 302 → `https://agentteam.hn.takin.cc`，cookie 建立 |
 | session with cookie | 200 |
 | write with cookie+CSRF+tunnel Origin | 400 invalid_input（门禁通过，非 403） |
+| public `/api/session` 无凭据（operator opt-in `=1`） | 200 |
+
+![tunnel live 1440](../design/F041/tunnel-live-1440.png)
 
 ## 安全说明
 
 - Origin allowlist 严格精确匹配；空项忽略；无通配符、无 `allowedHosts: true`。
 - 代理链下 daemon 看到的是 loopback socket，因此不能依赖 socket 地址判断真实来源；
-  外部 origin 存在时默认关闭 auto-login。
-- 开启穿透后 localhost 也不再自动登录（同一 daemon 策略），需要 console-link 建立会话；
-  这是 P1 收紧的预期结果。
+  外部 origin 存在时代码默认关闭 auto-login。
+- operator 明确该穿透域名仅供其本人访问；部署时显式 `SUPERAGENTTEAM_DEV_AUTO_LOGIN=1`，
+  因此 live 对穿透与 localhost 免登录。该 opt-in 是部署决策，代码默认收紧不变；
+  若穿透域名未来公开，应撤销该 opt-in。
 
 ## 剩余
 
-- operator 用穿透地址完成一次登录/写入验收。
+- operator 直接用穿透地址验收（免登录）。
 
 [宪宪/deepseek-flash🐾]

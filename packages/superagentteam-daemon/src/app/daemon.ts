@@ -90,6 +90,10 @@ export interface DaemonHandle {
 	close(): Promise<void>;
 }
 
+export function resolveWebDistPath(): string {
+	return join(import.meta.dirname, "..", "..", "..", "superagentteam-web", "dist");
+}
+
 function resolveStaticDir(input: string | false | undefined): string | null {
 	if (input === false) return null;
 	if (typeof input === "string" && input.trim() !== "") return input;
@@ -99,7 +103,7 @@ function resolveStaticDir(input: string | false | undefined): string | null {
 		if (value === "" || value === "off" || value === "false" || value === "0") return null;
 		return value;
 	}
-	return join(import.meta.dirname, "..", "..", "superagentteam-web", "dist");
+	return resolveWebDistPath();
 }
 
 function originPort(origin: string | undefined): string | null {

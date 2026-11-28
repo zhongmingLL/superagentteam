@@ -1303,6 +1303,10 @@ svg {
 	max-width: 80%;
 }
 
+.st-message.is-a2a-private .st-message-stack {
+	margin-left: 38px;
+}
+
 .st-message.is-multi-mention .st-message-stack {
 	margin-left: 38px;
 }
@@ -1312,11 +1316,19 @@ svg {
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 6px;
+	max-width: 100%;
+	padding: 0 5px;
 	color: var(--st-muted);
 	font-size: 9.5px;
 }
 
+.st-a2a-private-head time {
+	margin-left: auto;
+}
+
 .st-a2a-private-kind {
+	display: block;
+	margin-bottom: 6px;
 	color: var(--st-ink);
 	font-family: var(--st-font-mono);
 	font-size: 9.5px;
@@ -1325,6 +1337,15 @@ svg {
 
 .st-a2a-private-arrow {
 	color: var(--st-muted);
+}
+
+.st-a2a-private-sender {
+	padding: 1px 7px;
+	border: 1px solid var(--st-hairline);
+	border-radius: 999px;
+	background: var(--st-surface-2);
+	color: var(--st-ink);
+	font-weight: 600;
 }
 
 .st-a2a-private-recipient {
@@ -1351,8 +1372,11 @@ svg {
 }
 
 .st-a2a-private-body {
-	width: 100%;
 	max-width: 100%;
+	padding: 10px 14px;
+	border: 1px solid var(--st-hairline);
+	border-radius: var(--st-radius-lg);
+	background: var(--st-surface-1);
 }
 
 .st-a2a-private-content.is-clamped {
@@ -1363,7 +1387,7 @@ svg {
 }
 
 .st-a2a-private-footer {
-	padding: 0;
+	padding: 0 5px;
 	color: var(--st-muted);
 	font-size: 9.5px;
 }

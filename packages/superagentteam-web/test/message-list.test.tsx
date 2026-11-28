@@ -461,8 +461,7 @@ describe("message list", () => {
 		expect(a2a).toHaveTextContent("post_message");
 		expect(a2a).toHaveTextContent("私人消息");
 		expect(a2a).toHaveTextContent("已回复");
-		expect(a2a.querySelector(".st-message-avatar")).not.toBeNull();
-		expect(a2a.querySelector(".st-message-body")).not.toBeNull();
+		expect(a2a.querySelector(".st-message-avatar")).toBeNull();
 		expect(a2a.querySelector('[role="separator"]')).not.toBeNull();
 		expect(a2a.className).toContain("is-agent-column");
 		expect(a2a.querySelector(".st-a2a-private-kind")).toHaveTextContent("post_message");

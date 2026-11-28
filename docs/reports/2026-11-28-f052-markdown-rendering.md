@@ -39,12 +39,16 @@ SuperAgentTeam 原 `MessageContent` 只用正则拆 fenced code，其余文本�
 
 ## 验证
 
-- web 26 files / 125 tests passed；tsc + vite build passed。
+- web 26 files / 126 tests passed；tsc + vite build passed。
 - 测试覆盖：heading/list/table/code/link/task list、raw HTML 安全、javascript 链接、
   @mention、20 行折叠/展开、短消息不折叠。
 - 真实 Kimi 隔离栈（3007/3016）：markdown 文档渲染 h1/bold/em/inline code、
   GFM 表格、fenced code、@f037b pill、22 行折叠；1440/390 无横向滚动。
 - 截图：`docs/design/F052/`。
+- review：砚砚 approve base `a6eced447`，P3 delta（CJK 紧邻 @）`b0195b60a` approve；
+  PR #271 merged `af82e157`；runtime 3005/3014 已部署并验证真实 Markdown 消息。
+- runtime 实测：`a2a-测试2` agentD 的 h2/h3/GFM 表格/bold/list/inline code 正常渲染，
+  长内容显示“展开”；截图 `f052-runtime-markdown-1440.png`。
 
 ## 限制
 

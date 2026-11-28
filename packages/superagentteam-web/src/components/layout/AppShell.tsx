@@ -9,6 +9,7 @@ import { applyTheme, readTheme, type Theme } from "@/lib/theme";
 import { ThreadSidebar } from "@/components/threads/ThreadSidebar";
 import { NewThreadDialog } from "@/components/threads/NewThreadDialog";
 import { NavRail } from "@/components/layout/NavRail";
+import { SessionChainButton } from "@/components/session/SessionChainButton";
 import { Icon } from "@/components/ui/Icon";
 import { usePolling } from "@/lib/polling";
 
@@ -97,6 +98,7 @@ export function AppShell() {
 						)}
 					</div>
 					<div className="st-topbar-actions">
+						<SessionChainButton threadId={activeThreadId} agents={agents} />
 						<button
 							type="button"
 							className="st-icon-button st-theme-button"

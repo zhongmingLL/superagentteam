@@ -13,6 +13,7 @@ import { createLegacyRoutes, type LegacyRoutes } from "./routes/legacy.ts";
 import { createLiveRoutes, type LiveRoutes } from "./routes/live.ts";
 import { createMessageRoutes, type MessageRoutes } from "./routes/messages.ts";
 import { createQueueRoutes, type QueueRoutes } from "./routes/queue.ts";
+import { createSessionRoutes, type SessionRoutes } from "./routes/sessions.ts";
 import { createThreadRoutes } from "./routes/threads.ts";
 import {
 	type BrowserSession,
@@ -89,6 +90,9 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 		? createQueueRoutes({ runtime: options.a2a.runtime, changeBus: options.changeBus })
 		: null;
 	const liveRoutes: LiveRoutes | null = options.a2a ? createLiveRoutes({ runtime: options.a2a.runtime }) : null;
+	const sessionRoutes: SessionRoutes | null = options.a2a
+		? createSessionRoutes({ runtime: options.a2a.runtime, changeBus: options.changeBus })
+		: null;
 	const invocationRoutes: InvocationRoutes | null = options.a2a
 		? createInvocationRoutes({ runtime: options.a2a.runtime, changeBus: options.changeBus })
 		: null;
@@ -236,6 +240,7 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 			if (invocationRoutes?.handle(request, response, url, context)) return true;
 			if (threadRoutes && (await threadRoutes.handle(request, response, url, context))) return true;
 			if (queueRoutes && (await queueRoutes.handle(request, response, url, context))) return true;
+			if (sessionRoutes && (await sessionRoutes.handle(request, response, url, context))) return true;
 			if (liveRoutes?.handle(request, response, url, context)) return true;
 			if (messageRoutes && (await messageRoutes.handle(request, response, url, context))) return true;
 			if (agentRoutes && (await agentRoutes.handle(request, response, url, context))) return true;

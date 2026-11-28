@@ -207,6 +207,28 @@ export class MessageStore {
 		return rows.map(mapMessage).reverse();
 	}
 
+	/** F054: latest bounded window inside an inclusive seq range, returned ascending. */
+	getByThreadRangeRecent(
+		threadId: string,
+		fromSeq: number,
+		toSeq: number,
+		limit = 500,
+		options: ListMessagesOptions = {},
+	): StoredMessage[] {
+		const rows = (options.includeDeleted
+			? this.db
+					.prepare(
+						"SELECT * FROM messages WHERE thread_id = ? AND seq >= ? AND seq <= ? ORDER BY seq DESC LIMIT ?",
+					)
+					.all(threadId, fromSeq, toSeq, limit)
+			: this.db
+					.prepare(
+						"SELECT * FROM messages WHERE thread_id = ? AND seq >= ? AND seq <= ? AND deleted_at IS NULL ORDER BY seq DESC LIMIT ?",
+					)
+					.all(threadId, fromSeq, toSeq, limit)) as unknown as MessageRow[];
+		return rows.map(mapMessage).reverse();
+	}
+
 	/** Ascending window strictly before a seq (thread_context older-window read). */
 	getByThreadBefore(
 		threadId: string,

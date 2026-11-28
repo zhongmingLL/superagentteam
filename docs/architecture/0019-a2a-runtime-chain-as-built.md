@@ -168,16 +168,41 @@ OperatorMessageIngress（domains/a2a/ingress/router.ts）
 - F043：multi-mention 提问追加“回答自动汇总，不需要 post_message”；target 向 initiator
   的重复 post_message 在创建 message/queue 前返回 `multi_mention_auto_delivery`。
 
+### 3.6 Session chain / full seal（F054）
+
+- `AgentSessionStore.listByThread(threadId, agentId?)`：返回完整链（active/sealed，
+  按 agent + seq）；`AgentSession` 仍是 lifecycle 唯一真相。
+- `SessionSealService`（`domains/sessions/seal-service.ts`）：
+  - owner / `active` / idle（tracker slot + queue pending）校验；
+  - transcript 窗口 `[上一 artifact.toSeq + 1, messages.latestSeq]`，最多 400 条；
+  - 同一 SQLite 事务：写 `session_artifacts`（transcript + 确定性 digest）+
+    `active → sealed` + delivery cursor rewind 到 `max(0, toSeq - 200)`；
+  - 失败回滚保持 active；下一次 invocation `ensureActive` 创建 seq+1；
+  - check 与事务在同一个同步 JS turn 内，事务内再次检查 tracker/queue。
+- API：
+  - `GET /api/threads/:threadId/sessions`（chain，owner-only）；
+  - `GET /api/sessions/:sessionId`（session + artifact）；
+  - `GET /api/sessions/:sessionId/transcript`（artifact transcript）；
+  - `POST /api/sessions/:sessionId/seal`（CSRF，reason 默认 `manual`）。
+- 限制：v1 只支持手动、同步 finalize；不做 restore/unseal、自动阈值 seal、
+  context health/compression、LLM handoff digest。旧 lightweight sealed 行没有
+  artifact，链上显示无制品。
+
 ## 4. 数据模型 as-built
 
 - 迁移源：`packages/superagentteam-daemon/src/infrastructure/db/migrations/`；
-  live DB 的 `sqlite_master` 与当前 as-built 基线 `af82e157` 一致。
+  live DB 的 `sqlite_master` 与当前 as-built 基线（含 F054 migration 008）一致。
 - 核心表：`invocation_queue`、`invocation_records`、`turn_executions`、
   `invocation_attempts`、`response_drafts`、`invocation_credentials`、
   `agent_read_state`、`workers`、`worker_bindings`、`messages`、`threads`、
-  `agent_sessions`。
+  `agent_sessions`、`session_artifacts`（F054）。
 - multi-mention：`multi_mention_requests`、`multi_mention_responses`、
   `multi_mention_callbacks`。
+- F054 `session_artifacts`：`session_id` PK、`thread_id/agent_id/seq`、
+  `sealed_at/seal_reason`、`from_seq/to_seq`、`message_count`、`transcript_bytes`、
+  `digest_json`（object）、`transcript_json`（array）、`created_at`；
+  `session_artifacts_chain(thread_id, agent_id, seq)`；FK session/thread；
+  不可变制品，seal 后不重写。
 - 与 0007 的 DDL 差异（已修正 0007 的两处明确错误）：
   - `invocation_records` 的唯一性是 `UNIQUE(thread_id, source_record_id)`，不是列级
     `source_record_id UNIQUE`（0018 R-01 / DP-F018）。
@@ -409,6 +434,23 @@ OperatorMessageIngress（domains/a2a/ingress/router.ts）
   （request + responses + allFailed + callback）；aggregate message `extra.multiMention`
   与 callback row 是同一投影源。callback 的 `queueEntryId` 在 queue row 删除后由
   `ON DELETE SET NULL` 置空，parent/turn 字段保留投递证据。
+
+### R10 · Session chain / full seal（F054）
+
+- **0007/0010**：v1 只做 lightweight seal（active→sealed + seq+1）；
+  transcript/digest/chain 导航属于 v2。
+- **as-built**：F054 增加 `session_artifacts` + `SessionSealService` + 4 条 API +
+  Hub Sessions 面板；不改变 resume/lightweight seal 语义。
+- **classification**：**ratified additive extension**（F054 feature + PR #278；
+  无 0007 target 冲突）。F054 v1 是手动同步 full seal，不实现 Clowder 的
+  自动阈值/异步 finalize/restore。
+- **known window 1（首封窗口）**：`fromSeq` 只看已有 `session_artifacts`；旧
+  lightweight sealed session 没有 artifact，第一次 full seal 的窗口从 1 开始，
+  语义是 thread-level transcript，可能包含更早 session 的消息；最多 400 条
+  截断。后续可 backfill 或改用 session 边界列。
+- **known window 2（check→commit）**：tracker/queue 检查与 artifact+seal 事务在
+  同一同步 JS turn 内执行，事务内再次检查；因此不存在可观测的 check→commit
+  交错。若未来改为异步 finalize，需要重新引入 guard。
 
 ## 8. 整改计划 / 决策点
 

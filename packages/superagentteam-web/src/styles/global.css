@@ -2990,6 +2990,245 @@ svg {
 	color: var(--st-danger);
 }
 
+.st-session-dialog {
+	width: min(760px, 100%);
+	max-height: min(820px, calc(100vh - 32px));
+	overflow: auto;
+}
+
+.st-session-dialog-head,
+.st-session-detail-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.st-session-dialog-head h2 {
+	margin: 0;
+}
+
+.st-session-group {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.st-session-group h3 {
+	margin: 0;
+	color: var(--st-muted);
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.st-session-rows {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.st-session-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	padding: 7px 9px;
+	border: 1px solid var(--st-hairline);
+	border-radius: var(--st-radius-md);
+	background: var(--st-surface-2);
+	font-size: 10.5px;
+}
+
+.st-session-row.is-active {
+	border-color: var(--st-primary-soft);
+	background: var(--st-surface-1);
+}
+
+.st-session-seq {
+	flex: none;
+	color: var(--st-muted);
+	font-family: var(--st-font-mono);
+	font-size: 9.5px;
+}
+
+.st-session-status {
+	flex: none;
+	padding: 1px 7px;
+	border-radius: 999px;
+	background: var(--st-surface-3);
+	color: var(--st-muted);
+	font-size: 9px;
+}
+
+.st-session-status.is-active {
+	background: var(--st-primary-soft);
+	color: var(--st-primary-active);
+}
+
+.st-session-status.is-sealed {
+	background: var(--st-surface-3);
+	color: var(--st-body);
+}
+
+.st-session-count,
+.st-session-time {
+	flex: none;
+	color: var(--st-muted);
+	font-size: 9.5px;
+}
+
+.st-session-reason {
+	min-width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	color: var(--st-muted);
+	font-size: 9.5px;
+}
+
+.st-session-actions {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	margin-left: auto;
+}
+
+.st-session-action {
+	padding: 2px 8px;
+	border: 1px solid var(--st-hairline-strong);
+	border-radius: 999px;
+	background: var(--st-surface-1);
+	color: var(--st-primary);
+	font-size: 9.5px;
+	cursor: pointer;
+}
+
+.st-session-action:hover {
+	border-color: var(--st-primary);
+	background: var(--st-primary-soft);
+}
+
+.st-session-action.is-danger {
+	border-color: var(--st-danger);
+	color: var(--st-danger);
+}
+
+.st-session-action:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+.st-session-confirm,
+.st-session-no-artifact {
+	color: var(--st-muted);
+	font-size: 9.5px;
+}
+
+.st-session-notice {
+	margin: 0;
+	color: var(--st-success);
+	font-size: 10.5px;
+}
+
+.st-session-detail {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 10px;
+	border: 1px solid var(--st-hairline);
+	border-radius: var(--st-radius-md);
+	background: var(--st-surface-2);
+}
+
+.st-session-detail-head strong {
+	color: var(--st-ink);
+	font-size: 11.5px;
+}
+
+.st-session-digest {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 12px;
+	color: var(--st-body);
+	font-size: 10px;
+}
+
+.st-session-tools {
+	margin: 0;
+	color: var(--st-body);
+	font-size: 10px;
+}
+
+.st-session-recent {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.st-session-recent li {
+	display: flex;
+	gap: 8px;
+	color: var(--st-body);
+	font-size: 10px;
+}
+
+.st-session-recent li span {
+	flex: none;
+	min-width: 58px;
+	color: var(--st-muted);
+	font-family: var(--st-font-mono);
+	font-size: 9px;
+}
+
+.st-session-transcript {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	max-height: 300px;
+	overflow-y: auto;
+	padding-top: 6px;
+	border-top: 1px solid var(--st-hairline);
+}
+
+.st-session-transcript article {
+	padding: 6px 8px;
+	border-radius: var(--st-radius-sm);
+	background: var(--st-surface-1);
+}
+
+.st-session-transcript header {
+	display: flex;
+	gap: 8px;
+	color: var(--st-muted);
+	font-family: var(--st-font-mono);
+	font-size: 9px;
+}
+
+.st-session-transcript p {
+	margin: 3px 0 0;
+	color: var(--st-body);
+	font-size: 10.5px;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+	.st-session-dialog {
+		max-height: calc(100vh - 24px);
+		padding: 14px;
+	}
+
+	.st-session-actions {
+		margin-left: 0;
+	}
+}
+
 .st-accounts-head {
 	display: flex;
 	align-items: flex-start;

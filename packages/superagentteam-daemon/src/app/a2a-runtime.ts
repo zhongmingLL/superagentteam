@@ -27,6 +27,8 @@ import { SteerRegistry } from "../domains/queue/steer/registry.ts";
 import { SteerService } from "../domains/queue/steer/service.ts";
 import { InvocationTracker } from "../domains/queue/tracker/index.ts";
 import { RichBlockService } from "../domains/rich-blocks/service.ts";
+import { SessionArtifactStore } from "../domains/sessions/artifacts.ts";
+import { SessionSealService } from "../domains/sessions/seal-service.ts";
 import { AgentSessionStore } from "../domains/sessions/store.ts";
 import { ResponseDraftStore } from "../domains/streaming/store.ts";
 import { ThreadStore } from "../domains/threads/store.ts";
@@ -59,6 +61,8 @@ export interface A2ARuntime {
 	messages: MessageStore;
 	readState: AgentReadStateStore;
 	sessions: AgentSessionStore;
+	sessionArtifacts: SessionArtifactStore;
+	sessionSeal: SessionSealService;
 	credentials: InvocationCredentialStore;
 	drafts: ResponseDraftStore;
 	multiMention: MultiMentionStore;
@@ -91,6 +95,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 	const messages = new MessageStore(db);
 	const readState = new AgentReadStateStore(db);
 	const sessions = new AgentSessionStore(db);
+	const sessionArtifacts = new SessionArtifactStore(db);
 	const credentials = new InvocationCredentialStore(db);
 	const drafts = new ResponseDraftStore(db);
 	const multiMention = new MultiMentionStore(db);
@@ -100,6 +105,17 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 	const queue = new QueueLedgerStore(db);
 	const tracker = new InvocationTracker(clock);
 	const steerRegistry = new SteerRegistry();
+	const sessionSeal = new SessionSealService({
+		db,
+		threads,
+		sessions,
+		artifacts: sessionArtifacts,
+		messages,
+		readState,
+		tracker,
+		queue,
+		clock,
+	});
 	const workerStore = new WorkerStore(db);
 	const bindingStore = new WorkerBindingStore(db);
 	const pool = new WorkerPool({ workers: workerStore, bindings: bindingStore, spawn: deps.spawn, clock });
@@ -273,6 +289,8 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		messages,
 		readState,
 		sessions,
+		sessionArtifacts,
+		sessionSeal,
 		credentials,
 		drafts,
 		multiMention,

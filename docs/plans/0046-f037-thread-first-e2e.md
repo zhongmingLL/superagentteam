@@ -3,7 +3,7 @@ title: "F037 execution plan — thread-first full-feature E2E"
 doc_kind: plan
 status: done
 created: 2026-11-26
-updated: 2026-11-26
+updated: 2026-11-28
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 feature: F037
@@ -154,5 +154,8 @@ node packages/superagentteam-daemon/dist/cli.js \
 - PR #211 landed `2db3f3b79135ea13bfd9692c06b31ab5af1c3c5a`（2026-11-26）。
 - Reviewed HEAD `e7b27af5b`（实质代码 `93997c049`）；墨墨非作者 approve。
 - CI 5/5；daemon 507 / web 109 / `npm run check` / doc index 47/37 绿。
+- **2026-11-28 operator 验收通过**：F037 status `done`；最终 runtime `dceb0f86e`；
+  BUG-F037-003/004/005 与 BUG-F051-001 修复并部署；web 120/120、daemon 561/5、
+  CI 5/5。收口报告 `docs/reports/2026-11-28-f037-acceptance-close.md`。
 
 [宪宪/deepseek-flash🐾]

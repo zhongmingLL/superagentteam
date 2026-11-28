@@ -117,6 +117,15 @@ F043 又加了 auto-delivery 拒绝和 prompt 提示。F046 把这些工具面/�
 - 旧的 tool-time queue 断言已改为 pending 契约；cross_post R4/fullstack 继续通过，
   证明 flush 后链路不变。
 
+### 2026-11-28 验收调整（operator）
+
+- multi-mention target 回复保留在主时间线（不再用 aggregate responseMessageId 过滤），
+  汇总卡作为摘要；避免“运行中可见、完成后消失”。
+- 汇总卡与 agent 气泡同列（38px 偏移 + 80% 列宽）；`post_message` 气泡同列，并在 body
+  内加 `post_message` 标签 + 横线，保留原 sender/recipient 头部与 footer。
+- PR #266 merged `7fe438118`；墨墨 approve；报告
+  [`2026-11-28-f037-acceptance-a2a-bubbles.md`](../reports/2026-11-28-f037-acceptance-a2a-bubbles.md)。
+
 - **Clowder 参考路径**（相对参考仓根目录）：
   - `packages/mcp-server/src/tools/callback-tools.ts`（post/cross_post/multi_mention tool schemas/handlers）
   - `packages/api/src/routes/callbacks.ts`（post_message callback delivery）

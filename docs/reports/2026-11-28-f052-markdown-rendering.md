@@ -50,6 +50,28 @@ SuperAgentTeam 原 `MessageContent` 只用正则拆 fenced code，其余文本�
 - runtime 实测：`a2a-测试2` agentD 的 h2/h3/GFM 表格/bold/list/inline code 正常渲染，
   长内容显示“展开”；截图 `f052-runtime-markdown-1440.png`。
 
+## 字体栈跟进（2026-11-28）
+
+operator 反馈 Markdown 正文的数字/字母不好看，并问 Clowder 使用什么字体。核对结论：
+
+- Clowder 正文声明 `"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`，
+  但仓库没有自托管 Inter（无 `@font-face` / `next/font` 加载）；实际观感来自 OS 系统字体
+  （macOS SF Pro / Windows Segoe UI）。Clowder 只在排行榜自托管 Fraunces 与 Plus Jakarta Sans。
+- SAT 同样声明 Inter 但从未加载；且原回退顺序把 `"PingFang SC"` / `"Noto Sans CJK SC"`
+  放在 Latin 系统字体之前，缺少 Inter 的机器上数字/字母会落到 CJK 字体或 Arial/DejaVu。
+
+修复：
+
+- 自托管 Inter Variable（latin + latin-ext 两个 woff2，SIL OFL 1.1，来源与 SHA 记录在
+  `packages/superagentteam-web/src/assets/fonts/PROVENANCE.md`），`font-display: swap`。
+- `--st-font-body` / `--st-font-display` 回退顺序改为
+  `Inter → SF/Segoe UI/Roboto/Helvetica/Arial → PingFang/Noto CJK → sans-serif`。
+- `.st-message-content` 字号 13px → 14px，对齐 Clowder Markdown 的 `text-sm`。
+- 预览：`docs/design/F052/f052-font-before-1440.png` / `f052-font-after-1440.png`
+  （runtime 3005 同一 thread，只读注入对比，不改运行时数据）。
+- 验证：web 26 files / 126 tests passed；tsc + vite build passed；字体产物
+  `Inter-Variable-latin` 48KB + `-latin-ext` 85KB。
+
 ## 限制
 
 - v1 不含 math/KaTeX、Mermaid、workspace/文件路径链接、agent 注册表 mention 颜色。

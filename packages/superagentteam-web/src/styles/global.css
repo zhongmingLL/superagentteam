@@ -1292,8 +1292,19 @@ svg {
 	color: var(--st-muted);
 }
 
-.st-message.is-a2a-private {
+.st-message.is-a2a-private,
+.st-message.is-multi-mention {
 	justify-content: flex-start;
+}
+
+.st-message.is-agent-column .st-message-stack {
+	flex: 0 1 80%;
+	width: 80%;
+	max-width: 80%;
+}
+
+.st-message.is-multi-mention .st-message-stack {
+	margin-left: 38px;
 }
 
 .st-a2a-private-head {
@@ -1301,27 +1312,19 @@ svg {
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 6px;
-	max-width: min(760px, 82%);
-	padding: 0 5px;
 	color: var(--st-muted);
 	font-size: 9.5px;
 }
 
-.st-a2a-private-head time {
-	margin-left: auto;
+.st-a2a-private-kind {
+	color: var(--st-ink);
+	font-family: var(--st-font-mono);
+	font-size: 9.5px;
+	font-weight: 700;
 }
 
 .st-a2a-private-arrow {
 	color: var(--st-muted);
-}
-
-.st-a2a-private-sender {
-	padding: 1px 7px;
-	border: 1px solid var(--st-hairline);
-	border-radius: 999px;
-	background: var(--st-surface-2);
-	color: var(--st-ink);
-	font-weight: 600;
 }
 
 .st-a2a-private-recipient {
@@ -1341,12 +1344,15 @@ svg {
 	letter-spacing: 0.04em;
 }
 
+.st-a2a-private-divider {
+	height: 1px;
+	margin: 8px 0 10px;
+	background: var(--st-hairline);
+}
+
 .st-a2a-private-body {
-	max-width: min(760px, 82%);
-	padding: 10px 14px;
-	border: 1px solid var(--st-hairline);
-	border-radius: var(--st-radius-lg);
-	background: var(--st-surface-1);
+	width: 100%;
+	max-width: 100%;
 }
 
 .st-a2a-private-content.is-clamped {
@@ -1357,19 +1363,15 @@ svg {
 }
 
 .st-a2a-private-footer {
-	padding: 0 5px;
+	padding: 0;
 	color: var(--st-muted);
 	font-size: 9.5px;
 }
 
-.st-message.is-multi-mention {
-	justify-content: stretch;
-}
-
 .st-multi-mention-card {
 	width: 100%;
-	max-width: min(900px, 100%);
-	margin: 0 auto;
+	max-width: 100%;
+	margin: 0;
 	padding: 14px 16px;
 	border: 1px solid var(--st-hairline);
 	border-radius: var(--st-radius-lg);

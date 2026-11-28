@@ -276,8 +276,10 @@ function MessageRow({
 	};
 	if (multiMention) {
 		return (
-			<article className="st-message is-system is-multi-mention" data-message-id={message.id}>
-				<MultiMentionCard message={message} messagesById={messagesById} agentLabel={agentLabel} />
+			<article className="st-message is-system is-agent-column is-multi-mention" data-message-id={message.id}>
+				<div className="st-message-stack">
+					<MultiMentionCard message={message} messagesById={messagesById} agentLabel={agentLabel} />
+				</div>
 			</article>
 		);
 	}
@@ -287,21 +289,30 @@ function MessageRow({
 		const long = messageIsLong(message.content);
 		return (
 			<article
-				className="st-message is-agent is-a2a-private"
+				className="st-message is-agent is-agent-column is-a2a-private"
 				data-message-id={message.id}
 				data-testid="message-a2a-private"
 			>
+				{agentId !== null ? (
+					<span className={`st-message-avatar tone-${toneFor(agentId)}`} aria-hidden="true">
+						{initialForName(senderName)}
+					</span>
+				) : null}
 				<div className="st-message-stack">
-					<div className="st-a2a-private-head">
-						<span className="st-a2a-private-sender">{senderName}</span>
-						<span className="st-a2a-private-arrow" aria-hidden="true">
-							→
-						</span>
-						<span className="st-a2a-private-recipient">{recipientLabel}</span>
-						<span className="st-a2a-private-badge">A2A</span>
+					<div className="st-message-meta">
+						<span className="st-message-sender">{senderName}</span>
 						<time dateTime={new Date(message.timestamp).toISOString()}>{formatRelative(message.timestamp)}</time>
 					</div>
-					<div className="st-a2a-private-body">
+					<div className="st-message-body st-a2a-private-body">
+						<div className="st-a2a-private-head">
+							<span className="st-a2a-private-kind">post_message</span>
+							<span className="st-a2a-private-arrow" aria-hidden="true">
+								→
+							</span>
+							<span className="st-a2a-private-recipient">{recipientLabel}</span>
+							<span className="st-a2a-private-badge">A2A</span>
+						</div>
+						<div className="st-a2a-private-divider" role="separator" />
 						<div className={`st-a2a-private-content${expanded ? "" : " is-clamped"}`}>
 							<MessageContent content={message.content} />
 						</div>
@@ -311,9 +322,7 @@ function MessageRow({
 							</button>
 						) : null}
 					</div>
-					<div className="st-a2a-private-footer">
-						私人消息 · {deliveryState} {recipientLabel}
-					</div>
+					<div className="st-a2a-private-footer">私人消息 · {deliveryState} {recipientLabel}</div>
 				</div>
 			</article>
 		);
@@ -493,15 +502,6 @@ export function MessageList({
 			.filter((invocationId): invocationId is string => invocationId !== null),
 	);
 	const messagesById = new Map(messages.map((message) => [message.id, message]));
-	const hiddenResponseIds = new Set<string>();
-	for (const message of messages) {
-		const responses = message.extra?.multiMention?.responses;
-		if (!Array.isArray(responses)) continue;
-		for (const response of responses) {
-			if (response.responseMessageId) hiddenResponseIds.add(response.responseMessageId);
-		}
-	}
-	const visibleMessages = messages.filter((message) => !hiddenResponseIds.has(message.id));
 	const scrollToLatest = (): void => {
 		if (!followingLatest) onResumeLatest();
 		pinnedRef.current = true;
@@ -556,7 +556,7 @@ export function MessageList({
 					<p className="st-thread-empty-hint">在下面发第一条消息。</p>
 				</div>
 			) : null}
-			{visibleMessages.map((message) => (
+			{messages.map((message) => (
 				<MessageRow
 					key={message.id}
 					message={message}

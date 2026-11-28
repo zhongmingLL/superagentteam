@@ -458,13 +458,18 @@ describe("message list", () => {
 		const a2a = screen.getByTestId("message-a2a-private");
 		expect(a2a).toHaveTextContent("A2A");
 		expect(a2a).toHaveTextContent("Agent B");
+		expect(a2a).toHaveTextContent("post_message");
 		expect(a2a).toHaveTextContent("私人消息");
 		expect(a2a).toHaveTextContent("已回复");
-		expect(a2a.querySelector(".st-message-avatar")).toBeNull();
+		expect(a2a.querySelector(".st-message-avatar")).not.toBeNull();
+		expect(a2a.querySelector(".st-message-body")).not.toBeNull();
+		expect(a2a.querySelector('[role="separator"]')).not.toBeNull();
+		expect(a2a.className).toContain("is-agent-column");
+		expect(a2a.querySelector(".st-a2a-private-kind")).toHaveTextContent("post_message");
 		expect(container.querySelector('[data-testid="message-dispatch-targets"]')).toBeNull();
 	});
 
-	it("renders multi-mention responses inside one card and hides the scattered response rows", () => {
+	it("keeps multi-mention responses visible alongside the summary card", () => {
 		const { container } = renderList({
 			messages: [
 				message({
@@ -500,13 +505,14 @@ describe("message list", () => {
 			agentLabel: (agentId) => (agentId === "a1" ? "Agent A" : agentId === "a2" ? "Agent B" : "Agent C"),
 		});
 		const card = screen.getByTestId("multi-mention-card");
+		expect(container.querySelector('article[data-message-id="msg:multi"]')?.className).toContain("is-agent-column");
 		expect(card).toHaveTextContent("2/2 已回复");
 		expect(card).toHaveTextContent("choose A or B");
 		expect(card).toHaveTextContent("Agent A");
 		expect(card).toHaveTextContent("Agent B");
 		expect(card).toHaveTextContent("自动汇总 → Agent C");
-		expect(container.querySelector('article[data-message-id="resp:a1"]')).toBeNull();
-		expect(container.querySelector('article[data-message-id="resp:a2"]')).toBeNull();
+		expect(container.querySelector('article[data-message-id="resp:a1"]')).not.toBeNull();
+		expect(container.querySelector('article[data-message-id="resp:a2"]')).not.toBeNull();
 	});
 
 	it("renders rich blocks and a visible fallback for unknown kinds", () => {

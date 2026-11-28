@@ -47,7 +47,7 @@ Clowder 参考：`packages/web/src/components/MarkdownContent.tsx` 使用
 - [x] AC-5：web 26 files / 125 tests + build 绿；真实 Hub 1440/390 预览通过；
   非作者 review 通过（砚砚 approve @ `a6eced447`，delta @ `b0195b60a`）。
 - [x] AC-6：正文使用自托管 Inter Variable（SIL OFL 1.1），回退顺序 Latin 系统字体优先、
-  CJK 兜底；消息正文 14px 对齐 Clowder；before/after 预览通过。
+  CJK 兜底；消息正文 14px 对齐 Clowder；before/after + 部署后 1440/390 预览通过。
 
 ## 实现
 
@@ -61,6 +61,8 @@ Clowder 参考：`packages/web/src/components/MarkdownContent.tsx` 使用
 - 字体：`src/assets/fonts/` 自托管 Inter Variable（latin + latin-ext）；
   `tokens.css` 增加 `@font-face` 并修正 `--st-font-body/display` 回退顺序；
   `.st-message-content` 14px / 1.6。
+- 部署：PR #274 merged `5c6db6a5e`；runtime 3005/3014 已重启到该修订；
+  实测 `Inter:loaded`、14px、1440/390 无横向滚动。
 
 ## 证据
 

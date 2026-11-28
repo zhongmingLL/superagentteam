@@ -107,6 +107,16 @@ export class AgentSessionStore {
 		return row ? mapSession(row) : null;
 	}
 
+	/** F054: full chain for a thread, ordered by agent then seq (sealed rows included). */
+	listByThread(threadId: string, agentId?: string): AgentSession[] {
+		const rows = (agentId === undefined
+			? this.db.prepare("SELECT * FROM agent_sessions WHERE thread_id = ? ORDER BY agent_id, seq").all(threadId)
+			: this.db
+					.prepare("SELECT * FROM agent_sessions WHERE thread_id = ? AND agent_id = ? ORDER BY seq")
+					.all(threadId, agentId)) as unknown as SessionRow[];
+		return rows.map(mapSession);
+	}
+
 	/** Lightweight seal (0010 §6): active → sealed only; next active gets seq+1. */
 	sealActive(sessionId: string, reason: string, now: number): AgentSession | null {
 		const changes = this.db

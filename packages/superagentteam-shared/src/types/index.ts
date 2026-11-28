@@ -12,5 +12,6 @@ export type SuperAgentTeamSharedVersion = "v1-r1-0";
 export * from "./invocation.ts";
 export * from "./message.ts";
 export * from "./multi-mention.ts";
+export * from "./session.ts";
 export * from "./thread.ts";
 export * from "./thread-context.ts";

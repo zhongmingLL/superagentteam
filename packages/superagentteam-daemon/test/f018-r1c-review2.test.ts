@@ -352,6 +352,7 @@ describe("004 down rebuilds attempts without session/worker FKs", () => {
 		dirs.push(dir);
 		const db = new F018Database({ path: join(dir, "f018.db"), noMigrate: true });
 		db.migrateUp();
+		db.migrateDown(); // drops 008 (session artifacts)
 		db.migrateDown(); // drops 007 (rich blocks)
 		db.migrateDown(); // drops 006 (thread read state)
 		db.migrateDown(); // drops 005 (multi_mention)

@@ -82,11 +82,12 @@ operator 在 `a2a-测试` thread 做 multi-mention / post_message / 排队测试
 - [x] AC-2：agent A 长跑期间 @agent B，B 在 A 结束前开始执行；队列面板只在 B 真正等待时显示。
 - [x] AC-3：post_message 唤醒的目标能在 prompt 中读到源消息；不再出现"无新消息"的空转回复。
 - [x] AC-4：A2A 私有消息按选定设计渲染（A：无头像私有气泡 + recipient pill + A2A
-  标记）；multi-mention burst 收进 C 汇总卡，不再散落成多个气泡。实现于
+  标记）；multi-mention target 回复保留为普通 agent 气泡，同时收进 C 汇总卡。
+  2026-11-28 operator 验收调整为“回复可见 + 汇总卡摘要”。实现于
   `packages/superagentteam-web/src/components/chat/MessageList.tsx`；web 120 tests + build 绿。
   live 视觉证据：F050 AC-4b 四张真实 Hub 截图（1440/390、光暗，
   `docs/design/F050/ac4b-multi-mention-*.png`），operator 2026-11-28 签收；
-  runtime 3005/3014 已部署 `df2f1b978`。
+  runtime 3005/3014 已部署 `7fe438118`。
 - [x] AC-5：daemon/web tests、typecheck、doc-index 绿；非作者 review。
 
 ## 风险
@@ -129,7 +130,8 @@ operator 在 `a2a-测试` thread 做 multi-mention / post_message / 排队测试
 - A：A2A 私有消息渲染为无头像私有气泡；recipient pill + A2A 标记 + 展开全文；
   普通公开回复保持 nameplate。
 - C：multi-mention 收进一张汇总卡（question + per-target rows + 状态 + 自动汇总目标），
-  对应 response 行从主时间线隐藏，不再散落。
+  对应 response 行从主时间线隐藏，不再散落。（2026-11-28 验收后改为：response 行
+  保留为普通 agent 气泡，汇总卡继续做摘要。）
 - 代码：`packages/superagentteam-web/src/components/chat/MessageList.tsx`、
   `packages/superagentteam-web/src/domains/chat/api.ts`、`src/styles/global.css`。
 - 验证：web 120 tests / 25 files 全绿；`npm run build --workspace @superagentteam/web` 绿。
@@ -153,3 +155,11 @@ operator 在 `a2a-测试` thread 做 multi-mention / post_message / 排队测试
 ![F043 A2A 私有气泡 + multi-mention 汇总卡 · 1440 dark](../reports/2026-11-27-f043-a2c-1440-dark.png)
 
 ![F043 A2A 私有气泡 + multi-mention 汇总卡 · 390 light](../reports/2026-11-27-f043-a2c-390-light.png)
+
+### 2026-11-28 验收调整（operator）
+
+- multi-mention target 回复不再从时间线隐藏，作为普通 agent 气泡保留；汇总卡仍在。
+- private A2A / multi-mention card 与 agent 气泡同列（38px 偏移 + 80% 列宽）。
+- `post_message` 保留原头部/气泡/footer，仅在 body 内加 `post_message` 标签 + 横线。
+- PR #266 merged `7fe438118`；墨墨 approve；报告
+  [`2026-11-28-f037-acceptance-a2a-bubbles.md`](../reports/2026-11-28-f037-acceptance-a2a-bubbles.md)。

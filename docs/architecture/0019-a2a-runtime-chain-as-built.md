@@ -6,7 +6,7 @@ created: 2026-11-27
 updated: 2026-11-28
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 doc_role: "current implementation truth; 0007 remains the target-design/history document"
-evidence_baseline: "code e1d1dd38b; runtime 3005/3014 deployed 2026-11-28; isolated live 3007/3016 2026-11-28"
+evidence_baseline: "code 7fe438118; runtime 3005/3014 deployed 2026-11-28; isolated live 3007/3016 2026-11-28"
 ---
 
 # SuperAgentTeam A2A runtime chain — as-built

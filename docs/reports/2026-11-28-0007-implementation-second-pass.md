@@ -45,6 +45,7 @@ F046b successor、F047 DDL、F048 并发/recovery 与 0007 target 的核心行�
 | S6 | P3 | doc drift | 0019 §10 仍列 D1/D3/D4 待 operator 决策 | 改为已关闭；D1=B、D3=implement、D4 fixed |
 | S7 | P3 | doc gap | 0019 §3.2 preflight 列表漏 `session_workspace_changed` / `workspace_unavailable` | 补入；代码 `INVALID_SESSION_REASONS` 已包含两者 |
 | S8 | P3 | target-only mapping | `AgentRouter.resolveTargets`、`routeAgents(): AsyncIterable`、`commit(result)`、`InvocationRegistry`、collector class、`MessageDispatchSummary` | 0019 §7/§9 已记录显式映射；无行为缺口，不新增第二套 API |
+| S9 | P3 | target-only mapping | 0007 §3.4 写 tracker 抢占会把旧 TurnExecution 标 `interrupted/preempted`；实际 tracker 只 abort，旧 turn 捕获 signal 后终态为 `canceled` | F048 B5 覆盖无 zombie/新 slot 行为；0007 增加 as-built note，0019 §3.4/§6 记录 owner 映射 |
 
 ## 代码核验
 

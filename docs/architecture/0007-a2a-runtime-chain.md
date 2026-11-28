@@ -1242,6 +1242,11 @@ class InvocationTracker {
   旧 worker 未退出时新 start 返回 `worker_busy`，QueueProcessor 释放 claim 稍后重试。
 - `startAll` all-or-nothing：任一 target 的 slot 或 worker 不可用则全部不启动。
 - `complete` / `completeAll` 只释放匹配 `turnExecutionId` 的 slot（ownership fence），防止 late terminal 清掉 replacement。
+
+> **As-built note（2026-11-28，F048 B5）**：tracker `start` 只 abort 旧 controller；
+> 旧 TurnExecution 由该 turn 捕获的 signal 收敛为 `canceled`（不是 tracker 直接写
+> `interrupted/preempted`）。无 zombie、新 slot 立即登记，行为由
+> `f044-route-fullstack-e2e` B5 覆盖。
 - `isBusy` = slot active；取消即释放后不再有 pending teardown 状态；旧 worker 的忙由 `TurnExecution` 唯一 running + `RpcConnection.prompting` 表达。
 - 进程内，不持久化；durable truth 是 `TurnExecution.status`。
 

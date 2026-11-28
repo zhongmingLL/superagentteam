@@ -304,7 +304,23 @@ function MessageRow({
 			>
 				<div className="st-message-stack">
 					<div className="st-cross-post-head">
-						<span className="st-cross-post-sender">{senderName}</span>
+						<span className="st-cross-post-sender">
+							<span>{senderName}</span>
+							<span className="st-cross-post-source">
+								<span>跨线程来自</span>
+								{onOpenThread ? (
+									<button
+										type="button"
+										className="st-link-button"
+										onClick={() => onOpenThread(crossPost.sourceThreadId)}
+									>
+										{sourceLabel}
+									</button>
+								) : (
+									<span>{sourceLabel}</span>
+								)}
+							</span>
+						</span>
 						{recipients.length > 0 ? (
 							<>
 								<span className="st-cross-post-arrow" aria-hidden="true">
@@ -317,20 +333,6 @@ function MessageRow({
 								))}
 							</>
 						) : null}
-						<span className="st-cross-post-source">
-							<span>跨线程来自</span>
-							{onOpenThread ? (
-								<button
-									type="button"
-									className="st-link-button"
-									onClick={() => onOpenThread(crossPost.sourceThreadId)}
-								>
-									{sourceLabel}
-								</button>
-							) : (
-								<span>{sourceLabel}</span>
-							)}
-						</span>
 						<time dateTime={new Date(message.timestamp).toISOString()}>{formatRelative(message.timestamp)}</time>
 					</div>
 					<div className="st-cross-post-body">

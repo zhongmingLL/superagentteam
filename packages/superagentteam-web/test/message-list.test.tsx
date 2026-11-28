@@ -409,6 +409,7 @@ describe("message list", () => {
 		expect(article?.querySelector(".st-message-avatar")).toBeNull();
 		expect(article).toHaveTextContent("cross_post_message");
 		expect(article?.querySelector('[role="separator"]')).not.toBeNull();
+		expect(article?.querySelector(".st-cross-post-sender .st-cross-post-source")).not.toBeNull();
 		expect(screen.getAllByText("Agent B").length).toBeGreaterThan(0);
 		expect(screen.getByText("跨线程来自")).toBeInTheDocument();
 		fireEvent.click(screen.getByRole("button", { name: "Source thread" }));

@@ -1333,6 +1333,10 @@ svg {
 
 .st-cross-post-sender,
 .st-cross-post-recipient {
+	display: inline-flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px;
 	padding: 1px 7px;
 	border: 1px solid var(--st-hairline);
 	border-radius: 999px;
@@ -1349,11 +1353,10 @@ svg {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
-	padding: 1px 7px;
-	border: 1px solid var(--st-hairline);
-	border-radius: 999px;
-	background: var(--st-surface-2);
+	padding-left: 7px;
+	border-left: 1px solid var(--st-hairline);
 	color: var(--st-muted);
+	font-weight: 400;
 }
 
 .st-cross-post-source .st-link-button {

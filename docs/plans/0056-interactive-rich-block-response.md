@@ -96,6 +96,9 @@ source_decision: "operator 2026-11-28: rich-block 选择后返回，参考 Clowd
 
 ## 风险与回滚
 
+- **并发不同选择**：两次提交都在 block persist 前读取时，不同 selectedIds 会生成
+  不同确定性 messageId 并各自 ingress 成功 → 两条消息；同选择双击是幂等重放/409。
+  单 operator 场景非破坏性，记录为 v1 known limitation。
 - 回滚：移除 route + web 交互层即回到只读；已写入的 disabled/selectedIds 只是
   extra 字段，渲染器可忽略。
 - 不新增 DDL、不新增第二套消息/queue 写路径。

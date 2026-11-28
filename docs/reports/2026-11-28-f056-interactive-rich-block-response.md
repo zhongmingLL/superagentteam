@@ -111,6 +111,22 @@ SAT 把两者收成一个服务端 action，因为 message identity 与投递真
   `f056-interactive-after-1440.png`；390 截图：
   `f056-interactive-390.png`，`scrollWidth=390`（无横向滚动）。
 
+## 合入与部署
+
+- PR #282 merged `9af0b246fdd56cb867182d829630beb5b156bad4`（base
+  `superagentteam-work`）。
+- 非作者 review：砚砚 approve @ `9930ad089`，无 P1/P2；CI run `46134407881`
+  headSha 逐字一致，5/5 pass。
+- 附带 test-only 修复：F046 `multi_mention` E2E 的 wait 条件从“消息可见”改为
+  “callback 终态 completed”（+ fresh re-read），消除两次 CI 命中的既有 flake；
+  已在 PR body 披露。
+- 部署：`/home/ming/agent/superagentteam-runtime` checkout 并重启到
+  `9af0b246f`；`/health.runningRevision` 逐字一致（bootSequence 79）。
+- 部署核验（真实 runtime 3005/3014）：
+  - 无 CSRF 的 respond 请求 → `403 csrf_failed`；带 CSRF 的未知 message →
+    `404 message_not_found`（证明新路由已注册且 typed error 生效）。
+  - Web `GET /src/domains/chat/api.ts` 含 `rich-blocks` 路径，`/` 200。
+
 ## 已知限制
 
 - 选择是终局：提交后 block disabled，不做撤销/重选；重复提交 409。
@@ -118,6 +134,9 @@ SAT 把两者收成一个服务端 action，因为 message identity 与投递真
 - 不支持 `OptionAction` 直接回调 endpoint；所有选择都走普通用户消息。
 - 旧 producer 可能产出 >12 options 的 interactive block：Hub 显示只读
   fallback，API 返回 422；生产端 skill 已改为 1–12。
+- 并发**不同选择**的双提交（两次读都在 persist 前）会因不同确定性 messageId
+  各自成功而产生两条消息；同选择双击是幂等重放/409。单 operator 且非破坏性，
+  记录为 known limitation（砚砚 review 注）。
 
 ## 状态
 

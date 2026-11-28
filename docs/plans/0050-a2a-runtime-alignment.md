@@ -257,12 +257,12 @@ review 与 CI 5/5：
 | F047 | #254 `0dc8dcf7a` | 砚砚 approve @ `ea2b37826` |
 | F048 | #253 `59f0ec53e` | 砚砚 approve @ `ae99d75e0` |
 | F050 | #258 `b453703ee` | 砚砚 approve @ `6e3a3ec48` |
-| F051 | #259 `fcbe0ac37` / #260 `87a9f7a2d` | 砚砚 approve @ `ec74c33d3` |
+| F051 | #259 `fcbe0ac37` / #260 `87a9f7a2d` / #264 `e1d1dd38b` | 砚砚 approve @ `ec74c33d3` / `46f936e4b` |
 
 已关闭（2026-11-28）：
 
 - F050 AC-4b：真实 Hub 的 A2A 私有气泡/汇总卡 1440/390、光暗截图已补齐，operator 视觉签收。
-- F050 AC-5：operator 明确授权部署；runtime 3005/3014 已运行 `df2f1b978`，健康与写路径验证通过。
+- F050 AC-5：operator 明确授权部署；runtime 3005/3014 已运行 `e1d1dd38b`（含 F051c hotfix），健康与写路径验证通过。
 - F044 runtime cut：随本次部署完成，不再另开切换决策。
 
 剩余非目标限制：

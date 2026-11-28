@@ -133,7 +133,7 @@ export class SessionSealService {
 				span?.setAttribute("message.count", result.artifact.messageCount);
 				span?.setAttribute("transcript.bytes", result.artifact.transcriptBytes);
 				span?.setStatus("ok");
-				this.telemetry.recordSeal(result.session.sealReason ?? reason);
+				this.telemetry.recordSeal(result.session.sealReason === "manual" ? "manual" : "other");
 			} else {
 				span?.setStatus("error", "seal_rejected");
 				this.telemetry.recordError("seal", result.code);

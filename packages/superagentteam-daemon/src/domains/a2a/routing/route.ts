@@ -1,3 +1,4 @@
+import { disabledRuntimeTelemetry, type RuntimeTelemetry } from "../../../observability/runtime-telemetry.ts";
 import type { A2ALog } from "../../../shared/a2a-log.ts";
 import type { AgentRegistry } from "../../agents/registry.ts";
 import type { HistoryWindow } from "../../context/assembler.ts";
@@ -79,13 +80,17 @@ export interface AgentRouterDeps {
 	committer: RouteCommitter;
 	/** Structured lifecycle/error log; T2 failures must never be silent (P3-c). */
 	log?: A2ALog;
+	/** F055: thread-first telemetry (best-effort). */
+	telemetry?: RuntimeTelemetry;
 }
 
 export class AgentRouter {
 	private readonly deps: AgentRouterDeps;
+	private readonly telemetry: RuntimeTelemetry;
 
 	constructor(deps: AgentRouterDeps) {
 		this.deps = deps;
+		this.telemetry = deps.telemetry ?? disabledRuntimeTelemetry("agent_router");
 	}
 
 	/**
@@ -94,7 +99,34 @@ export class AgentRouter {
 	 * isolated and returned for QueueProcessor's convergence/T3 ownership.
 	 */
 	async routeAgents(targets: readonly PreparedDispatch[], mode: "parallel" | "serial"): Promise<RouteResult> {
-		return mode === "serial" ? this.routeSerial(targets) : this.routeParallel(targets);
+		const first = targets[0];
+		const span = this.telemetry.startSpan(
+			"superagentteam.route",
+			{
+				"thread.id": first?.threadId ?? "unknown",
+				"user.id": first?.userId ?? "unknown",
+				"invocation.id": first?.parentInvocationId ?? "unknown",
+				"queue.entry.id": first?.queueEntryId ?? "unknown",
+				"target.count": targets.length,
+				phase: mode,
+			},
+			first?.trace,
+		);
+		const tracedTargets = targets.map((target) => ({ ...target, ...(span ? { trace: span.context } : {}) }));
+		try {
+			const result =
+				mode === "serial" ? await this.routeSerial(tracedTargets) : await this.routeParallel(tracedTargets);
+			span?.setAttribute("status", result.errors.length > 0 ? "partial" : "ok");
+			span?.setStatus(result.errors.length > 0 ? "error" : "ok");
+			if (result.errors.length > 0) this.telemetry.recordError("route", "target_error");
+			return result;
+		} catch (error) {
+			span?.setStatus("error", "route_failed");
+			this.telemetry.recordError("route", "exception");
+			throw error;
+		} finally {
+			span?.end();
+		}
 	}
 
 	private async routeParallel(targets: readonly PreparedDispatch[]): Promise<RouteResult> {

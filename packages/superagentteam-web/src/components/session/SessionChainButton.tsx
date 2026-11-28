@@ -11,9 +11,10 @@ export function SessionChainButton({ threadId, agents }: { threadId?: string; ag
 		<>
 			<button
 				type="button"
-				className="st-icon-button st-agent-button"
+				className="st-icon-button st-agent-button st-session-chain-button"
 				aria-expanded={open}
 				aria-haspopup="dialog"
+				aria-label="Sessions"
 				onClick={() => setOpen(true)}
 			>
 				<Icon name="threads" size={14} />

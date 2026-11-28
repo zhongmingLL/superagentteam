@@ -8,6 +8,7 @@ import type {
 } from "@superagentteam/shared/types";
 
 import { runInTransaction } from "../../infrastructure/db/database.ts";
+import { disabledRuntimeTelemetry, type RuntimeTelemetry } from "../../observability/runtime-telemetry.ts";
 import { BOOTSTRAP_WINDOW } from "../context/assembler.ts";
 import type { AgentReadStateStore, MessageStore } from "../messages/store.ts";
 import type { QueueLedgerStore } from "../queue/ledger/store.ts";
@@ -46,6 +47,7 @@ export interface SessionSealServiceDeps {
 	readState: AgentReadStateStore;
 	tracker: InvocationTracker;
 	queue: QueueLedgerStore;
+	telemetry?: RuntimeTelemetry;
 	clock?: () => number;
 }
 
@@ -74,10 +76,12 @@ export type SessionSealSuccess = {
 export class SessionSealService {
 	private readonly deps: SessionSealServiceDeps;
 	private readonly clock: () => number;
+	private readonly telemetry: RuntimeTelemetry;
 
 	constructor(deps: SessionSealServiceDeps) {
 		this.deps = deps;
 		this.clock = deps.clock ?? Date.now;
+		this.telemetry = deps.telemetry ?? disabledRuntimeTelemetry("session_seal");
 	}
 
 	chain(threadId: string, userId: string, agentId?: string): SessionChainResult | SessionSealRejected {
@@ -115,6 +119,36 @@ export class SessionSealService {
 	}
 
 	seal(sessionId: string, userId: string, reason = "manual"): SessionSealSuccess | SessionSealRejected {
+		const existing = this.deps.sessions.get(sessionId);
+		const span = this.telemetry.startSpan("superagentteam.session.seal", {
+			"thread.id": existing?.threadId ?? "unknown",
+			"user.id": userId,
+			"agent.id": existing?.agentId ?? "unknown",
+			"session.id": sessionId,
+			"seal.reason": reason,
+		});
+		try {
+			const result = this.sealInner(sessionId, userId, reason);
+			if (result.outcome === "sealed") {
+				span?.setAttribute("message.count", result.artifact.messageCount);
+				span?.setAttribute("transcript.bytes", result.artifact.transcriptBytes);
+				span?.setStatus("ok");
+				this.telemetry.recordSeal(result.session.sealReason === "manual" ? "manual" : "other");
+			} else {
+				span?.setStatus("error", "seal_rejected");
+				this.telemetry.recordError("seal", result.code);
+			}
+			return result;
+		} catch (error) {
+			span?.setStatus("error", "seal_exception");
+			this.telemetry.recordError("seal", "exception");
+			throw error;
+		} finally {
+			span?.end();
+		}
+	}
+
+	private sealInner(sessionId: string, userId: string, reason: string): SessionSealSuccess | SessionSealRejected {
 		const authorized = this.authorize(sessionId, userId);
 		if ("outcome" in authorized) return authorized;
 		const { session } = authorized;

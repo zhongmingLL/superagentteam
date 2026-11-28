@@ -234,6 +234,12 @@ describe("F037 full-stack thread-first E2E", () => {
 		expect(agentInput?.content).toBe("POST_FROM_A");
 		expect(agentInput?.lifecycle?.kind).toBe("input");
 		expect(agentInput?.lifecycle?.dispatchRefs?.some((ref) => ref.target.id === "b1")).toBe(true);
+		const a2aTrace = daemon!.observability.traces.query({ threadId: thread.id, limit: 200 });
+		expect(
+			a2aTrace.spans.some(
+				(span) => span.name === "superagentteam.tool" && span.attributes["tool.name"] === "post_message",
+			),
+		).toBe(true);
 
 		const logLines = readKeyLogLines(daemon!);
 		console.log(`[f037-e2e] base=${base} dataDir=${dataDir} cwd=${process.cwd()}\n${logLines.join("\n")}`);
@@ -332,5 +338,66 @@ describe("F037 full-stack thread-first E2E", () => {
 		} finally {
 			db.close();
 		}
+	}, 60_000);
+
+	it("emits thread-first traces and turn metrics for a real worker turn", async () => {
+		provider = await startMockAnthropic((request) => {
+			if (request.model === "a-model") return textResponse("F055_DONE");
+			return textResponse("UNEXPECTED_MODEL");
+		});
+		const { base, headers, thread } = await startStack();
+
+		const posted = await fetch(`${base}/api/messages`, {
+			method: "POST",
+			headers,
+			body: JSON.stringify({
+				threadId: thread.id,
+				content: "emit telemetry @a1",
+				idempotencyKey: "f055-telemetry-message",
+				targets: ["a1"],
+			}),
+		});
+		expect(posted.status).toBe(202);
+
+		await waitFor(async () => {
+			const response = await fetch(`${base}/api/messages?threadId=${encodeURIComponent(thread.id)}&limit=20`, {
+				headers: { cookie: headers.cookie! },
+			});
+			const body = (await response.json()) as { messages: Array<{ type: string; content: string }> };
+			return body.messages.some((message) => message.type === "assistant" && message.content === "F055_DONE")
+				? true
+				: null;
+		}, 40_000);
+
+		const trace = await waitFor(async () => {
+			const current = daemon!.observability.traces.query({ threadId: thread.id, limit: 100 });
+			const currentNames = new Set(current.spans.map((span) => span.name));
+			return currentNames.has("superagentteam.queue.process") && currentNames.has("superagentteam.turn")
+				? current
+				: null;
+		});
+		expect(trace.availability).toBe("available");
+		const names = new Set(trace.spans.map((span) => span.name));
+		expect(names.has("superagentteam.ingress")).toBe(true);
+		expect(names.has("superagentteam.queue.process")).toBe(true);
+		expect(names.has("superagentteam.route")).toBe(true);
+		expect(names.has("superagentteam.turn")).toBe(true);
+		const turn = trace.spans.find((span) => span.name === "superagentteam.turn");
+		expect(turn?.attributes.provider).toBe("mock");
+		expect(turn?.attributes.model).toBe("a-model");
+		expect(turn?.attributes["turn.status"]).toBe("completed");
+		expect(turn?.attributes["thread.id"]).not.toBe(thread.id);
+
+		const metrics = daemon!.observability.metrics.snapshot();
+		expect(
+			metrics.some(
+				(series) =>
+					series.name === "superagentteam_turns_completed_total" &&
+					series.labels.provider === "mock" &&
+					series.labels.status === "completed" &&
+					(series.value ?? 0) >= 1,
+			),
+		).toBe(true);
+		expect(metrics.some((series) => series.name === "superagentteam_turn_duration_ms")).toBe(true);
 	}, 60_000);
 });

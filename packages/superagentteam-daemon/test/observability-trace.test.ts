@@ -67,6 +67,28 @@ describe("W6c local trace ring", () => {
 		expect(store.query({ invocationId: "run-1" }).spans[0]?.attributes["invocation.id"]).not.toBe("run-1");
 	});
 
+	it("matches thread-first ids through HMAC filters", () => {
+		const now = 1_000;
+		const store = new LocalTraceStore({ now: () => now, hmacId: (id) => redactor.hmacId(id) });
+		store.add({
+			...span("t1", "s1", "inv:1", now),
+			attributes: {
+				"invocation.id": redactor.hmacId("inv:1"),
+				"thread.id": redactor.hmacId("thread:1"),
+				"agent.id": redactor.hmacId("a1"),
+				"turn.execution.id": redactor.hmacId("te:1"),
+				"queue.entry.id": redactor.hmacId("queue:1"),
+				"session.id": redactor.hmacId("sess:1"),
+			},
+		});
+		expect(store.query({ threadId: "thread:1" }).spans).toHaveLength(1);
+		expect(store.query({ agentId: "a1" }).spans).toHaveLength(1);
+		expect(store.query({ turnExecutionId: "te:1" }).spans).toHaveLength(1);
+		expect(store.query({ queueEntryId: "queue:1" }).spans).toHaveLength(1);
+		expect(store.query({ sessionId: "sess:1" }).spans).toHaveLength(1);
+		expect(store.query({ threadId: "thread:2" }).availability).toBe("trace_unavailable");
+	});
+
 	it("returns explicit trace_unavailable for a ring miss and telemetry disabled", () => {
 		const store = new LocalTraceStore({ hmacId: (id) => redactor.hmacId(id) });
 		expect(store.query({ invocationId: "missing" })).toMatchObject({

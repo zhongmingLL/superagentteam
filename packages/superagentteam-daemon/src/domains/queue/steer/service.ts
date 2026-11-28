@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { QueueEntry } from "@superagentteam/shared/types";
+import { disabledRuntimeTelemetry, type RuntimeTelemetry } from "../../../observability/runtime-telemetry.ts";
 import type { MessageStore } from "../../messages/store.ts";
 import type { ThreadStore } from "../../threads/store.ts";
 import type { QueueLedgerStore } from "../ledger/store.ts";
@@ -40,6 +41,7 @@ export interface SteerServiceDeps {
 	tracker: InvocationTracker;
 	registry: SteerRegistry;
 	processor: Pick<QueueProcessor, "processEntry">;
+	telemetry?: RuntimeTelemetry;
 	clock?: () => number;
 	newClaimId?: () => string;
 	claimTtlMs?: number;
@@ -60,15 +62,41 @@ export class SteerService {
 	private readonly clock: () => number;
 	private readonly newClaimId: () => string;
 	private readonly claimTtlMs: number;
+	private readonly telemetry: RuntimeTelemetry;
 
 	constructor(deps: SteerServiceDeps) {
 		this.deps = deps;
 		this.clock = deps.clock ?? Date.now;
 		this.newClaimId = deps.newClaimId ?? (() => `steer:${randomUUID()}`);
 		this.claimTtlMs = deps.claimTtlMs ?? DEFAULT_CLAIM_TTL_MS;
+		this.telemetry = deps.telemetry ?? disabledRuntimeTelemetry("steer_service");
 	}
 
 	async steer(input: SteerInput): Promise<SteerResult> {
+		const span = this.telemetry.startSpan("superagentteam.steer", {
+			"thread.id": input.threadId,
+			"user.id": input.userId,
+			"agent.id": input.targetAgentId,
+			"queue.entry.id": input.queueEntryId,
+			"steer.mode": input.mode,
+		});
+		try {
+			const result = await this.steerInner(input);
+			span?.setAttribute("status", result.outcome);
+			span?.setStatus(result.outcome === "rejected" ? "error" : "ok");
+			this.telemetry.recordSteer(input.mode, result.outcome);
+			return result;
+		} catch (error) {
+			span?.setStatus("error", "steer_exception");
+			this.telemetry.recordSteer(input.mode, "exception");
+			this.telemetry.recordError("steer", "exception");
+			throw error;
+		} finally {
+			span?.end();
+		}
+	}
+
+	private async steerInner(input: SteerInput): Promise<SteerResult> {
 		const thread = this.deps.threads.get(input.threadId);
 		if (!thread || (thread.deletedAt !== null && thread.deletedAt !== undefined)) {
 			return reject("thread_not_found", `thread ${input.threadId} not found`);

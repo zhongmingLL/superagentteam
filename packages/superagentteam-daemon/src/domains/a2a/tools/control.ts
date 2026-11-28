@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
 import type { InvocationCredential, ThreadContextInput, TurnExecution } from "@superagentteam/shared/types";
+import { disabledRuntimeTelemetry, type RuntimeTelemetry } from "../../../observability/runtime-telemetry.ts";
 import type { InvocationCredentialStore } from "../../credentials/store.ts";
 import type { TurnExecutionStore } from "../../invocation/index.ts";
 import { RichBlockError, type RichBlockService } from "../../rich-blocks/service.ts";
@@ -58,6 +59,8 @@ export interface A2AControlServerDeps {
 	multiMention: MultiMentionOrchestrator;
 	threadContext: ThreadContextService;
 	richBlocks: RichBlockService;
+	/** F055: thread-first tool spans (best-effort). */
+	telemetry?: RuntimeTelemetry;
 	clock?: () => number;
 	leaseTtlMs?: number;
 }
@@ -100,6 +103,7 @@ export class A2AControlServer {
 	readonly socketPath: string;
 	private readonly deps: A2AControlServerDeps;
 	private readonly clock: () => number;
+	private readonly telemetry: RuntimeTelemetry;
 	private readonly leaseTtlMs: number;
 	private server: Server | null = null;
 	private readonly sockets = new Set<Socket>();
@@ -109,6 +113,7 @@ export class A2AControlServer {
 		this.deps = deps;
 		this.socketPath = deps.socketPath;
 		this.clock = deps.clock ?? Date.now;
+		this.telemetry = deps.telemetry ?? disabledRuntimeTelemetry("a2a_control");
 		this.leaseTtlMs = deps.leaseTtlMs ?? DEFAULT_LEASE_TTL_MS;
 	}
 
@@ -247,7 +252,28 @@ export class A2AControlServer {
 		if (!credential.allowedTools.includes("create_rich_block")) {
 			throw new A2AToolError("tool_not_allowed", "credential does not allow create_rich_block");
 		}
-		return this.deps.richBlocks.create(credential.turnExecutionId, input.block);
+		const span = this.telemetry.startToolSpan(credential.turnExecutionId, {
+			"tool.name": "create_rich_block",
+			"tool.category": "rich",
+			"thread.id": credential.threadId,
+			"user.id": credential.userId,
+			"agent.id": credential.agentId,
+			"invocation.id": credential.parentInvocationId,
+			"turn.execution.id": credential.turnExecutionId,
+		});
+		try {
+			const result = this.deps.richBlocks.create(credential.turnExecutionId, input.block);
+			span?.setStatus("ok");
+			this.telemetry.recordTool("create_rich_block", "rich", "ok");
+			return result;
+		} catch (error) {
+			span?.setStatus("error", "rich_block_failed");
+			this.telemetry.recordError("tool", "rich_block_error");
+			this.telemetry.recordTool("create_rich_block", "rich", "error");
+			throw error;
+		} finally {
+			span?.end();
+		}
 	}
 
 	private handleA2ACall(request: ControlRequest): unknown {
@@ -274,22 +300,51 @@ export class A2AControlServer {
 			multiMentionRequestId: turn.causal.multiMentionRequestId ?? null,
 			now: this.clock(),
 		};
-		switch (toolName) {
-			case "superagentteam_post_message":
-				return this.deps.a2aTools.postMessage(ctx, input as unknown as PostMessageInput);
-			case "superagentteam_cross_post_message":
-				return this.deps.a2aTools.crossPostMessage(ctx, input as unknown as CrossPostMessageInput);
-			case "superagentteam_multi_mention":
-				return this.deps.multiMention.create(ctx, input as unknown as MultiMentionInput);
-			case "superagentteam_thread_context":
-				return this.deps.threadContext.read(
-					{
-						threadId: credential.threadId,
-						userId: credential.userId,
-						callerAgentId: credential.agentId,
-					},
-					input as ThreadContextInput,
-				);
+		const span = this.telemetry.startToolSpan(credential.turnExecutionId, {
+			"tool.name": credentialTool,
+			"tool.category": "a2a",
+			"tool.call.id": piExtToolCallId,
+			"thread.id": credential.threadId,
+			"user.id": credential.userId,
+			"agent.id": credential.agentId,
+			"invocation.id": turn.parentInvocationId,
+			"turn.execution.id": credential.turnExecutionId,
+			"a2a.depth": ctx.a2aDepth ?? 0,
+		});
+		let status = "ok";
+		try {
+			let result: unknown;
+			switch (toolName) {
+				case "superagentteam_post_message":
+					result = this.deps.a2aTools.postMessage(ctx, input as unknown as PostMessageInput);
+					break;
+				case "superagentteam_cross_post_message":
+					result = this.deps.a2aTools.crossPostMessage(ctx, input as unknown as CrossPostMessageInput);
+					break;
+				case "superagentteam_multi_mention":
+					result = this.deps.multiMention.create(ctx, input as unknown as MultiMentionInput);
+					break;
+				case "superagentteam_thread_context":
+					result = this.deps.threadContext.read(
+						{
+							threadId: credential.threadId,
+							userId: credential.userId,
+							callerAgentId: credential.agentId,
+						},
+						input as ThreadContextInput,
+					);
+					break;
+			}
+			span?.setStatus("ok");
+			return result;
+		} catch (error) {
+			status = "error";
+			span?.setStatus("error", "a2a_tool_failed");
+			this.telemetry.recordError("tool", "a2a_tool_error");
+			throw error;
+		} finally {
+			span?.end();
+			this.telemetry.recordTool(credentialTool, "a2a", status);
 		}
 	}
 

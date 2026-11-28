@@ -41,4 +41,29 @@ describe("W6c metrics snapshot", () => {
 		expect(metrics.droppedSeriesCount()).toBe(1);
 		expect(metrics.renderPrometheus()).not.toContain('role="verifier"');
 	});
+
+	it("projects a bounded JSON snapshot", () => {
+		const metrics = new MetricsRegistry();
+		metrics
+			.counter("superagentteam_turns_completed_total", { provider: "mock", model: "a", status: "completed" })
+			.add(2);
+		metrics.histogram("superagentteam_turn_duration_ms", { provider: "mock", model: "a" }).observe(12);
+		const snapshot = metrics.snapshot();
+		expect(snapshot).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					name: "superagentteam_turns_completed_total",
+					kind: "counter",
+					labels: { provider: "mock", model: "a", status: "completed" },
+					value: 2,
+				}),
+				expect.objectContaining({
+					name: "superagentteam_turn_duration_ms",
+					kind: "histogram",
+					count: 1,
+					sum: 12,
+				}),
+			]),
+		);
+	});
 });

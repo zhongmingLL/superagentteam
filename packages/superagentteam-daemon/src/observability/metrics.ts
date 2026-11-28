@@ -1,3 +1,4 @@
+import type { MetricSeriesSnapshot } from "./contracts.ts";
 import { METRIC_LABEL_ALLOWLIST } from "./redaction.ts";
 
 export type MetricKind = "counter" | "gauge" | "histogram";
@@ -108,6 +109,30 @@ export class MetricsRegistry {
 
 	droppedSeriesCount(): number {
 		return this.droppedSeries;
+	}
+
+	/** F055: bounded JSON projection for the authenticated telemetry API. */
+	snapshot(): MetricSeriesSnapshot[] {
+		return [...this.series.values()]
+			.map((series): MetricSeriesSnapshot => {
+				const kind = this.kinds.get(series.name) ?? "gauge";
+				if (kind === "histogram") {
+					return {
+						name: series.name,
+						kind,
+						labels: { ...series.labels },
+						buckets: [...(series.buckets ?? [])],
+						counts: [...(series.counts ?? [])],
+						sum: series.sum ?? 0,
+						count: series.count ?? 0,
+					};
+				}
+				return { name: series.name, kind, labels: { ...series.labels }, value: series.value };
+			})
+			.sort(
+				(left, right) =>
+					left.name.localeCompare(right.name) || labelKey(left.labels).localeCompare(labelKey(right.labels)),
+			);
 	}
 
 	renderPrometheus(): string {

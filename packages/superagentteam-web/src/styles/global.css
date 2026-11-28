@@ -4025,3 +4025,336 @@ svg {
 	}
 }
 
+.st-observability-dialog {
+	width: min(920px, 100%);
+	max-height: min(860px, calc(100vh - 32px));
+	overflow: auto;
+}
+
+.st-observability-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.st-observability-head h2 {
+	margin: 0;
+}
+
+.st-observability-head-actions {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.st-observability-health {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 8px;
+}
+
+.st-observability-health-card {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 9px 10px;
+	border: 1px solid var(--st-hairline);
+	border-radius: var(--st-radius-md);
+	background: var(--st-surface-2);
+}
+
+.st-observability-health-card span {
+	color: var(--st-muted);
+	font-size: 9.5px;
+}
+
+.st-observability-health-card strong {
+	color: var(--st-ink);
+	font-size: 12px;
+}
+
+.st-observability-health-card.is-ready {
+	border-color: var(--st-primary-soft);
+}
+
+.st-observability-health-card.is-degraded strong {
+	color: var(--st-warning);
+}
+
+.st-observability-health-card.is-disabled strong {
+	color: var(--st-muted);
+}
+
+.st-observability-tabs {
+	display: flex;
+	gap: 4px;
+	border-bottom: 1px solid var(--st-hairline);
+}
+
+.st-observability-tab {
+	padding: 6px 10px;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	background: transparent;
+	color: var(--st-muted);
+	font-size: 11px;
+	cursor: pointer;
+}
+
+.st-observability-tab.is-active {
+	border-bottom-color: var(--st-primary);
+	color: var(--st-primary);
+	font-weight: 600;
+}
+
+.st-observability-filter {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.st-observability-filter select,
+.st-observability-filter input {
+	height: 30px;
+	padding: 0 8px;
+	border: 1px solid var(--st-hairline-strong);
+	border-radius: var(--st-radius-sm);
+	background: var(--st-surface-1);
+	color: var(--st-ink);
+	font: inherit;
+	font-size: 11px;
+}
+
+.st-observability-filter input {
+	flex: 1;
+	min-width: 0;
+}
+
+.st-observability-filter .st-button {
+	height: 30px;
+	padding: 0 12px;
+	font-size: 11px;
+}
+
+.st-observability-trace-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 10px;
+	min-height: 260px;
+}
+
+.st-observability-trace-list {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	max-height: 420px;
+	overflow-y: auto;
+}
+
+.st-observability-trace-row {
+	display: grid;
+	grid-template-columns: 8px minmax(0, 1fr) auto auto;
+	align-items: center;
+	gap: 7px;
+	width: 100%;
+	padding: 6px 8px;
+	border: 1px solid transparent;
+	border-radius: var(--st-radius-sm);
+	background: var(--st-surface-2);
+	color: var(--st-body);
+	font-size: 10.5px;
+	text-align: left;
+	cursor: pointer;
+}
+
+.st-observability-trace-row.is-selected {
+	border-color: var(--st-primary);
+	background: var(--st-primary-soft);
+}
+
+.st-observability-span-status {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--st-hairline-strong);
+}
+
+.st-observability-span-status.is-ok {
+	background: var(--st-success);
+}
+
+.st-observability-span-status.is-error {
+	background: var(--st-danger);
+}
+
+.st-observability-trace-name {
+	min-width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	color: var(--st-ink);
+}
+
+.st-observability-trace-duration,
+.st-observability-trace-id {
+	color: var(--st-muted);
+	font-family: var(--st-font-mono);
+	font-size: 9px;
+	white-space: nowrap;
+}
+
+.st-observability-span-detail {
+	min-width: 0;
+	max-height: 420px;
+	overflow-y: auto;
+	padding: 10px;
+	border: 1px solid var(--st-hairline);
+	border-radius: var(--st-radius-md);
+	background: var(--st-surface-2);
+}
+
+.st-observability-span-detail h3,
+.st-observability-span-detail h4 {
+	margin: 0 0 6px;
+	color: var(--st-ink);
+	font-size: 11.5px;
+}
+
+.st-observability-span-detail h4 {
+	margin-top: 8px;
+	color: var(--st-muted);
+	font-size: 10px;
+}
+
+.st-observability-span-detail dl {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: 3px 10px;
+	margin: 0;
+	font-size: 10px;
+}
+
+.st-observability-span-detail dt {
+	color: var(--st-muted);
+	font-family: var(--st-font-mono);
+}
+
+.st-observability-span-detail dd {
+	margin: 0;
+	overflow-wrap: anywhere;
+	color: var(--st-body);
+}
+
+.st-observability-span-detail ul {
+	margin: 0;
+	padding-left: 16px;
+	color: var(--st-body);
+	font-size: 10px;
+}
+
+.st-observability-table-wrap {
+	overflow-x: auto;
+}
+
+.st-observability-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 10px;
+}
+
+.st-observability-table th,
+.st-observability-table td {
+	padding: 6px 8px;
+	border-bottom: 1px solid var(--st-hairline);
+	text-align: left;
+	vertical-align: top;
+}
+
+.st-observability-table th {
+	color: var(--st-muted);
+	font-size: 9px;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.st-observability-table td:first-child {
+	font-family: var(--st-font-mono);
+	white-space: nowrap;
+}
+
+.st-observability-log-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	max-height: 420px;
+	overflow-y: auto;
+}
+
+.st-observability-log-list article {
+	padding: 6px 8px;
+	border-radius: var(--st-radius-sm);
+	background: var(--st-surface-2);
+}
+
+.st-observability-log-list header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--st-muted);
+	font-size: 9.5px;
+}
+
+.st-observability-log-list pre {
+	margin: 4px 0 0;
+	overflow-wrap: anywhere;
+	white-space: pre-wrap;
+	color: var(--st-body);
+	font-family: var(--st-font-mono);
+	font-size: 9.5px;
+}
+
+.st-observability-log-level {
+	padding: 0 5px;
+	border-radius: 999px;
+	background: var(--st-surface-3);
+	font-family: var(--st-font-mono);
+	font-size: 8.5px;
+}
+
+.st-observability-log-level.is-error {
+	color: var(--st-danger);
+}
+
+.st-observability-log-level.is-warn {
+	color: var(--st-warning);
+}
+
+@media (max-width: 720px) {
+	.st-topbar-actions {
+		gap: 4px;
+	}
+
+	.st-observability-button span,
+	.st-session-chain-button span {
+		display: none;
+	}
+
+	.st-observability-dialog {
+		max-height: calc(100vh - 20px);
+		padding: 14px;
+	}
+
+	.st-observability-health {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.st-observability-trace-layout {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.st-observability-filter {
+		flex-wrap: wrap;
+	}
+}
+

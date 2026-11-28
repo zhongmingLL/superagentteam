@@ -57,6 +57,11 @@ SAT v1 收敛为：只读链 + 手动同步 full seal + transcript/确定性 dig
 - 截图：`docs/design/F054/f054-session-chain-1440.png`、
   `f054-session-digest-1440.png`、`f054-session-transcript-1440.png`、
   `f054-session-chain-390.png`。
+- 合入：PR #278 merged `c2af11187`；砚砚 approve @ `9f1838990`，CI 5/5。
+- 部署：runtime 3005/3014 已重启到 `c2af11187`；health `ready`；
+  `f018_schema_migrations` 最高版本 8，`session_artifacts` 存在；
+  `a2a-测试2` Sessions 面板显示 4 个 agent 的 #0 链。
+  截图：`docs/design/F054/f054-runtime-session-chain-1440.png`。
 
 ## 已知限制
 
@@ -79,6 +84,7 @@ SAT v1 收敛为：只读链 + 手动同步 full seal + transcript/确定性 dig
 
 ## 状态
 
-- 实现、单测、隔离预览完成；等待非作者 review、CI、合入与 runtime 部署。
+- 实现、单测、review、CI、合入与 runtime 部署完成；等待 operator 实机确认后标
+  `done`。
 
 [宪宪/deepseek-flash🐾]

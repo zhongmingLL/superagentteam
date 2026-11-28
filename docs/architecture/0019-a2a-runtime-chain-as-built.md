@@ -191,7 +191,8 @@ OperatorMessageIngress（domains/a2a/ingress/router.ts）
 ## 4. 数据模型 as-built
 
 - 迁移源：`packages/superagentteam-daemon/src/infrastructure/db/migrations/`；
-  live DB 的 `sqlite_master` 与当前 as-built 基线（含 F054 migration 008）一致。
+  live DB 的 `sqlite_master` 与当前 as-built 基线 `c2af11187`（含 F054
+  migration 008）一致。
 - 核心表：`invocation_queue`、`invocation_records`、`turn_executions`、
   `invocation_attempts`、`response_drafts`、`invocation_credentials`、
   `agent_read_state`、`workers`、`worker_bindings`、`messages`、`threads`、

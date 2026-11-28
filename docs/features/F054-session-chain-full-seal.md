@@ -116,6 +116,10 @@ SAT 已有 durable `agent_sessions` 和 `seq/status` 形状；本 feature 补齐
   摘要/Transcript 可读；390 `scrollWidth=390`。
 - 连续性：seal 后 cursor 回退到最近 200 条，新 session 首轮不空心启动
   （service test 断言 4→0 / 405→205）。
+- 合入与部署：PR #278 merged `c2af11187`；砚砚 approve @ `9f1838990`，CI 5/5；
+  runtime 3005/3014 已重启到 `c2af11187`，schema migration 8 已应用；
+  runtime `a2a-测试2` 的 Sessions 面板显示 4 个 agent 的 #0 链。
+  截图：`f054-runtime-session-chain-1440.png`。
 
 ## 分阶段
 

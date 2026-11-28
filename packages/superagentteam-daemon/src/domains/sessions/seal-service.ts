@@ -156,6 +156,12 @@ export class SessionSealService {
 			const sealed = runInTransaction(this.deps.db, () => {
 				const fresh = this.deps.sessions.get(sessionId);
 				if (!fresh || fresh.status !== "active") throw new SealConflictError("session_not_active");
+				if (this.deps.tracker.has(fresh.threadId, fresh.agentId)) {
+					throw new SealConflictError("session_active_invocation");
+				}
+				if (this.hasQueuedWork(fresh.threadId, fresh.agentId)) {
+					throw new SealConflictError("session_busy");
+				}
 				if (this.deps.artifacts.has(sessionId)) throw new SealConflictError("session_artifact_exists");
 				const artifact = this.deps.artifacts.create({
 					sessionId,

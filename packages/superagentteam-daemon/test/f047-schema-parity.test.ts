@@ -11,6 +11,29 @@ import { F018Database } from "../src/infrastructure/db/database.ts";
 
 const dirs: string[] = [];
 
+/** Every non-internal table a fresh F018 DB must have (two-way documented). */
+const CANONICAL_TABLES = [
+	"agent_read_state",
+	"agent_sessions",
+	"invocation_attempts",
+	"invocation_credentials",
+	"invocation_queue",
+	"invocation_records",
+	"messages",
+	"multi_mention_callbacks",
+	"multi_mention_requests",
+	"multi_mention_responses",
+	"queue_admissions",
+	"response_drafts",
+	"session_artifacts",
+	"thread_participants",
+	"thread_read_state",
+	"threads",
+	"turn_executions",
+	"worker_bindings",
+	"workers",
+] as const;
+
 function tableSql(db: F018Database, name: string): string {
 	const row = db.db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?").get(name) as
 		| { sql: string }
@@ -41,26 +64,19 @@ describe("F047 schema parity (0007 §4 / §9.2)", () => {
 		expect(queue).toContain("json_type(owner_json) = 'object'");
 		expect(queue).toContain("json_type(from_json) = 'object'");
 
-		// C4: the canonical table list is complete in a fresh live DB.
-		for (const name of [
-			"agent_sessions",
-			"workers",
-			"worker_bindings",
-			"threads",
-			"messages",
-			"invocation_records",
-			"invocation_queue",
-			"queue_admissions",
-			"turn_executions",
-			"invocation_attempts",
-			"response_drafts",
-			"invocation_credentials",
-			"multi_mention_requests",
-			"multi_mention_responses",
-			"multi_mention_callbacks",
-		]) {
+		// C4: two-way canonical table check. A new table that is not documented
+		// here (or a documented table that is missing) fails this test.
+		for (const name of CANONICAL_TABLES) {
 			expect(tableSql(db, name).length, `table ${name}`).toBeGreaterThan(0);
 		}
+		const liveTables = (
+			db.db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").all() as Array<{
+				name: string;
+			}>
+		)
+			.map((row) => row.name)
+			.filter((name) => name !== "f018_schema_migrations" && !name.startsWith("sqlite_"));
+		expect(liveTables).toEqual([...CANONICAL_TABLES]);
 		db.db.close();
 	});
 });

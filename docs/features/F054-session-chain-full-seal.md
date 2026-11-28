@@ -135,6 +135,12 @@ SAT 已有 durable `agent_sessions` 和 `seq/status` 形状；本 feature 补齐
 - **制品体积**：transcript 有界（500 条 / 单条截断 / 总字节上限），digest 只存摘要。
 - **与 Clowder 差异**：v1 同步 finalize（无 sealing 中间态/异步 reaper），
   避免崩溃留下 stuck sealing；失败回滚保持 active。
+- **首封窗口（P3-c）**：`fromSeq` 只看已有 `session_artifacts`；旧 lightweight
+  sealed session 没有 artifact，第一次 full seal 的窗口从 1 开始，语义是
+  thread-level transcript（最多 400 条截断），可能包含更早 session 的消息。
+- **check→commit（P3-d）**：tracker/queue 检查、artifact 写入与 `sealActive` 在
+  同一个同步 JS turn 内执行，事务内再次检查；SAT v1 不存在可观测交错。若未来
+  改成异步 finalize，需要重新引入 guard。
 
 ## 证据
 

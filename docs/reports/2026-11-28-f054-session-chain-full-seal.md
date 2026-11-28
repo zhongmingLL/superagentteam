@@ -70,6 +70,12 @@ SAT v1 收敛为：只读链 + 手动同步 full seal + transcript/确定性 dig
   JSONL；pi session 文件仍按 0010 保留，不删除。
 - 连续性 v1 用 cursor rewind 到最近 200 条；digest 只做 UI/审计，不直接注入
   prompt。跨更多历史的 handoff/continuity capsule 仍留后续。
+- 首封窗口（P3-c）：旧 lightweight sealed 行没有 artifact，第一次 full seal 的
+  `fromSeq` 从 1 开始，语义是 thread-level transcript（400 条截断），可能包含
+  更早 session 的消息；后续可 backfill。
+- check→commit（P3-d）：seal 的 checks + artifact + sealActive 在同一个同步 JS
+  turn 内，事务内再次检查 tracker/queue；v1 无可观测交错。异步 finalize 时需重新
+  评估 guard。
 
 ## 状态
 

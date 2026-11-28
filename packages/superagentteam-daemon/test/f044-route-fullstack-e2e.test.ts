@@ -584,9 +584,10 @@ describe("F044 route ownership full-stack E2E v2", () => {
 			const callback = runtime.multiMention.statusView(request.requestId)?.callback;
 			return callback?.status === "completed" ? callback : null;
 		}, 15_000);
-		expect(request.status).toBe("done");
-		expect(request.targetAgentIds.sort()).toEqual(["b1", "c1"]);
-		expect(request.callbackToAgentId).toBe("a1");
+		const settled = runtime.multiMention.getBySourceRecordId(source!.id)!;
+		expect(settled.status).toBe("done");
+		expect(settled.targetAgentIds.sort()).toEqual(["b1", "c1"]);
+		expect(settled.callbackToAgentId).toBe("a1");
 
 		const view = runtime.multiMention.statusView(request.requestId)!;
 		expect(view.request.status).toBe("done");

@@ -111,6 +111,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		sessions,
 		artifacts: sessionArtifacts,
 		messages,
+		readState,
 		tracker,
 		queue,
 		clock,

@@ -34,7 +34,8 @@ SAT v1 收敛为：只读链 + 手动同步 full seal + transcript/确定性 dig
   默认保留最新 400 条，超出标记 `truncated`；单条正文 3k 字符、摘要 excerpt 400。
 - **Digest**：确定性 extractive：senders、tool usage、errors、first/last/recent。
 - **Seal service**：owner/active/tracker/queue 校验；同一事务写 artifact +
-  active→sealed；失败回滚保持 active；下一次 invocation `ensureActive` 创建 seq+1。
+  active→sealed + delivery cursor rewind 到 `max(0, toSeq - 200)`；失败回滚保持
+  active；下一次 invocation `ensureActive` 创建 seq+1。
 - **API**：chain/detail/transcript/seal；CSRF + typed 403/404/409。
 - **Web**：topbar `Sessions` → `SessionChainDialog`；active 行封存、sealed 行摘要/
   transcript；封存后刷新链。
@@ -44,6 +45,7 @@ SAT v1 收敛为：只读链 + 手动同步 full seal + transcript/确定性 dig
 - `f054-session-seal.test.ts`：4/4
   - seal 生成 transcript/digest、senders/errors；
   - 下一窗口 fromSeq = 前一 toSeq + 1，seq+1 active；
+  - seal 后 cursor rewind（4→0、405→205），新 session 首轮带最近上下文；
   - tracker/queue/foreign/non-active 拒绝；
   - 405 条窗口截断保留最新 400 条。
 - `f054-session-api.test.ts`：1/1（chain、CSRF、seal、detail、transcript、重复 seal）。
@@ -66,6 +68,8 @@ SAT v1 收敛为：只读链 + 手动同步 full seal + transcript/确定性 dig
 - 不做自动阈值 seal/context health/compression/LLM handoff digest。
 - transcript 是 thread 消息窗口（含该 agent 可见的上下文），不是 provider 原始
   JSONL；pi session 文件仍按 0010 保留，不删除。
+- 连续性 v1 用 cursor rewind 到最近 200 条；digest 只做 UI/审计，不直接注入
+  prompt。跨更多历史的 handoff/continuity capsule 仍留后续。
 
 ## 状态
 

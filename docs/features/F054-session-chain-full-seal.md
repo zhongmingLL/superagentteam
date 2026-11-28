@@ -99,7 +99,8 @@ SAT 已有 durable `agent_sessions` 和 `seq/status` 形状；本 feature 补齐
 - `domains/sessions/transcript.ts`：有界 transcript（400 条 / 3k 字符/条）+
   确定性 extractive digest（senders/tools/errors/first-last-recent）。
 - `SessionSealService`：owner/active/idle 校验 → 窗口计算 → 同步事务
-  （artifact + active→sealed）；失败回滚保持 active。
+  （artifact + active→sealed + delivery cursor rewind 到
+  `max(0, toSeq - 200)`）；失败回滚保持 active。
 - API：`GET /threads/:id/sessions`、`GET /sessions/:id`、
   `GET /sessions/:id/transcript`、`POST /sessions/:id/seal`。
 - Web：topbar `Sessions` → `SessionChainDialog`（链、封存、摘要、transcript）。
@@ -113,6 +114,8 @@ SAT 已有 durable `agent_sessions` 和 `seq/status` 形状；本 feature 补齐
 - daemon 574 passed / 5 skipped；web 27 files / 133 tests + tsc/vite build。
 - 隔离 3007/3016 实机：seal 200 → chain #0 sealed/hasArtifact + #1 active；
   摘要/Transcript 可读；390 `scrollWidth=390`。
+- 连续性：seal 后 cursor 回退到最近 200 条，新 session 首轮不空心启动
+  （service test 断言 4→0 / 405→205）。
 
 ## 分阶段
 

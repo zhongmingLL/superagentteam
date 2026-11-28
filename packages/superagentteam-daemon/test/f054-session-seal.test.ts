@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { MessageStore } from "../src/domains/messages/store.ts";
+import { AgentReadStateStore, MessageStore } from "../src/domains/messages/store.ts";
 import { QueueLedgerStore } from "../src/domains/queue/ledger/store.ts";
 import { InvocationTracker } from "../src/domains/queue/tracker/index.ts";
 import { SessionArtifactStore } from "../src/domains/sessions/artifacts.ts";
@@ -18,6 +18,7 @@ interface World {
 	db: F018Database;
 	threads: ThreadStore;
 	messages: MessageStore;
+	readState: AgentReadStateStore;
 	sessions: AgentSessionStore;
 	artifacts: SessionArtifactStore;
 	queue: QueueLedgerStore;
@@ -36,6 +37,7 @@ function makeWorld(): World {
 		.run();
 	const threads = new ThreadStore(db.db);
 	const messages = new MessageStore(db.db);
+	const readState = new AgentReadStateStore(db.db);
 	const sessions = new AgentSessionStore(db.db);
 	const artifacts = new SessionArtifactStore(db.db);
 	const queue = new QueueLedgerStore(db.db);
@@ -46,11 +48,12 @@ function makeWorld(): World {
 		sessions,
 		artifacts,
 		messages,
+		readState,
 		tracker,
 		queue,
 		clock: () => 2_000,
 	});
-	return { db, threads, messages, sessions, artifacts, queue, tracker, service };
+	return { db, threads, messages, readState, sessions, artifacts, queue, tracker, service };
 }
 
 function append(
@@ -99,6 +102,7 @@ describe("F054 session chain + full seal", () => {
 			endedAt: 1_400,
 		});
 
+		w.readState.ack("t1", "a1", 4, 1_500);
 		const result = w.service.seal(session.id, "u1", "manual");
 		expect(result.outcome).toBe("sealed");
 		if (result.outcome !== "sealed") return;
@@ -118,6 +122,7 @@ describe("F054 session chain + full seal", () => {
 		expect(result.artifact.digest.firstUserMessage).toBe("please inspect");
 		expect(result.artifact.digest.lastUserMessage).toBe("now fix it");
 		expect(result.artifact.digest.lastAgentMessage).toBe("failed while fixing");
+		expect(w.readState.get("t1", "a1")?.deliveryCursor).toBe(0);
 
 		const chain = w.service.chain("t1", "u1");
 		expect("sessions" in chain && chain.sessions[0]).toMatchObject({
@@ -213,6 +218,7 @@ describe("F054 session chain + full seal", () => {
 		for (let index = 0; index < 405; index += 1) {
 			append(w, `m${index}`, { kind: "user", userId: "u1" }, `message ${index}`, 1_100 + index);
 		}
+		w.readState.ack("t1", "a1", 405, 1_500);
 		const result = w.service.seal(session.id, "u1");
 		expect(result.outcome).toBe("sealed");
 		if (result.outcome !== "sealed") return;
@@ -220,6 +226,7 @@ describe("F054 session chain + full seal", () => {
 		expect(result.artifact.fromSeq).toBe(6);
 		expect(result.artifact.toSeq).toBe(405);
 		expect(result.artifact.digest.window.truncated).toBe(true);
+		expect(w.readState.get("t1", "a1")?.deliveryCursor).toBe(205);
 		expect(result.artifact.transcript[0]?.content).toBe("message 5");
 		expect(result.artifact.transcript.at(-1)?.content).toBe("message 404");
 	});

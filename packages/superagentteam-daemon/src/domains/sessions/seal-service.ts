@@ -8,7 +8,8 @@ import type {
 } from "@superagentteam/shared/types";
 
 import { runInTransaction } from "../../infrastructure/db/database.ts";
-import type { MessageStore } from "../messages/store.ts";
+import { BOOTSTRAP_WINDOW } from "../context/assembler.ts";
+import type { AgentReadStateStore, MessageStore } from "../messages/store.ts";
 import type { QueueLedgerStore } from "../queue/ledger/store.ts";
 import type { InvocationTracker } from "../queue/tracker/index.ts";
 import type { ThreadStore } from "../threads/store.ts";
@@ -42,6 +43,7 @@ export interface SessionSealServiceDeps {
 	sessions: AgentSessionStore;
 	artifacts: SessionArtifactStore;
 	messages: MessageStore;
+	readState: AgentReadStateStore;
 	tracker: InvocationTracker;
 	queue: QueueLedgerStore;
 	clock?: () => number;
@@ -172,6 +174,14 @@ export class SessionSealService {
 				});
 				const updated = this.deps.sessions.sealActive(sessionId, sealReason, now);
 				if (!updated || updated.status !== "sealed") throw new SealConflictError("session_seal_conflict");
+				// Chain continuity: the next active session must not start from an
+				// empty cursor. Rewind to the bootstrap window (0010 reset semantics).
+				this.deps.readState.rewind(
+					fresh.threadId,
+					fresh.agentId,
+					Math.max(0, transcript.toSeq - BOOTSTRAP_WINDOW),
+					now,
+				);
 				return { session: updated, artifact };
 			});
 			return { outcome: "sealed", ...sealed };

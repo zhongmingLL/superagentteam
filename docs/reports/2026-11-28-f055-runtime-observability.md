@@ -48,7 +48,8 @@ JSONL logs、redaction、`/ready`、`/metrics`），但契约是 task-first 的
     `superagentteam.session.seal`。
 - **API**：`GET /api/telemetry/traces`、`/traces/stats`、`/metrics`、
   `/metrics/prometheus`、`/logs`、`/health`；session auth；thread/session owner
-  check；HMAC filters；logs raw fields 仍 strict allowlist。
+  check；所有 trace 查询额外按 session user 的 HMAC `user.id` 收窄；logs raw
+  fields 仍 strict allowlist。
 - **Hub**：topbar Observability → 健康卡、Traces（filter + span detail）、
   Metrics 表、Logs tail；390 窄屏按钮收成图标。
 

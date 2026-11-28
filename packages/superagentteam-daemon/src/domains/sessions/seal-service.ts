@@ -122,6 +122,7 @@ export class SessionSealService {
 		const existing = this.deps.sessions.get(sessionId);
 		const span = this.telemetry.startSpan("superagentteam.session.seal", {
 			"thread.id": existing?.threadId ?? "unknown",
+			"user.id": userId,
 			"agent.id": existing?.agentId ?? "unknown",
 			"session.id": sessionId,
 			"seal.reason": reason,

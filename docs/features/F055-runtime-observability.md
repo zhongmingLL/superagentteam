@@ -68,7 +68,8 @@ redaction / health 归一个 owner；trace/metrics/logs 只回答“发生了什
 
 ### 读 API
 
-- `GET /api/telemetry/traces`（thread/agent/invocation/turn/queue/session/name filters）。
+- `GET /api/telemetry/traces`（thread/agent/invocation/turn/queue/session/name filters；
+  始终按 session user 的 HMAC `user.id` 收窄）。
 - `GET /api/telemetry/traces/stats`。
 - `GET /api/telemetry/metrics`（JSON snapshot）与 `GET /api/telemetry/metrics/prometheus`。
 - `GET /api/telemetry/logs`（tail）。

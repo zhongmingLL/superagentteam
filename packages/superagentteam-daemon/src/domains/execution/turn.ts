@@ -90,6 +90,7 @@ export class RunAgentTurn implements TurnRunner {
 			"superagentteam.turn",
 			{
 				"thread.id": prepared.threadId,
+				"user.id": prepared.userId,
 				"agent.id": prepared.agentId,
 				"invocation.id": prepared.parentInvocationId,
 				"parent.invocation.id": prepared.parentInvocationId,

@@ -129,6 +129,7 @@ export const TRACE_ATTRIBUTE_ALLOWLIST: ReadonlyMap<string, TraceAttributeClassi
 	["worker.id", "id"],
 	["queue.entry.id", "id"],
 	["session.id", "id"],
+	["user.id", "id"],
 	["message.id", "id"],
 	["target.agent.id", "id"],
 	["task.id", "id"],

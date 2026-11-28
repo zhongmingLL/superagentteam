@@ -100,6 +100,7 @@ describe("F055 telemetry API", () => {
 				name: "superagentteam.turn",
 				attributes: {
 					"thread.id": thread.id,
+					"user.id": auth.userId,
 					"agent.id": "a1",
 					"invocation.id": "inv:1",
 					"turn.execution.id": "te:1",

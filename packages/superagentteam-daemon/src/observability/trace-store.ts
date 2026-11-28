@@ -74,6 +74,7 @@ export class LocalTraceStore {
 		const turnExecutionId = hmac(filter.turnExecutionId);
 		const queueEntryId = hmac(filter.queueEntryId);
 		const sessionId = hmac(filter.sessionId);
+		const userId = hmac(filter.userId);
 		const matches: TraceSpanDTO[] = [];
 		for (let index = this.buffer.length - 1; index >= 0; index -= 1) {
 			const span = this.buffer[index]!;
@@ -84,6 +85,7 @@ export class LocalTraceStore {
 			if (turnExecutionId && span.attributes["turn.execution.id"] !== turnExecutionId) continue;
 			if (queueEntryId && span.attributes["queue.entry.id"] !== queueEntryId) continue;
 			if (sessionId && span.attributes["session.id"] !== sessionId) continue;
+			if (userId && span.attributes["user.id"] !== userId) continue;
 			if (filter.profileId && span.attributes["profile.id"] !== filter.profileId) continue;
 			if (filter.name && span.name !== filter.name) continue;
 			if (filter.startMin !== undefined && span.startTimeMs < filter.startMin) continue;

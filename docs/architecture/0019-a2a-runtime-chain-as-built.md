@@ -205,7 +205,8 @@ OperatorMessageIngress（domains/a2a/ingress/router.ts）
   turn_terminal）、A2AControlServer tool、SteerService steer、
   SessionSealService session seal。
 - API（browser session auth）：
-  - `GET /api/telemetry/traces`（thread/agent/invocation/turn/queue/session/name）；
+  - `GET /api/telemetry/traces`（thread/agent/invocation/turn/queue/session/name；
+    始终按 session user 的 HMAC `user.id` 收窄）；
   - `GET /api/telemetry/traces/stats`；
   - `GET /api/telemetry/metrics` / `/metrics/prometheus`；
   - `GET /api/telemetry/logs`；

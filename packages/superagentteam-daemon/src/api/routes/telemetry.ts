@@ -78,6 +78,7 @@ export function createTelemetryRoutes(options: TelemetryRoutesOptions): Telemetr
 			const startMin = numberParam(url.searchParams.get("startMin"), 0, Number.MAX_SAFE_INTEGER);
 			const startMax = numberParam(url.searchParams.get("startMax"), 0, Number.MAX_SAFE_INTEGER);
 			const result = telemetry.observability.traces.query({
+				userId: context.session.userId,
 				...(stringParam(url.searchParams.get("traceId"))
 					? { traceId: stringParam(url.searchParams.get("traceId")) }
 					: {}),

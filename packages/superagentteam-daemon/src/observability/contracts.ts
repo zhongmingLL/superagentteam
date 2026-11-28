@@ -48,6 +48,8 @@ export interface TraceQuery {
 	readonly queueEntryId?: string;
 	/** Raw AgentSession id; HMACed before matching `session.id`. */
 	readonly sessionId?: string;
+	/** Raw owner user id; HMACed before matching `user.id`. */
+	readonly userId?: string;
 	/** Legacy task-first alias for `agentId`; kept for old clients/tests. */
 	readonly profileId?: string;
 	readonly name?: string;

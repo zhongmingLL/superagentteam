@@ -228,6 +228,7 @@ export function createMessageRoutes(options: MessageRoutesOptions): MessageRoute
 			.slice(0, 32)}`;
 		const span = telemetry.startSpan("superagentteam.ingress", {
 			"thread.id": threadId,
+			"user.id": context.session.userId,
 			"agent.id": targets[0] ?? "auto",
 			"message.id": messageId,
 		});

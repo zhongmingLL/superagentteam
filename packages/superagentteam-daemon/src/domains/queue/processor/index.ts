@@ -190,6 +190,7 @@ export class QueueProcessor {
 			if (!claimed) break;
 			const span = this.telemetry.startSpan("superagentteam.queue.process", {
 				"thread.id": threadId,
+				"user.id": userId,
 				"queue.entry.id": claimed.entry.queueEntryId,
 				"queue.kind": claimed.entry.kind,
 				"queue.priority": claimed.entry.priority,

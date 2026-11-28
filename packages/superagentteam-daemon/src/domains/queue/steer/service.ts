@@ -75,6 +75,7 @@ export class SteerService {
 	async steer(input: SteerInput): Promise<SteerResult> {
 		const span = this.telemetry.startSpan("superagentteam.steer", {
 			"thread.id": input.threadId,
+			"user.id": input.userId,
 			"agent.id": input.targetAgentId,
 			"queue.entry.id": input.queueEntryId,
 			"steer.mode": input.mode,

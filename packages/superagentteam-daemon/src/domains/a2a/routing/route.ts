@@ -104,6 +104,7 @@ export class AgentRouter {
 			"superagentteam.route",
 			{
 				"thread.id": first?.threadId ?? "unknown",
+				"user.id": first?.userId ?? "unknown",
 				"invocation.id": first?.parentInvocationId ?? "unknown",
 				"queue.entry.id": first?.queueEntryId ?? "unknown",
 				"target.count": targets.length,

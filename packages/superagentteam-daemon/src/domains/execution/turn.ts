@@ -7,6 +7,7 @@ import type { InvocationCredentialStore } from "../credentials/store.ts";
 import type { InvocationAttemptStore, TurnExecutionStore } from "../invocation/index.ts";
 import { TurnExecutionLifecycle } from "../invocation/settlement/index.ts";
 import type { AgentReadStateStore, MessageStore } from "../messages/store.ts";
+import type { SteerRegistry } from "../queue/steer/registry.ts";
 import type { AgentSessionStore } from "../sessions/store.ts";
 import { ResponseEventSink } from "../streaming/sink.ts";
 import type { ResponseDraftStore } from "../streaming/store.ts";
@@ -44,6 +45,8 @@ export interface RunAgentTurnDeps {
 	/** Phase B owner (0007 §3.6): R + TurnExecution + credential + draft + retire. */
 	invokeSingleAgent: InvokeSingleAgent;
 	onStreamEvent?: (event: AgentStreamEvent, threadId: string) => void;
+	/** F053: live-turn steering registry (process-local). */
+	steerRegistry?: SteerRegistry;
 	log?: A2ALog;
 	clock?: () => number;
 	promptTimeoutMs?: number;
@@ -186,6 +189,18 @@ export class RunAgentTurn implements TurnRunner {
 				clock: this.clock,
 			});
 			const offEvent = handle.connection.onEvent((event) => sink.handle(event));
+			// F053: expose the live worker RPC only for the exact prompt window.
+			const detachSteer =
+				this.deps.steerRegistry?.attach({
+					threadId: prepared.threadId,
+					agentId: prepared.agentId,
+					turnExecutionId: prepared.turnExecutionId,
+					attempt: attempt.attempt,
+					steer: async (message) => {
+						if (!handle?.connection.steer) throw new Error("steer_unavailable");
+						return await handle.connection.steer(message);
+					},
+				}) ?? (() => {});
 
 			try {
 				// Step 5: prompt RPC. markPromptDelivered fires from onAccepted —
@@ -205,6 +220,7 @@ export class RunAgentTurn implements TurnRunner {
 				});
 				if (promptResult.aborted || aborted()) throw new TurnCanceledError();
 			} finally {
+				detachSteer();
 				offEvent();
 			}
 

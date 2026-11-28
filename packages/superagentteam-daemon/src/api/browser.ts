@@ -85,7 +85,9 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 	const messageRoutes: MessageRoutes | null = options.a2a
 		? createMessageRoutes({ runtime: options.a2a.runtime, clock })
 		: null;
-	const queueRoutes: QueueRoutes | null = options.a2a ? createQueueRoutes({ runtime: options.a2a.runtime }) : null;
+	const queueRoutes: QueueRoutes | null = options.a2a
+		? createQueueRoutes({ runtime: options.a2a.runtime, changeBus: options.changeBus })
+		: null;
 	const liveRoutes: LiveRoutes | null = options.a2a ? createLiveRoutes({ runtime: options.a2a.runtime }) : null;
 	const invocationRoutes: InvocationRoutes | null = options.a2a
 		? createInvocationRoutes({ runtime: options.a2a.runtime, changeBus: options.changeBus })
@@ -233,7 +235,7 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 			if (eventRoutes?.handle(request, response, url, context)) return true;
 			if (invocationRoutes?.handle(request, response, url, context)) return true;
 			if (threadRoutes && (await threadRoutes.handle(request, response, url, context))) return true;
-			if (queueRoutes?.handle(request, response, url, context)) return true;
+			if (queueRoutes && (await queueRoutes.handle(request, response, url, context))) return true;
 			if (liveRoutes?.handle(request, response, url, context)) return true;
 			if (messageRoutes && (await messageRoutes.handle(request, response, url, context))) return true;
 			if (agentRoutes && (await agentRoutes.handle(request, response, url, context))) return true;

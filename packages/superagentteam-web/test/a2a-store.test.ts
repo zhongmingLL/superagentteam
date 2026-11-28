@@ -47,6 +47,7 @@ describe("a2a store", () => {
 			live: vi.fn(async () => ({ threadId: "thread:1", invocations: [invocation] })),
 			retryInvocation: vi.fn(),
 			cancelAgent: vi.fn(),
+			steerQueue: vi.fn(),
 		};
 		const store = createA2AStore({ api });
 
@@ -72,6 +73,7 @@ describe("a2a store", () => {
 				.mockRejectedValueOnce(new Error("daemon down")),
 			retryInvocation: vi.fn(),
 			cancelAgent: vi.fn(),
+			steerQueue: vi.fn(),
 		};
 		const store = createA2AStore({ api });
 		await store.getState().load("thread:1");
@@ -102,6 +104,7 @@ describe("a2a store", () => {
 			}),
 			retryInvocation: vi.fn(),
 			cancelAgent: vi.fn(),
+			steerQueue: vi.fn(),
 		};
 		const store = createA2AStore({ api });
 
@@ -126,6 +129,7 @@ describe("a2a store", () => {
 			live: vi.fn(async () => ({ threadId: "thread:1", invocations: [] })),
 			retryInvocation: vi.fn(async () => ({ status: "retrying" as const, retriedAgentIds: ["a1"] })),
 			cancelAgent: vi.fn(),
+			steerQueue: vi.fn(),
 		};
 		const store = createA2AStore({ api });
 		await store.getState().load("thread:1");
@@ -148,6 +152,7 @@ describe("a2a store", () => {
 			live: vi.fn(async () => ({ threadId: "thread:1", invocations: [] })),
 			retryInvocation: vi.fn(async () => Promise.reject(new ApiError(409, "not_retryable", "not retryable", {}))),
 			cancelAgent: vi.fn(),
+			steerQueue: vi.fn(),
 		};
 		const store = createA2AStore({ api });
 		await store.getState().load("thread:1");
@@ -167,6 +172,7 @@ describe("a2a store", () => {
 			live: vi.fn(async () => ({ threadId: "thread:1", invocations: [] })),
 			retryInvocation: vi.fn(),
 			cancelAgent: vi.fn(async () => ({ status: "canceling" as const, agentId: "a1" })),
+			steerQueue: vi.fn(),
 		};
 		const store = createA2AStore({ api });
 		await store.getState().load("thread:1");

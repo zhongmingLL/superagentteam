@@ -51,6 +51,7 @@ export function ThreadPage() {
 	const refreshA2A = useA2AStore((state) => state.refresh);
 	const retryInvocation = useA2AStore((state) => state.retryInvocation);
 	const cancelAgent = useA2AStore((state) => state.cancelAgent);
+	const steerQueue = useA2AStore((state) => state.steerQueue);
 	const resetA2A = useA2AStore((state) => state.reset);
 	const agents = useAgentStore((state) => state.agents);
 	const liveExecutions = useExecutionStore((state) => state.turns);
@@ -255,7 +256,13 @@ export function ThreadPage() {
 					</button>
 				</p>
 			) : null}
-			<QueueStrip queue={a2aMatches ? a2aQueue : []} agents={agents} cap={a2aCap} />
+			<QueueStrip
+				queue={a2aMatches ? a2aQueue : []}
+				agents={agents}
+				live={a2aMatches ? a2aLive : []}
+				onSteer={a2aMatches ? steerQueue : undefined}
+				cap={a2aCap}
+			/>
 			{a2aMatches && a2aLive.length > 0 ? (
 				<div className="st-thread-status-row">
 					<LivePill

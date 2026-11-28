@@ -1,15 +1,21 @@
-import type { QueueEntryView } from "@/domains/a2a/api";
+import { useState } from "react";
+
+import type { LiveInvocationView, QueueEntryView, SteerMode } from "@/domains/a2a/api";
 import type { AgentView } from "@/domains/agent/api";
 import { agentDisplayName } from "@/domains/agent/labels";
 import { formatRelative } from "@/lib/time";
+import { SteerQueueDialog } from "./SteerQueueDialog";
 
 export interface QueueStripProps {
 	queue: QueueEntryView[];
 	agents: AgentView[];
+	live?: LiveInvocationView[];
+	onSteer?: (queueEntryId: string, targetAgentId: string, mode: SteerMode) => Promise<void>;
 	cap?: number;
 }
 
-export function QueueStrip({ queue, agents, cap }: QueueStripProps) {
+export function QueueStrip({ queue, agents, live = [], onSteer, cap }: QueueStripProps) {
+	const [steerEntry, setSteerEntry] = useState<QueueEntryView | null>(null);
 	if (queue.length === 0) return null;
 	return (
 		<section className="st-queue-strip" aria-label="消息队列">
@@ -38,9 +44,33 @@ export function QueueStrip({ queue, agents, cap }: QueueStripProps) {
 						<time className="st-queue-age" dateTime={new Date(entry.enqueuedAt).toISOString()}>
 							{formatRelative(entry.enqueuedAt)}
 						</time>
+						{onSteer && entry.status === "queued" ? (
+							<button
+								type="button"
+								className="st-queue-steer"
+								aria-label="处理这条排队消息"
+								onClick={() => setSteerEntry(entry)}
+							>
+								处理这条
+							</button>
+						) : null}
 					</div>
 				))}
 			</div>
+			{steerEntry && onSteer ? (
+				<SteerQueueDialog
+					entry={steerEntry}
+					agents={agents}
+					live={live}
+					onCancel={() => setSteerEntry(null)}
+					onConfirm={async (actions) => {
+						for (const action of actions) {
+							await onSteer(steerEntry.queueEntryId, action.targetAgentId, action.mode);
+						}
+						setSteerEntry(null);
+					}}
+				/>
+			) : null}
 		</section>
 	);
 }

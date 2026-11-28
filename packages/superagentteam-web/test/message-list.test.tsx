@@ -378,19 +378,38 @@ describe("message list", () => {
 
 	it("shows cross-thread provenance and opens the source thread", () => {
 		const onOpenThread = vi.fn();
-		renderList({
+		const { container } = renderList({
 			messages: [
 				message({
 					id: "msg:cross",
 					type: "assistant",
 					from: { kind: "agent", agentId: "a1" },
 					content: "cross posted",
-					extra: { crossPost: { sourceThreadId: "thread:0" } },
+					extra: { crossPost: { sourceThreadId: "thread:0" }, targetAgentIds: ["a2"] },
+					lifecycle: {
+						kind: "input",
+						dispatchRefs: [
+							{
+								target: { kind: "agent", id: "a2" },
+								queueEntryId: "q:1",
+								attempt: 1,
+								phase: "settled",
+								at: 2,
+							},
+						],
+					},
 				}),
 			],
+			agentLabel: (agentId) => (agentId === "a2" ? "Agent B" : agentId),
 			threadLabel: (threadId) => (threadId === "thread:0" ? "Source thread" : threadId),
 			onOpenThread,
 		});
+		const article = container.querySelector('article[data-message-id="msg:cross"]');
+		expect(article?.className).toContain("is-cross-post");
+		expect(article?.querySelector(".st-message-avatar")).toBeNull();
+		expect(article).toHaveTextContent("cross_post_message");
+		expect(article?.querySelector('[role="separator"]')).not.toBeNull();
+		expect(screen.getAllByText("Agent B").length).toBeGreaterThan(0);
 		expect(screen.getByText("跨线程来自")).toBeInTheDocument();
 		fireEvent.click(screen.getByRole("button", { name: "Source thread" }));
 		expect(onOpenThread).toHaveBeenCalledWith("thread:0");

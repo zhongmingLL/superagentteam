@@ -6,7 +6,6 @@ import type { LiveExecutionMap, LiveExecutionState } from "@/domains/events/exec
 import type { ThreadView } from "@/domains/thread/api";
 import { initialForName, toneFor } from "@/lib/identity";
 import { formatElapsed, formatRelative } from "@/lib/time";
-import { Icon } from "@/components/ui/Icon";
 import { MessageExecutionRecord } from "./MessageExecutionRecord";
 import { MessageContent } from "./MessageContent";
 import { RichBlocks } from "./RichBlocks";
@@ -99,6 +98,17 @@ function privateA2ARecipients(message: MessageView): string[] {
 	if (message.from.kind !== "agent") return [];
 	if (message.extra?.crossPost || message.extra?.multiMention) return [];
 	return [...new Set(message.extra?.targetAgentIds ?? [])];
+}
+
+function crossPostRecipients(message: MessageView): string[] {
+	if (message.from.kind !== "agent") return [];
+	const refs = message.lifecycle?.kind === "input" ? message.lifecycle.dispatchRefs : [];
+	return [
+		...new Set([
+			...(message.extra?.targetAgentIds ?? []),
+			...refs.filter((ref) => ref.target.kind === "agent").map((ref) => ref.target.id),
+		]),
+	];
 }
 
 function privateA2ADeliveryState(message: MessageView, recipients: readonly string[]): string {
@@ -283,6 +293,56 @@ function MessageRow({
 			</article>
 		);
 	}
+	if (crossPost) {
+		const recipients = crossPostRecipients(message);
+		const sourceLabel = threadLabel?.(crossPost.sourceThreadId) ?? crossPost.sourceThreadId;
+		return (
+			<article
+				className="st-message is-agent is-agent-column is-cross-post"
+				data-message-id={message.id}
+				data-testid="message-cross-post"
+			>
+				<div className="st-message-stack">
+					<div className="st-cross-post-head">
+						<span className="st-cross-post-sender">{senderName}</span>
+						{recipients.length > 0 ? (
+							<>
+								<span className="st-cross-post-arrow" aria-hidden="true">
+									→
+								</span>
+								{recipients.map((targetId) => (
+									<span className="st-cross-post-recipient" key={targetId}>
+										{agentLabel?.(targetId) ?? targetId}
+									</span>
+								))}
+							</>
+						) : null}
+						<span className="st-cross-post-source">
+							<span>跨线程来自</span>
+							{onOpenThread ? (
+								<button
+									type="button"
+									className="st-link-button"
+									onClick={() => onOpenThread(crossPost.sourceThreadId)}
+								>
+									{sourceLabel}
+								</button>
+							) : (
+								<span>{sourceLabel}</span>
+							)}
+						</span>
+						<time dateTime={new Date(message.timestamp).toISOString()}>{formatRelative(message.timestamp)}</time>
+					</div>
+					<div className="st-cross-post-body">
+						<div className="st-cross-post-kind">cross_post_message</div>
+						<DispatchTargets message={message} agentLabel={agentLabel} />
+						<div className="st-cross-post-divider" role="separator" />
+						<MessageContent content={message.content} />
+					</div>
+				</div>
+			</article>
+		);
+	}
 	if (privateRecipients.length > 0) {
 		const recipientLabel = privateRecipients.map((targetId) => agentLabel?.(targetId) ?? targetId).join("、");
 		const deliveryState = privateA2ADeliveryState(message, privateRecipients);
@@ -329,26 +389,9 @@ function MessageRow({
 	const body = (
 		<div className="st-message-body">
 			{sender === "system" ? meta : null}
-				{crossPost || multiMention || message.mentionsUser ? (
+				{message.mentionsUser ? (
 					<div className="st-message-badges">
-						{crossPost ? (
-							<span className="st-message-badge is-cross">
-								<Icon name="cross" size={11} />
-								跨线程来自{" "}
-								{onOpenThread ? (
-									<button
-										type="button"
-										className="st-link-button"
-										onClick={() => onOpenThread(crossPost.sourceThreadId)}
-									>
-										{threadLabel?.(crossPost.sourceThreadId) ?? crossPost.sourceThreadId}
-									</button>
-								) : (
-									<code>{threadLabel?.(crossPost.sourceThreadId) ?? crossPost.sourceThreadId}</code>
-								)}
-							</span>
-						) : null}
-						{message.mentionsUser ? <span className="st-message-badge is-mention">提到了你</span> : null}
+						<span className="st-message-badge is-mention">提到了你</span>
 					</div>
 				) : null}
 				<DispatchTargets message={message} agentLabel={agentLabel} />

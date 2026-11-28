@@ -11,6 +11,7 @@ import {
 	disabledObservabilityRuntime,
 	type ObservabilityRuntime,
 } from "../observability/runtime.ts";
+import { createRuntimeTelemetry } from "../observability/runtime-telemetry.ts";
 import { envValue } from "../shared/env.ts";
 import { DaemonError } from "../shared/errors.ts";
 import { appendBootRecord, nextBootSequence } from "./boot-ledger.ts";
@@ -188,6 +189,7 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 	record("started");
 	persist();
 	const observability = createRuntime(options, paths.dataDir);
+	const telemetry = createRuntimeTelemetry(observability);
 
 	let a2aControlPlane: A2ADaemonControlPlane | null = null;
 	if (useA2A) {
@@ -203,6 +205,7 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 				...a2aOptions,
 				dataDir: paths.dataDir,
 				changeBus,
+				telemetry,
 				log: controlPlaneLog,
 				onStreamEvent: (event, threadId) => {
 					injectedStream?.(event, threadId);
@@ -331,6 +334,8 @@ export async function startDaemon(options: StartDaemonOptions): Promise<DaemonHa
 		consoleRedirect: serveStatic ? "/" : undefined,
 		secureCookies: options.secureCookies ?? false,
 		changeBus,
+		telemetry,
+		daemonHealth: health,
 		eventHeartbeatMs: options.eventHeartbeatMs,
 		devAutoLogin,
 		a2a: a2aControlPlane

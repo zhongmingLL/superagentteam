@@ -1,6 +1,8 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { AgentConfig, AgentSession, QueueEntry, QueueTarget } from "@superagentteam/shared/types";
 import { runInTransaction } from "../../../infrastructure/db/database.ts";
+import { disabledRuntimeTelemetry, type RuntimeTelemetry } from "../../../observability/runtime-telemetry.ts";
+import type { SpanContext } from "../../../observability/tracer.ts";
 import type { A2ALog } from "../../../shared/a2a-log.ts";
 import type { MultiMentionOrchestrator } from "../../a2a/multi-mention/orchestrator.ts";
 import type { MultiMentionStore } from "../../a2a/multi-mention/store.ts";
@@ -52,6 +54,8 @@ export interface QueueProcessorDeps {
 	multiMention?: MultiMentionStore;
 	multiMentionOrchestrator?: MultiMentionOrchestrator;
 	capacity?: CapacityChecker;
+	/** F055: thread-first telemetry (best-effort). */
+	telemetry?: RuntimeTelemetry;
 	clock?: () => number;
 	owner?: string;
 }
@@ -144,6 +148,7 @@ export class QueueProcessor {
 	private readonly deps: QueueProcessorDeps;
 	private readonly deferrals = new RetryDeferrals();
 	private readonly providerRetryStart = new Map<string, number>();
+	private readonly telemetry: RuntimeTelemetry;
 
 	private providerRetryKey(invocationId: string, agentId: string): string {
 		return `${invocationId}\u0000${agentId}`;
@@ -151,6 +156,7 @@ export class QueueProcessor {
 
 	constructor(deps: QueueProcessorDeps) {
 		this.deps = deps;
+		this.telemetry = deps.telemetry ?? disabledRuntimeTelemetry("queue_processor");
 	}
 
 	private now(): number {
@@ -182,7 +188,26 @@ export class QueueProcessor {
 		for (let i = 0; i < maxEntries; i += 1) {
 			const claimed = this.claimNext(threadId, userId);
 			if (!claimed) break;
-			const result = await this.processEntry(claimed.entry, claimed.claimId, userId);
+			const span = this.telemetry.startSpan("superagentteam.queue.process", {
+				"thread.id": threadId,
+				"queue.entry.id": claimed.entry.queueEntryId,
+				"queue.kind": claimed.entry.kind,
+				"queue.priority": claimed.entry.priority,
+				"invocation.id": `inv:${threadId}:${claimed.entry.payload.sourceRecordId}`,
+			});
+			let result: ProcessEntryResult;
+			try {
+				result = await this.processEntry(claimed.entry, claimed.claimId, userId, span?.context);
+				span?.setAttribute("status", result.outcome);
+				span?.setStatus("ok");
+			} catch (error) {
+				span?.setStatus("error", "queue_process_failed");
+				this.telemetry.recordError("queue", "exception");
+				throw error;
+			} finally {
+				span?.end();
+			}
+			this.telemetry.recordQueueProcessed(result.outcome);
 			if (result.outcome === "deferred") {
 				deferred += 1;
 			} else {
@@ -201,6 +226,7 @@ export class QueueProcessor {
 	 * candidate threads globally; each thread uses its owner as the userId.
 	 */
 	async drainAll(maxEntries = 10): Promise<DrainResult> {
+		this.telemetry.recordQueueDepth(this.deps.queue.countQueuedAll());
 		let processed = 0;
 		let deferred = 0;
 		const convergenceFailed: string[] = [];
@@ -213,6 +239,7 @@ export class QueueProcessor {
 			deferred += result.deferred;
 			convergenceFailed.push(...result.convergenceFailed);
 		}
+		this.telemetry.recordQueueDepth(this.deps.queue.countQueuedAll());
 		return { processed, deferred, convergenceFailed };
 	}
 
@@ -321,7 +348,12 @@ export class QueueProcessor {
 	}
 
 	/** 0007 §3.2 processEntry: Phase A → tracker → route (Phase B + T1 within). */
-	async processEntry(entry: QueueEntry, claimId: string, userId: string): Promise<ProcessEntryResult> {
+	async processEntry(
+		entry: QueueEntry,
+		claimId: string,
+		userId: string,
+		trace?: SpanContext,
+	): Promise<ProcessEntryResult> {
 		const now = this.now();
 		const invocationId = `inv:${entry.threadId}:${entry.payload.sourceRecordId}`;
 		let phaseA: Array<{
@@ -560,6 +592,7 @@ export class QueueProcessor {
 					claimId,
 					execution: entry.execution,
 					signal: this.deps.tracker.getController(entry.threadId, prepared.agentId)?.signal,
+					...(trace ? { trace } : {}),
 				};
 			});
 			const routeMode = routedTargets.length > 1 ? "parallel" : "serial";

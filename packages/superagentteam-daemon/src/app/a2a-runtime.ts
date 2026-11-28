@@ -35,6 +35,7 @@ import { ThreadStore } from "../domains/threads/store.ts";
 import { WorkerPool, type WorkerSpawnPort } from "../domains/workers/pool.ts";
 import { WorkerBindingStore, WorkerStore } from "../domains/workers/store.ts";
 import type { ChangeBus } from "../infrastructure/events/bus.ts";
+import { disabledRuntimeTelemetry, type RuntimeTelemetry } from "../observability/runtime-telemetry.ts";
 import type { A2ALog } from "../shared/a2a-log.ts";
 
 // F018 R2-d composition root: one wiring point for the daemon (and the E2E
@@ -54,6 +55,8 @@ export interface A2ARuntimeDeps {
 	promptTimeoutMs?: number;
 	/** Enables the v1 worker A2A control channel when provided. */
 	controlSocketPath?: string;
+	/** F055: thread-first telemetry (best-effort). */
+	telemetry?: RuntimeTelemetry;
 }
 
 export interface A2ARuntime {
@@ -76,6 +79,7 @@ export interface A2ARuntime {
 	attempts: InvocationAttemptStore;
 	queue: QueueLedgerStore;
 	tracker: InvocationTracker;
+	telemetry: RuntimeTelemetry;
 	steer: SteerService;
 	steerRegistry: SteerRegistry;
 	workerStore: WorkerStore;
@@ -90,6 +94,7 @@ export interface A2ARuntime {
 
 export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 	const clock = deps.clock ?? Date.now;
+	const telemetry = deps.telemetry ?? disabledRuntimeTelemetry("a2a_runtime");
 	const db = deps.db;
 	const threads = new ThreadStore(db);
 	const messages = new MessageStore(db);
@@ -114,6 +119,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		readState,
 		tracker,
 		queue,
+		telemetry,
 		clock,
 	});
 	const workerStore = new WorkerStore(db);
@@ -167,6 +173,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 				multiMention: multiMentionOrchestrator,
 				threadContext,
 				richBlocks,
+				telemetry,
 				clock,
 			})
 		: null;
@@ -194,6 +201,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		readState,
 		messages,
 		invokeSingleAgent,
+		telemetry,
 		onStreamEvent: deps.onStreamEvent,
 		steerRegistry,
 		...(deps.log ? { log: deps.log } : {}),
@@ -224,6 +232,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		}),
 		runner: runAgentTurn,
 		committer: new RouteResponseCommitter(settlementDeps),
+		telemetry,
 		...(deps.log ? { log: deps.log } : {}),
 	});
 	const processor = new QueueProcessor({
@@ -244,6 +253,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		multiMention,
 		multiMentionOrchestrator,
 		capacity: { check: (threadId, targets) => pool.checkCapacityFor(threadId, targets) },
+		telemetry,
 		clock,
 	});
 	const steer = new SteerService({
@@ -253,6 +263,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		tracker,
 		registry: steerRegistry,
 		processor,
+		telemetry,
 		clock,
 	});
 	const recoveryDeps: RecoveryDeps = {
@@ -304,6 +315,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		attempts,
 		queue,
 		tracker,
+		telemetry,
 		steer,
 		steerRegistry,
 		workerStore,

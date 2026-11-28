@@ -188,6 +188,32 @@ OperatorMessageIngress（domains/a2a/ingress/router.ts）
   context health/compression、LLM handoff digest。旧 lightweight sealed 行没有
   artifact，链上显示无制品。
 
+### 3.7 Runtime observability（F055）
+
+- 复用 F013 local-first `ObservabilityRuntime`：`LocalTraceStore` ring（10k/24h）、
+  `MetricsRegistry` Prometheus snapshot、`JsonlLogStore`、redaction/salt、OTLP
+  可选；不建第二 truth store。
+- `RuntimeTelemetry` facade（`observability/runtime-telemetry.ts`）：
+  `startSpan`、`registerTurn`、`startToolSpan`、`recordMessageAdmitted`、
+  `recordQueueDepth/Processed`、`recordTurnStarted/Finished`、`recordTool`、
+  `recordSteer`、`recordSeal`、`recordError`；disabled 时 no-op。
+- trace 坐标为 thread-first：`thread.id`、`agent.id`、`invocation.id`、
+  `parent.invocation.id`、`turn.execution.id`、`attempt.id`、`worker.id`、
+  `queue.entry.id`、`session.id`；ID 仍 HMAC；metric labels 只允许 bounded enum。
+- 埋点：message route ingress、QueueProcessor queue process/queue depth、
+  AgentRouter route、RunAgentTurn turn（phase_b/worker_bound/prompt_accepted/
+  turn_terminal）、A2AControlServer tool、SteerService steer、
+  SessionSealService session seal。
+- API（browser session auth）：
+  - `GET /api/telemetry/traces`（thread/agent/invocation/turn/queue/session/name）；
+  - `GET /api/telemetry/traces/stats`；
+  - `GET /api/telemetry/metrics` / `/metrics/prometheus`；
+  - `GET /api/telemetry/logs`；
+  - `GET /api/telemetry/health`。
+- Hub topbar `Observability`：健康卡、trace 列表/span 详情、metrics 表、logs tail。
+- 限制：ring 是 cache（重启丢失）；无 metrics history/burn-rate、trace
+  persistence/hydration、Prompt X-Ray、跨进程 trace propagation。
+
 ## 4. 数据模型 as-built
 
 - 迁移源：`packages/superagentteam-daemon/src/infrastructure/db/migrations/`；
@@ -452,6 +478,18 @@ OperatorMessageIngress（domains/a2a/ingress/router.ts）
 - **known window 2（check→commit）**：tracker/queue 检查与 artifact+seal 事务在
   同一同步 JS turn 内执行，事务内再次检查；因此不存在可观测的 check→commit
   交错。若未来改为异步 finalize，需要重新引入 guard。
+
+### R11 · Runtime observability（F055）
+
+- **F013/F153**：local-first telemetry 的 raw/redaction/health 边界保留；
+  F055 只把坐标从 task-first `runId/profileId` 扩到 thread-first，并补主链埋点。
+- **as-built**：新增 `RuntimeTelemetry`、trace filters、6 条 telemetry API、
+  Hub 面板；无 DDL/新表，trace ring/metrics/logs 仍是 F013 的本地设施。
+- **classification**：**ratified additive extension**（F055 feature + PR；
+  无 0007 target 冲突）。
+- **known limits**：trace ring 是 cache，缺 trace 显式 `trace_unavailable`；
+  tool span 只覆盖 daemon 侧 A2A control socket；Hub 用 HMAC ID，不能反查
+  display name。
 
 ## 8. 整改计划 / 决策点
 

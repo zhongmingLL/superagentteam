@@ -36,14 +36,36 @@ export interface TraceSpanDTO {
 
 export interface TraceQuery {
 	readonly traceId?: string;
-	/** Raw canonical runs.id. The store HMACs it before matching. */
+	/** Raw canonical invocation record id. The store HMACs it before matching. */
 	readonly invocationId?: string;
+	/** Raw thread id; HMACed before matching `thread.id`. */
+	readonly threadId?: string;
+	/** Raw agent id; HMACed before matching `agent.id`. */
+	readonly agentId?: string;
+	/** Raw TurnExecution id; HMACed before matching `turn.execution.id`. */
+	readonly turnExecutionId?: string;
+	/** Raw queue entry id; HMACed before matching `queue.entry.id`. */
+	readonly queueEntryId?: string;
+	/** Raw AgentSession id; HMACed before matching `session.id`. */
+	readonly sessionId?: string;
+	/** Legacy task-first alias for `agentId`; kept for old clients/tests. */
 	readonly profileId?: string;
 	readonly name?: string;
 	readonly startMin?: number;
 	readonly startMax?: number;
 	/** Default 100, max 500. */
 	readonly limit?: number;
+}
+
+export interface MetricSeriesSnapshot {
+	readonly name: string;
+	readonly kind: "counter" | "gauge" | "histogram";
+	readonly labels: Readonly<Record<string, string | number | boolean>>;
+	readonly value?: number;
+	readonly buckets?: readonly number[];
+	readonly counts?: readonly number[];
+	readonly sum?: number;
+	readonly count?: number;
 }
 
 export interface TraceQueryResult {

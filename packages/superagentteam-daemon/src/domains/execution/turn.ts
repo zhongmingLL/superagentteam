@@ -1,6 +1,8 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { AgentStreamEvent } from "@superagentteam/shared/types";
 import { runInTransaction } from "../../infrastructure/db/database.ts";
+import { disabledRuntimeTelemetry, type RuntimeTelemetry } from "../../observability/runtime-telemetry.ts";
+import type { SpanHandle } from "../../observability/tracer.ts";
 import type { A2ALog } from "../../shared/a2a-log.ts";
 import type { AgentTurnCompletion, AgentTurnInput, AgentTurnResult, TurnRunner } from "../a2a/routing/route.ts";
 import type { InvocationCredentialStore } from "../credentials/store.ts";
@@ -47,6 +49,8 @@ export interface RunAgentTurnDeps {
 	onStreamEvent?: (event: AgentStreamEvent, threadId: string) => void;
 	/** F053: live-turn steering registry (process-local). */
 	steerRegistry?: SteerRegistry;
+	/** F055: thread-first telemetry (best-effort). */
+	telemetry?: RuntimeTelemetry;
 	log?: A2ALog;
 	clock?: () => number;
 	promptTimeoutMs?: number;
@@ -55,10 +59,12 @@ export interface RunAgentTurnDeps {
 export class RunAgentTurn implements TurnRunner {
 	private readonly deps: RunAgentTurnDeps;
 	private readonly clock: () => number;
+	private readonly telemetry: RuntimeTelemetry;
 
 	constructor(deps: RunAgentTurnDeps) {
 		this.deps = deps;
 		this.clock = deps.clock ?? Date.now;
+		this.telemetry = deps.telemetry ?? disabledRuntimeTelemetry("run_agent_turn");
 	}
 
 	private settlementDeps() {
@@ -77,10 +83,51 @@ export class RunAgentTurn implements TurnRunner {
 	}
 
 	async run(input: AgentTurnInput): Promise<AgentTurnCompletion> {
+		const prepared = input.prepared;
+		const started = this.clock();
+		const labels = { provider: prepared.provider, model: prepared.model };
+		const span = this.telemetry.startSpan(
+			"superagentteam.turn",
+			{
+				"thread.id": prepared.threadId,
+				"agent.id": prepared.agentId,
+				"invocation.id": prepared.parentInvocationId,
+				"parent.invocation.id": prepared.parentInvocationId,
+				"turn.execution.id": prepared.turnExecutionId,
+				"attempt.id": prepared.attemptId,
+				"session.id": prepared.agentSessionId,
+				provider: prepared.provider,
+				model: prepared.model,
+			},
+			prepared.trace,
+		);
+		const detach = span ? this.telemetry.registerTurn(prepared.turnExecutionId, span.context) : undefined;
+		this.telemetry.recordTurnStarted(labels);
+		let status = "failed";
+		try {
+			const completion = await this.runInner(input, span);
+			status = completion.result.status;
+			span?.setAttribute("turn.status", status);
+			span?.setStatus(status === "completed" ? "ok" : "error");
+			return completion;
+		} catch (error) {
+			status = error instanceof TurnCanceledError ? "canceled" : "failed";
+			span?.setStatus("error", status === "canceled" ? "turn_canceled" : "turn_failed");
+			this.telemetry.recordError("turn", status === "canceled" ? "canceled" : "exception");
+			throw error;
+		} finally {
+			detach?.();
+			this.telemetry.recordTurnFinished({ ...labels, status }, Math.max(0, this.clock() - started));
+			span?.end();
+		}
+	}
+
+	private async runInner(input: AgentTurnInput, span: SpanHandle | null): Promise<AgentTurnCompletion> {
 		const { prepared, context } = input;
 		// Phase B comes first: if it fails, invoke-single-agent already recorded
 		// the typed prestart failure and this runner must not touch the provider.
 		const phaseB = this.deps.invokeSingleAgent.begin(prepared);
+		span?.addEvent("phase_b");
 		const now = this.clock();
 		const session = this.deps.sessions.get(prepared.agentSessionId);
 		if (!session || session.status !== "active") {
@@ -112,6 +159,8 @@ export class RunAgentTurn implements TurnRunner {
 		let released = false;
 		const completion = (result: AgentTurnResult): AgentTurnCompletion => {
 			handedOff = true;
+			span?.setAttribute("turn.status", result.status);
+			span?.addEvent("turn_terminal", { "turn.status": result.status });
 			this.deps.log?.("info", "turn_terminal", {
 				thread_id: prepared.threadId,
 				invocation_id: prepared.parentInvocationId,
@@ -136,6 +185,8 @@ export class RunAgentTurn implements TurnRunner {
 		};
 		try {
 			handle = await this.deps.pool.ensure(poolKey, session, phaseB.credentialToken);
+			span?.setAttribute("worker.id", handle.workerId);
+			span?.addEvent("worker_bound");
 			this.deps.attempts.bindWorker(prepared.attemptId, handle.workerId);
 			this.deps.log?.("info", "turn_worker_bound", {
 				thread_id: prepared.threadId,
@@ -218,6 +269,7 @@ export class RunAgentTurn implements TurnRunner {
 						});
 					},
 				});
+				span?.addEvent("prompt_accepted");
 				if (promptResult.aborted || aborted()) throw new TurnCanceledError();
 			} finally {
 				detachSteer();

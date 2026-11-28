@@ -3,6 +3,7 @@ import type { A2ARuntime } from "../app/a2a-runtime.ts";
 import { operatorCredentialPaths } from "../domains/access/operator.ts";
 import type { AgentRegistry } from "../domains/agents/registry.ts";
 import type { ChangeBus } from "../infrastructure/events/bus.ts";
+import type { RuntimeTelemetry } from "../observability/runtime-telemetry.ts";
 import { verifyConsoleToken } from "./console-link.ts";
 import { sendError, sendJson } from "./http.ts";
 import { type AgentRoutes, createAgentRoutes } from "./routes/agents.ts";
@@ -14,6 +15,7 @@ import { createLiveRoutes, type LiveRoutes } from "./routes/live.ts";
 import { createMessageRoutes, type MessageRoutes } from "./routes/messages.ts";
 import { createQueueRoutes, type QueueRoutes } from "./routes/queue.ts";
 import { createSessionRoutes, type SessionRoutes } from "./routes/sessions.ts";
+import { createTelemetryRoutes, type TelemetryRoutes } from "./routes/telemetry.ts";
 import { createThreadRoutes } from "./routes/threads.ts";
 import {
 	type BrowserSession,
@@ -67,6 +69,10 @@ export interface BrowserApiOptions {
 		catalogPath?: string;
 		accountsPath?: string;
 	};
+	/** F055: telemetry read surface for the Hub Observability panel. */
+	telemetry?: RuntimeTelemetry;
+	/** F055: daemon health snapshot for the telemetry health endpoint. */
+	daemonHealth?: () => unknown;
 }
 
 export interface BrowserApi {
@@ -92,6 +98,13 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 	const liveRoutes: LiveRoutes | null = options.a2a ? createLiveRoutes({ runtime: options.a2a.runtime }) : null;
 	const sessionRoutes: SessionRoutes | null = options.a2a
 		? createSessionRoutes({ runtime: options.a2a.runtime, changeBus: options.changeBus })
+		: null;
+	const telemetryRoutes: TelemetryRoutes | null = options.telemetry
+		? createTelemetryRoutes({
+				telemetry: options.telemetry,
+				runtime: options.a2a?.runtime,
+				daemonHealth: options.daemonHealth,
+			})
 		: null;
 	const invocationRoutes: InvocationRoutes | null = options.a2a
 		? createInvocationRoutes({ runtime: options.a2a.runtime, changeBus: options.changeBus })
@@ -241,6 +254,7 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 			if (threadRoutes && (await threadRoutes.handle(request, response, url, context))) return true;
 			if (queueRoutes && (await queueRoutes.handle(request, response, url, context))) return true;
 			if (sessionRoutes && (await sessionRoutes.handle(request, response, url, context))) return true;
+			if (telemetryRoutes && (await telemetryRoutes.handle(request, response, url, context))) return true;
 			if (liveRoutes?.handle(request, response, url, context)) return true;
 			if (messageRoutes && (await messageRoutes.handle(request, response, url, context))) return true;
 			if (agentRoutes && (await agentRoutes.handle(request, response, url, context))) return true;

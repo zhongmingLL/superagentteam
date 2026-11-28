@@ -1,6 +1,7 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { AgentConfig, MessageLifecycle, QueueExecution } from "@superagentteam/shared/types";
 import { runInTransaction } from "../../infrastructure/db/database.ts";
+import type { SpanContext } from "../../observability/tracer.ts";
 import type { A2ALog } from "../../shared/a2a-log.ts";
 import { WORKER_CREDENTIAL_TOOL_NAMES } from "../a2a/tools/tool-service.ts";
 import type { InvocationCredentialStore } from "../credentials/store.ts";
@@ -38,6 +39,8 @@ export interface PreparedDispatch {
 	execution: QueueExecution;
 	/** Tracker-owned abort signal; operator cancel aborts this turn. */
 	signal?: AbortSignal;
+	/** F055: parent queue/route span for the turn trace. */
+	trace?: SpanContext;
 }
 
 export type DeliveryFailureReason = Extract<MessageLifecycle, { kind: "delivery_failure" }>["reason"];

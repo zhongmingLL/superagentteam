@@ -67,12 +67,23 @@ export class LocalTraceStore {
 		}
 		this.evictExpired();
 		const limit = clampLimit(filter.limit);
-		const invocationId = filter.invocationId && this.hmacId ? this.hmacId(filter.invocationId) : filter.invocationId;
+		const hmac = (id: string | undefined): string | undefined => (id && this.hmacId ? this.hmacId(id) : id);
+		const invocationId = hmac(filter.invocationId);
+		const threadId = hmac(filter.threadId);
+		const agentId = hmac(filter.agentId);
+		const turnExecutionId = hmac(filter.turnExecutionId);
+		const queueEntryId = hmac(filter.queueEntryId);
+		const sessionId = hmac(filter.sessionId);
 		const matches: TraceSpanDTO[] = [];
 		for (let index = this.buffer.length - 1; index >= 0; index -= 1) {
 			const span = this.buffer[index]!;
 			if (filter.traceId && span.traceId !== filter.traceId) continue;
 			if (invocationId && span.attributes["invocation.id"] !== invocationId) continue;
+			if (threadId && span.attributes["thread.id"] !== threadId) continue;
+			if (agentId && span.attributes["agent.id"] !== agentId) continue;
+			if (turnExecutionId && span.attributes["turn.execution.id"] !== turnExecutionId) continue;
+			if (queueEntryId && span.attributes["queue.entry.id"] !== queueEntryId) continue;
+			if (sessionId && span.attributes["session.id"] !== sessionId) continue;
 			if (filter.profileId && span.attributes["profile.id"] !== filter.profileId) continue;
 			if (filter.name && span.name !== filter.name) continue;
 			if (filter.startMin !== undefined && span.startTimeMs < filter.startMin) continue;

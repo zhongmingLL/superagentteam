@@ -33,6 +33,8 @@ export {
 } from "./redaction.ts";
 export type { ObservabilityRuntime, ObservabilityRuntimeOptions } from "./runtime.ts";
 export { createObservabilityRuntime, disabledObservabilityRuntime } from "./runtime.ts";
+export type { RuntimeTelemetry, TurnTelemetryLabels } from "./runtime-telemetry.ts";
+export { createRuntimeTelemetry, disabledRuntimeTelemetry } from "./runtime-telemetry.ts";
 export type { TelemetrySalt, TelemetrySaltOptions } from "./salt.ts";
 export { loadOrCreateTelemetrySalt, TELEMETRY_SALT_BYTES, TELEMETRY_SALT_FILE } from "./salt.ts";
 export type { ToolClassification } from "./tool-classification.ts";

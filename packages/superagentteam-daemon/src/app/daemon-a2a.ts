@@ -14,6 +14,7 @@ import {
 import type { WorkerSpawnPort } from "../domains/workers/pool.ts";
 import { F018Database } from "../infrastructure/db/database.ts";
 import type { ChangeBus } from "../infrastructure/events/bus.ts";
+import type { RuntimeTelemetry } from "../observability/runtime-telemetry.ts";
 import type { A2ALog } from "../shared/a2a-log.ts";
 import { envValue } from "../shared/env.ts";
 import { DaemonError } from "../shared/errors.ts";
@@ -52,6 +53,8 @@ export interface A2ADaemonControlPlaneOptions {
 	readonly changeBus?: ChangeBus;
 	/** Local JSONL lifecycle log; omitted in tests that only assert stores. */
 	readonly log?: A2ALog;
+	/** F055: shared thread-first telemetry facade. */
+	readonly telemetry?: RuntimeTelemetry;
 }
 
 export interface A2ADaemonControlPlaneReady {
@@ -154,6 +157,7 @@ export class A2ADaemonControlPlane {
 				promptTimeoutMs: options.promptTimeoutMs,
 				onStreamEvent: options.onStreamEvent,
 				changeBus: options.changeBus,
+				telemetry: options.telemetry,
 				...(options.log ? { log: options.log } : {}),
 			});
 		} catch (error) {
@@ -256,12 +260,14 @@ export class A2ADaemonControlPlane {
 	private async tick(maxEntries = 10): Promise<Awaited<ReturnType<A2ARuntime["processor"]["drainAll"]>> | null> {
 		if (!this.started || this.closing) return null;
 		if (this.activeDrains.size >= MAX_ACTIVE_DRAINS) return null;
+		this.runtime.telemetry.recordQueueDepth(this.runtime.queue.countQueuedAll());
 		if (this.runtime.queue.countQueuedAll() === 0) return null;
 		const queuedThreads = this.runtime.queue.listQueuedThreadIds();
 		for (const threadId of queuedThreads) this.changeBus?.publish(threadId, ["queue", "live"]);
 		const drain = (async () => {
 			const result = await this.runtime.processor.drainAll(maxEntries);
 			this.lastDrainAt = this.clock();
+			this.runtime.telemetry.recordQueueDepth(this.runtime.queue.countQueuedAll());
 			return result;
 		})();
 		this.activeDrains.add(drain);

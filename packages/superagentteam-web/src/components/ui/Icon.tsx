@@ -23,7 +23,8 @@ export type IconName =
 	| "wrench"
 	| "brain"
 	| "sun"
-	| "moon";
+	| "moon"
+	| "activity";
 
 const paths: Record<IconName, ReactNode> = {
 	threads: (
@@ -170,6 +171,7 @@ const paths: Record<IconName, ReactNode> = {
 		</>
 	),
 	moon: <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />,
+	activity: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
 };
 
 export function Icon({ name, size = 16 }: { name: IconName; size?: number }) {

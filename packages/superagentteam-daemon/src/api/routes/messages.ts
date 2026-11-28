@@ -119,7 +119,7 @@ function readRichExtra(value: unknown): { rich?: RichMessageExtra } | null {
 
 export function createMessageRoutes(options: MessageRoutesOptions): MessageRoutes {
 	const clock = options.clock ?? Date.now;
-	const { threads, messages, ingress } = options.runtime;
+	const { threads, messages, ingress, telemetry } = options.runtime;
 
 	async function listMessages(response: ServerResponse, url: URL, context: ApiRouteContext): Promise<true> {
 		const threadId = url.searchParams.get("threadId");
@@ -226,6 +226,11 @@ export function createMessageRoutes(options: MessageRoutesOptions): MessageRoute
 			.update(`${threadId}\0${context.session.userId}\0${idempotencyKey}`)
 			.digest("hex")
 			.slice(0, 32)}`;
+		const span = telemetry.startSpan("superagentteam.ingress", {
+			"thread.id": threadId,
+			"agent.id": targets[0] ?? "auto",
+			"message.id": messageId,
+		});
 		try {
 			const result = ingress.submit({
 				threadId,
@@ -237,6 +242,9 @@ export function createMessageRoutes(options: MessageRoutesOptions): MessageRoute
 				extra,
 				now: clock(),
 			});
+			span?.setAttribute("target.count", result.targetAgentIds.length);
+			span?.setStatus("ok");
+			telemetry.recordMessageAdmitted("conversation_input");
 			sendJson(response, 202, {
 				status: "queued",
 				userMessageId: result.message.id,
@@ -294,6 +302,8 @@ export function createMessageRoutes(options: MessageRoutesOptions): MessageRoute
 				return fail(response, 409, "idempotency_conflict", "queue admission was already consumed");
 			}
 			throw error;
+		} finally {
+			span?.end();
 		}
 	}
 

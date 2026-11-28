@@ -30,18 +30,18 @@ evidence_baseline: "code af82e157; runtime 3005/3014 deployed 2026-11-28; isolat
 ## 1. As-built 链路
 
 ```text
-OperatorMessageIngress（domains/a2a/router.ts）
+OperatorMessageIngress（domains/a2a/ingress/router.ts）
   → invocation_queue（QueueLedgerStore）
-  → QueueProcessor.processEntry（domains/queue/processor.ts）
+  → QueueProcessor.processEntry（domains/queue/processor/index.ts）
       Phase A 单事务：parent InvocationRecord + 每个 target attempt starting
       InvocationTracker.startAll(thread, claimed targets)
       AgentRouter.routeAgents(preparedTargets, parallel|serial)
-  → AgentRouter（domains/agent/route.ts）
+  → AgentRouter（domains/a2a/routing/route.ts）
       routeParallel：批次 barrier 先装配全部 target context（history snapshot +
         prompt），再启动任何 runner；单 target 错误隔离
       routeSerial：单 target operator/A2A hop 的 assemble → run → T2 → release；
         多 target serial 时后续 target 收到 priorResponses
-  → RunAgentTurn.run（domains/agent/turn.ts）
+  → RunAgentTurn.run（domains/execution/turn.ts）
       InvokeSingleAgent.begin：Phase B 单事务（processing R +
         TurnExecution.createRunning + bindAppended + credential + draft +
         input dispatchRef + retireTargets）
@@ -80,7 +80,7 @@ OperatorMessageIngress（domains/a2a/router.ts）
 
 ### 3.1 OperatorMessageIngress
 
-- `domains/a2a/router.ts`：operator 显式 `@` 解析、隐式 5 步 fallback、message + queue
+- `domains/a2a/ingress/router.ts`：operator 显式 `@` 解析、隐式 5 步 fallback、message + queue
   同事务 admission；`StoredMessage.targetAgentIds` 只用于 user message。
 - 没有独立的 `AgentRouter` 类；target 解析/校验在 ingress 完成。
 
@@ -95,7 +95,8 @@ OperatorMessageIngress（domains/a2a/router.ts）
   `processEntry(entry, claimId, userId)`、`requestRetry(invocationId, targets?)`、
   `abandon(invocationId)`；`isThreadBusy` / `isAgentBusy` / `hasQueuedForThread`。
 - `processEntry` 顺序：claim 校验 → preflight（`agent_not_found` / `agent_disabled` /
-  `account_not_found`；`worker_capacity` defer）→ Phase A 单事务 → `tracker.startAll`
+  `account_not_found` / `session_workspace_changed` / `workspace_unavailable`；
+  `worker_capacity` defer）→ Phase A 单事务 → `tracker.startAll`
   → `AgentRouter.routeAgents`（Phase B 在各 runner 内）→ 错误分类 → `finally` 释放
   tracker/claim + T3 aggregate。
 - route 错误分类（F044b）：
@@ -105,23 +106,24 @@ OperatorMessageIngress（domains/a2a/router.ts）
     credential 并恢复 target；
   - `PhaseBError.failureRecorded=false`（清理事务也失败）→ processor 重试一次共享
     prestart 记录，仍失败则进入 `convergenceFailed`。
-- F048 仍待处理 bounded concurrent drain 的精确上限；`DaemonA2A.tick` 目前最多 8 个
-  并发 drain。
+- F048 已实现 bounded concurrent drain：`MAX_ACTIVE_DRAINS=8`
+  （`app/daemon-a2a.ts:23`），`tick` 在 `activeDrains.size >= 8` 时拒绝新 drain
+  （`:256-258`）。
 
 ### 3.3 AgentRouter + RunAgentTurn + invoke-single-agent
 
-- `domains/agent/route.ts`：`AgentRouter` 拥有 parallel barrier、serial worklist、
+- `domains/a2a/routing/route.ts`：`AgentRouter` 拥有 parallel barrier、serial worklist、
   `priorResponses`、per-target 错误隔离、T2 commit 与 carrier release 时机。
   `routeParallel` 先同步装配所有 target 的 `TurnContext`（history window + prompt），
   再 `Promise.all` 启动 runner；`routeSerial` 单 target 仍走
   assemble → run → T2 → release，多 target 时把前序 `responseText` 作为
   `priorResponses` 加入下一个 prompt。
-- `domains/agent/turn.ts`：`RunAgentTurn` 实现 `TurnRunner.run(input):
+- `domains/execution/turn.ts`：`RunAgentTurn` 实现 `TurnRunner.run(input):
   Promise<AgentTurnCompletion>`。顺序：`invoke-single-agent.begin`（Phase B）→
   校验 session/attempt → `pool.ensure` → `bindWorker` → `promptAndWait` → sink →
   T1 `TurnExecutionLifecycle.invokeTerminal` → 返回 `result + release()`。
   route 在 T2 commit 之后调用 `release()`；T1 仍是 child terminal 的唯一写入点。
-- `domains/agent/invoke-single-agent.ts`：Phase B owner。`begin(prepared)` 在一个事务内
+- `domains/execution/invoke-single-agent.ts`：Phase B owner。`begin(prepared)` 在一个事务内
   写 processing R + `TurnExecutionStore.createRunning` + `bindAppended` +
   credential + draft + input dispatchRef + `retireTargets`。Phase B 失败抛
   `PhaseBError`：attempt `starting→failed`（terminalReason `phase_b_failed`）+
@@ -159,7 +161,8 @@ OperatorMessageIngress（domains/a2a/router.ts）
 - `A2A_V1_TOOL_NAMES`：`post_message`、`cross_post_message`、`multi_mention`、
   `thread_context`；另有独立 rich-block producer tool
   `superagentteam_create_rich_block`（F031，同一 control socket）。
-- `A2AToolService.postMessage`：targets=1 时 message + `message_wake`；targets=0 仅 message。
+- `A2AToolService.postMessage`：targets=1 时 tool-time 只写 message + caller credential
+  的 `pendingSuccessor`；queue entry 在 caller T2/T4 flush（F046b）；targets=0 仅 message。
 - `MultiMentionOrchestrator`：request + source message + queue entry（同一事务）；
   callback aggregate 通过 `multi_mention_callbacks` 交付。
 - F043：multi-mention 提问追加“回答自动汇总，不需要 post_message”；target 向 initiator
@@ -168,7 +171,7 @@ OperatorMessageIngress（domains/a2a/router.ts）
 ## 4. 数据模型 as-built
 
 - 迁移源：`packages/superagentteam-daemon/src/infrastructure/db/migrations/`；
-  live DB 的 `sqlite_master` 与 0019 基线 `f51d9f3c7` 一致。
+  live DB 的 `sqlite_master` 与当前 as-built 基线 `af82e157` 一致。
 - 核心表：`invocation_queue`、`invocation_records`、`turn_executions`、
   `invocation_attempts`、`response_drafts`、`invocation_credentials`、
   `agent_read_state`、`workers`、`worker_bindings`、`messages`、`threads`、
@@ -529,10 +532,10 @@ daemon 521 passed / 1 skipped。
 - F043 live：multi-mention A/B/C 同起点，结束 +2.82/+3.00/+3.66s；D 60s turn 期间
   C probe invocation 169ms 后启动并在 D 结束前完成（`1795759696697 < 1795759748270`）。
 
-## 10. 待 operator 决策
+## 10. 决策收口
 
-1. **D1**：A（ratify QueueProcessor/DispatchTargetPort）还是 B（补薄 route 层）。
-2. **D3**：serial/priorResponses retire 还是 implement。
-3. **D4**：preflight workspace/session 修复是否现在做（建议做，小改）。
-
-在 D1/D3 决定前，0019 只声明 as-built 真相，不把未批准的 route 缺失写成“已批准设计”。
+- **D1**：已决定 B（恢复 route 层），F044a/F044b 实现并验证。
+- **D3**：已决定 implement；routeSerial/priorResponses 已在
+  `domains/a2a/routing/route.ts` + fullstack E2E 中验证。
+- **D4**：已修复 `743a94237`；preflight 把 session/workspace 两类归为 invalid target。
+- 当前无待 operator 决策项；0007 target-only API 的映射见 §7、§9。

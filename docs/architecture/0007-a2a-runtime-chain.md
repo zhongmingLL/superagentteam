@@ -3,7 +3,7 @@ title: "SuperAgentTeam A2A runtime chain v1 — Clowder-aligned"
 doc_kind: architecture
 status: target-design
 created: 2026-11-06
-updated: 2026-11-27
+updated: 2026-11-28
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [烁烁 (Kimi K3), 砚砚 (GLM 5.3 Flash), 墨墨 (Qwen 3.8 Flash)]
 operator_signoff: "confirmed 2026-11-06"
@@ -61,8 +61,8 @@ related_features: [codeteam/F018, codeteam/F017]
 > **As-built note（2026-11-27，F044a/F044b）**：route 层与 Phase B/T2 ownership
 > 已按本文恢复。Phase B 在 `invoke-single-agent`（`RunAgentTurn` 调用），T1 在
 > `RunAgentTurn`/`TurnExecutionLifecycle`，T2 在 route，T3 在 `QueueProcessor`。
-> 仍由后续 feature 收口：A2A successor admission（F046）、API/DDL/命名（F047）、
-> 并发/recovery 细节（F048）。§0.1 是 F044b 后的 as-built；0019 是详细 as-built。
+> F046b（successor admission）、F047（API/DDL/命名）、F048（并发/recovery）已收口；
+> F051 已完成目录迁移。§0.1 是当前 as-built 快照；0019 是详细 as-built。
 >
 > **Alignment plan（2026-11-27 operator direction）**：
 > [`docs/plans/0050-a2a-runtime-alignment.md`](../plans/0050-a2a-runtime-alignment.md)
@@ -73,18 +73,18 @@ related_features: [codeteam/F018, codeteam/F017]
 当前实际链路（以代码为准）：
 
 ```text
-OperatorMessageIngress（domains/a2a/router.ts）
+OperatorMessageIngress（domains/a2a/ingress/router.ts）
   → invocation_queue（QueueLedgerStore）
-  → QueueProcessor.processEntry（domains/queue/processor.ts）
+  → QueueProcessor.processEntry（domains/queue/processor/index.ts）
       Phase A 单事务：parent InvocationRecord + 每个 target attempt starting
       InvocationTracker.startAll(thread, claimed targets)
       AgentRouter.routeAgents(preparedTargets, parallel|serial)
-  → AgentRouter（domains/agent/route.ts）
+  → AgentRouter（domains/a2a/routing/route.ts）
       routeParallel：先完成同批全部 target 的 history/prompt 装配（barrier），
         再并发启动 runner；单 target 错误隔离
       routeSerial：单 target operator/A2A hop 的 assemble → run → T2 → release；
         多 target serial 时后一个 target 收到 priorResponses
-  → RunAgentTurn.run（domains/agent/turn.ts）
+  → RunAgentTurn.run（domains/execution/turn.ts）
       invoke-single-agent.begin：Phase B 单事务
         processing R + TurnExecution.createRunning + bindAppended +
         credential + draft + input dispatchRef + retireTargets
@@ -117,8 +117,8 @@ OperatorMessageIngress（domains/a2a/router.ts）
 - `RouteResponseCommitter.commit` 的输入是
   `{ turnExecutionId, responseText?, thinking? }`，不是整个 `AgentTurnResult`；
   route 在 T2 失败时写 `route_t2_commit_failed` 日志并留给 T4。
-- A2A successor admission 仍由 tool-time `post_message` 完成；F046 统一到 durable
-  commit 之后。
+- A2A successor admission 已由 F046b 统一：post/cross_post tool-time 只写 message +
+  caller credential `pendingSuccessor`；queue entry 在 caller T2/T4 flush。
 - 多 target operator message 恒走 `routeParallel`；`routeSerial` 用于单 target
   operator/A2A hop 与显式 serial 测试路径。
 - `turn_executions`/`invocation_attempts` 等 schema 命名仍按 0019/0013；F047 处理
@@ -1360,9 +1360,10 @@ runAgentTurn
 
 **定位与边界**
 
-> **As-built note（2026-11-27）**：下表是 target ownership；当前实现中 Phase B 与
-> T2 分别落在 `QueueProcessor.processEntry` 和 `RunAgentTurn.dispatch`。
-> 以 §0.1 的 as-built 表为准。
+> **As-built note（2026-11-27，F044b）**：下表是 target ownership；当前实现中
+> Phase B 落在 `InvokeSingleAgent.begin`，T2 由 route 的
+> `RouteResponseCommitter` 提交，T1 在 `TurnExecutionLifecycle`。以 §0.1 与 0019
+> §3.2–3.3 的 as-built 表为准。
 
 | 组件 | 拥有 | 不拥有 |
 |---|---|---|
@@ -1446,10 +1447,11 @@ async function* runAgentTurn(
 
 **route-parallel 形态**
 
-> **As-built note（2026-11-27）**：本节及下面的 route-serial 是 target design。
-> 当前代码没有 `AgentRouter`/`routeParallel`/`routeSerial`/`priorResponses`；
-> 并发 fan-out 由 `QueueProcessor.processEntry` 的 `Promise.allSettled` 完成，
-> context 用 queue source 快照。见 §0.1。
+> **As-built note（2026-11-27，F044）**：本节及下面的 route-serial 已由 F044
+> 实现：`AgentRouter` 拥有 parallel barrier、routeSerial/priorResponses 和 T2；
+> 实际 API 返回 `RouteResult`（`results + errors`），不是 `AsyncIterable`，
+> 没有独立 `mergeStreams`；stream 仍经 `ResponseEventSink` → `onStreamEvent`。
+> 见 0019 §3.3。
 
 ```ts
 async function* routeParallel(input: RouteInput): AsyncIterable<AgentStreamEvent> {
@@ -4090,7 +4092,8 @@ parent partial_failed: successful=[A], failed=[B]
 - `response_missing` 是独立 recovery reason：typed system message +
   `terminalReason='response_missing'`；不改写 child/attempt 的 delivery_state，不写
   prestart `delivery_failure`，也不依赖 legacy audit。
-- `post_message` 在 targets 非空时创建新 message + queue entry + parent；targets 为空
+- `post_message` 在 targets 非空时 tool-time 创建新 message + caller credential
+  `pendingSuccessor`；queue entry + parent 在 caller T2/T4 admission。targets 为空
   时只创建 message（message-only write），无论是否设置 `mentionsUser`，都不创建
   queue/parent。child
   `a2aParentTurnExecutionId`/`a2aDepth` 正确。

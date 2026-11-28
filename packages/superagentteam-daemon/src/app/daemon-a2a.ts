@@ -64,11 +64,11 @@ export interface A2ADaemonControlPlaneReady {
 	readonly lastError: string | null;
 }
 
-function resolvePiCliPath(): string {
+export function resolvePiCliPath(): string {
 	const configured = envValue(process.env, "PI_CLI");
 	if (configured && configured.trim() !== "") return configured;
 	const here = dirname(fileURLToPath(import.meta.url));
-	return join(here, "..", "..", "coding-agent", "dist", "cli.js");
+	return join(here, "..", "..", "..", "coding-agent", "dist", "cli.js");
 }
 
 export class A2ADaemonControlPlane {

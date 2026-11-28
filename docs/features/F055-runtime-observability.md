@@ -153,5 +153,10 @@ redaction / health 归一个 owner；trace/metrics/logs 只回答“发生了什
 - 计划：`docs/plans/0055-runtime-observability.md`
 - 报告：`docs/reports/2026-11-28-f055-runtime-observability.md`（执行时创建）
 - 参考：Clowder F153、`docs/reuse/observability.md`、SAT F013
+- 合入与部署：PR #280 merged `ec986b786`；砚砚 approve @ `262ae3950`，
+  CI 5/5；runtime 3005/3014 已重启到 `ec986b786`。部署核验：runtime data dir
+  的 `telemetry-salt` 存在；一条真实 ingress 触发 `ingress → queue.process →
+  route → turn` 4 spans（全 ok，HMAC ID）；`/api/telemetry/metrics` 7 series、
+  `/api/telemetry/logs` 可读、`/api/telemetry/health` trace/metrics/logs ready。
 
 [宪宪/deepseek-flash🐾]

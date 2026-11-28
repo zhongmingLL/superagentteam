@@ -12,6 +12,7 @@ import { createEventRoutes, type EventRoutes } from "./routes/events.ts";
 import { createInvocationRoutes, type InvocationRoutes } from "./routes/invocations.ts";
 import { createLegacyRoutes, type LegacyRoutes } from "./routes/legacy.ts";
 import { createLiveRoutes, type LiveRoutes } from "./routes/live.ts";
+import { createMessageActionRoutes, type MessageActionRoutes } from "./routes/message-actions.ts";
 import { createMessageRoutes, type MessageRoutes } from "./routes/messages.ts";
 import { createQueueRoutes, type QueueRoutes } from "./routes/queue.ts";
 import { createSessionRoutes, type SessionRoutes } from "./routes/sessions.ts";
@@ -91,6 +92,9 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 		: null;
 	const messageRoutes: MessageRoutes | null = options.a2a
 		? createMessageRoutes({ runtime: options.a2a.runtime, clock })
+		: null;
+	const messageActionRoutes: MessageActionRoutes | null = options.a2a
+		? createMessageActionRoutes({ runtime: options.a2a.runtime, changeBus: options.changeBus, clock })
 		: null;
 	const queueRoutes: QueueRoutes | null = options.a2a
 		? createQueueRoutes({ runtime: options.a2a.runtime, changeBus: options.changeBus })
@@ -257,11 +261,13 @@ export function createBrowserApi(options: BrowserApiOptions): BrowserApi {
 			if (telemetryRoutes && (await telemetryRoutes.handle(request, response, url, context))) return true;
 			if (liveRoutes?.handle(request, response, url, context)) return true;
 			if (messageRoutes && (await messageRoutes.handle(request, response, url, context))) return true;
+			if (messageActionRoutes && (await messageActionRoutes.handle(request, response, url, context))) return true;
 			if (agentRoutes && (await agentRoutes.handle(request, response, url, context))) return true;
 			if (legacyRoutes?.handle(request, response, url, context)) return true;
 			if (
 				!threadRoutes ||
 				!messageRoutes ||
+				!messageActionRoutes ||
 				!queueRoutes ||
 				!liveRoutes ||
 				!invocationRoutes ||

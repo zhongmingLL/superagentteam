@@ -2020,6 +2020,10 @@ svg {
 	gap: 6px;
 }
 
+.st-rich-options.is-grid {
+	grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+
 .st-rich-option {
 	display: flex;
 	flex-direction: column;
@@ -2027,13 +2031,91 @@ svg {
 	padding: 6px 9px;
 	border: 1px solid var(--st-hairline);
 	border-radius: var(--st-radius-sm);
+	background: transparent;
 	color: var(--st-ink);
 	font-size: 11px;
+	text-align: left;
+	cursor: pointer;
+}
+
+.st-rich-option:hover:not(:disabled) {
+	border-color: var(--st-accent, var(--st-info));
+}
+
+.st-rich-option.is-selected {
+	border-color: var(--st-info);
+	background: color-mix(in srgb, var(--st-info) 10%, transparent);
+}
+
+.st-rich-option:disabled {
+	cursor: default;
+	opacity: 0.72;
+}
+
+.st-rich-option-label {
+	font-weight: 600;
 }
 
 .st-rich-option small {
 	color: var(--st-muted);
 	font-size: 9.5px;
+}
+
+.st-rich-confirm-row {
+	display: flex;
+	gap: 6px;
+}
+
+.st-rich-confirm-row .st-rich-option {
+	flex: 1;
+	align-items: center;
+	text-align: center;
+}
+
+.st-rich-confirm-row .st-rich-option:last-child {
+	border-color: var(--st-success);
+}
+
+.st-rich-submit-row {
+	display: flex;
+	margin-top: 8px;
+}
+
+.st-rich-confirm {
+	padding: 6px 14px;
+	border: 1px solid var(--st-info);
+	border-radius: 999px;
+	background: var(--st-info);
+	color: #fff;
+	font-size: 11px;
+	font-weight: 650;
+	cursor: pointer;
+}
+
+.st-rich-confirm:hover:not(:disabled) {
+	opacity: 0.9;
+}
+
+.st-rich-confirm:disabled {
+	cursor: default;
+	opacity: 0.5;
+}
+
+.st-rich-custom-input {
+	width: 100%;
+	margin-top: 6px;
+	padding: 6px 9px;
+	border: 1px solid var(--st-hairline);
+	border-radius: var(--st-radius-sm);
+	background: var(--st-surface-1);
+	color: var(--st-ink);
+	font-size: 11px;
+}
+
+.st-rich-error {
+	margin: 6px 0 0;
+	color: var(--st-danger);
+	font-size: 10px;
 }
 
 .st-rich-note {

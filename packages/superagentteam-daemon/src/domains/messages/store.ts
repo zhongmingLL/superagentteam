@@ -327,6 +327,48 @@ export class MessageStore {
 	}
 
 	/**
+	 * F056: persist interactive block state (disabled/selectedIds) into the
+	 * message's existing `extra.rich` container. Only interactive blocks are
+	 * mutable; other extra keys and blocks are preserved. Shared per message
+	 * (SAT is single-operator), matching Clowder's block-state semantics.
+	 */
+	updateRichBlockState(
+		id: string,
+		blockId: string,
+		patch: { disabled?: boolean; selectedIds?: string[] },
+		now: number,
+	):
+		| { outcome: "updated"; message: StoredMessage; block: RichBlock }
+		| { outcome: "message_not_found" }
+		| { outcome: "block_not_found" }
+		| { outcome: "not_interactive" } {
+		const current = this.get(id);
+		if (!current) return { outcome: "message_not_found" };
+		const rich = current.extra?.rich;
+		if (!rich || !Array.isArray(rich.blocks)) return { outcome: "block_not_found" };
+		const index = rich.blocks.findIndex((block) => block.id === blockId);
+		if (index < 0) return { outcome: "block_not_found" };
+		const block = rich.blocks[index]!;
+		if (block.kind !== "interactive") return { outcome: "not_interactive" };
+		if (patch.disabled === undefined && patch.selectedIds === undefined) {
+			return { outcome: "updated", message: current, block };
+		}
+		const nextBlock: RichBlock = {
+			...block,
+			...(patch.disabled !== undefined ? { disabled: patch.disabled } : {}),
+			...(patch.selectedIds !== undefined ? { selectedIds: [...patch.selectedIds] } : {}),
+		};
+		const blocks = rich.blocks.map((item, itemIndex) => (itemIndex === index ? nextBlock : item));
+		const extra = { ...(current.extra ?? {}), rich: { v: 1 as const, blocks } };
+		const changed =
+			this.db
+				.prepare("UPDATE messages SET extra_json = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL")
+				.run(JSON.stringify(extra), now, id).changes > 0;
+		if (!changed) return { outcome: "message_not_found" };
+		return { outcome: "updated", message: this.get(id)!, block: nextBlock };
+	}
+
+	/**
 	 * F018 R2-a Phase B (0007 §3.1): append a dispatch receipt to an input
 	 * message's lifecycle. Only kind='input' rows accept dispatchRefs; the
 	 * append is idempotent per (queueEntryId, attempt).

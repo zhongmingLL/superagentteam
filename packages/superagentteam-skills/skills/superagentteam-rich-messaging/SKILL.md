@@ -19,7 +19,7 @@ Use `superagentteam_create_rich_block` only when a structured block makes the an
 | `file` | Point at an existing file | `fileName` (+ optional `url`) |
 | `audio` | Attach an existing audio URL or spoken text | `url` or `text` |
 | `html_widget` | A small read-only visual; sandboxed iframe | `html` |
-| `interactive` | Show options for a future decision; v1 is display-only | `options: [{ id, label, description? }]` |
+| `interactive` | Let the reader choose an option; the choice returns as a user message | `interactiveType`, `options: [{ id, label, description? }]`, optional `messageTemplate` |
 
 Every block needs `{ id, kind, v: 1 }`. Use a stable id per block; repeating the same id replaces it, so retries do not duplicate.
 
@@ -28,7 +28,9 @@ Every block needs `{ id, kind, v: 1 }`. Use a stable id per block; repeating the
 - Prefer 1–3 blocks. Never exceed 20 blocks or 64 KiB per block.
 - Do not create `approval` or permission blocks; those are not part of this surface.
 - Do not use a card or checklist to hide the actual answer. Write the answer first, then add the block.
-- `interactive` options are display-only in v1. Never tell the reader they can click them.
+- `interactive` options are clickable. Use `select` / `multi-select` / `card-grid` /
+  `confirm`, keep 1–12 stable option ids, and set `messageTemplate` with
+  `{selection}` when the returned text needs a specific shape.
 - For `html_widget`, keep it self-contained and read-only. Do not put secrets or scripts that need network access in it.
 
 ## Example

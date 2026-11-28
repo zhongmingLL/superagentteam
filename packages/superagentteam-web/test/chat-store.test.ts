@@ -27,6 +27,7 @@ describe("chat store", () => {
 					hasMore: false,
 				}),
 			send: vi.fn(),
+			respondToRichBlock: vi.fn(),
 		};
 		const store = createChatStore({ api });
 
@@ -46,6 +47,7 @@ describe("chat store", () => {
 				.mockResolvedValueOnce({ messages: [], hasMore: false, query_warnings: ["invalid_cursor"] })
 				.mockResolvedValueOnce({ messages: [message(), message({ id: "msg:2" })], hasMore: true }),
 			send: vi.fn(),
+			respondToRichBlock: vi.fn(),
 		};
 		const store = createChatStore({ api });
 		await store.getState().loadLatest("thread:1");
@@ -61,6 +63,7 @@ describe("chat store", () => {
 		const api = {
 			list: vi.fn(async () => ({ messages: [] as MessageView[], hasMore: false })),
 			send: vi.fn(async () => ({ status: "queued" as const, userMessageId: "msg:sent" })),
+			respondToRichBlock: vi.fn(),
 		};
 		const store = createChatStore({ api });
 		await store.getState().loadLatest("thread:1");
@@ -79,6 +82,7 @@ describe("chat store", () => {
 				.mockResolvedValueOnce({ messages: [], hasMore: false })
 				.mockResolvedValueOnce({ messages: [sent], hasMore: false }),
 			send: vi.fn(async () => ({ status: "queued" as const, userMessageId: sent.id })),
+			respondToRichBlock: vi.fn(),
 		};
 		const store = createChatStore({ api });
 		await store.getState().loadLatest("thread:1");
@@ -101,6 +105,7 @@ describe("chat store", () => {
 				return Promise.resolve({ messages: [message({ id: "msg:2", threadId: "thread:2" })], hasMore: false });
 			}),
 			send: vi.fn(),
+			respondToRichBlock: vi.fn(),
 		};
 		const store = createChatStore({ api });
 
@@ -111,5 +116,45 @@ describe("chat store", () => {
 
 		expect(store.getState().threadId).toBe("thread:2");
 		expect(store.getState().messages.map((item) => item.id)).toEqual(["msg:2"]);
+	});
+
+	it("posts a rich-block response and keeps the answered block state", async () => {
+		const block = { id: "choose", kind: "interactive" as const, v: 1 as const, options: [{ id: "a", label: "A" }] };
+		const original = message({ id: "msg:1", extra: { rich: { v: 1, blocks: [block] } } });
+		const answered = message({
+			id: "msg:1",
+			extra: { rich: { v: 1, blocks: [{ ...block, disabled: true, selectedIds: ["a"] }] } },
+		});
+		const api = {
+			list: vi
+				.fn()
+				.mockResolvedValueOnce({ messages: [original], hasMore: false })
+				.mockResolvedValueOnce({
+					messages: [answered],
+					hasMore: false,
+				}),
+			send: vi.fn(),
+			respondToRichBlock: vi.fn(async () => ({
+				status: "queued" as const,
+				userMessageId: "msg:resp",
+				block: { id: "choose", disabled: true as const, selectedIds: ["a"] },
+				blockState: "persisted" as const,
+			})),
+		};
+		const store = createChatStore({ api });
+		await store.getState().loadLatest("thread:1");
+
+		const receipt = await store.getState().respondToRichBlock("msg:1", "choose", ["a"]);
+		expect(api.respondToRichBlock).toHaveBeenCalledWith({
+			messageId: "msg:1",
+			blockId: "choose",
+			selectedIds: ["a"],
+		});
+		expect(receipt.userMessageId).toBe("msg:resp");
+		expect(store.getState().messages[0]?.extra?.rich?.blocks[0]).toMatchObject({
+			id: "choose",
+			disabled: true,
+			selectedIds: ["a"],
+		});
 	});
 });

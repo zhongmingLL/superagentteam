@@ -43,6 +43,34 @@ export type RichBlockKind =
 /** F031: one producer-created block; kind-specific fields stay open by design. */
 export type RichBlock = { id: string; kind: RichBlockKind; v: 1; [key: string]: unknown };
 
+/** F056: interactive block selection contract (Clowder F096 shape, adapted). */
+export type InteractiveType = "select" | "multi-select" | "card-grid" | "confirm";
+
+export interface InteractiveOption {
+	id: string;
+	label: string;
+	emoji?: string;
+	description?: string;
+	group?: string;
+	/** When true, selecting this option reveals a text input for custom input. */
+	customInput?: boolean;
+	customInputPlaceholder?: string;
+}
+
+/** Typed view of an interactive block; stored block keeps the open RichBlock shape. */
+export interface RichInteractiveBlock extends RichBlock {
+	kind: "interactive";
+	interactiveType?: InteractiveType;
+	title?: string;
+	description?: string;
+	options: InteractiveOption[];
+	maxSelect?: number;
+	/** `{selection}` is replaced with the selected labels. */
+	messageTemplate?: string;
+	disabled?: boolean;
+	selectedIds?: string[];
+}
+
 /** Hub presentation container; block shapes follow the 0001 RichBlock contract. */
 export interface RichMessageExtra {
 	v: 1;
@@ -52,6 +80,9 @@ export interface RichMessageExtra {
 /** F031 limits are shared by the tool, store, and renderer. */
 export const MAX_RICH_BLOCKS = 20;
 export const MAX_RICH_BLOCK_BYTES = 64 * 1024;
+/** F056 interactive response bounds, shared by API validation and Hub renderer. */
+export const MAX_INTERACTIVE_OPTIONS = 12;
+export const MAX_INTERACTIVE_CUSTOM_INPUT = 500;
 
 /**
  * Execution replay; content-level, distinct from contentBlocks.

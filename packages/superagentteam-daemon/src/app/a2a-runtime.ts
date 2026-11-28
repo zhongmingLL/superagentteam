@@ -90,6 +90,8 @@ export interface A2ARuntime {
 	startup: TurnExecutionStartupReconciler;
 	reaper: InvocationOwnerReaper;
 	recovery: ResponseRecoveryService;
+	/** F056: change invalidation bus (optional; tests may omit it). */
+	changeBus?: ChangeBus;
 }
 
 export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
@@ -326,5 +328,6 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		startup: new TurnExecutionStartupReconciler(recoveryDeps),
 		reaper: new InvocationOwnerReaper(recoveryDeps),
 		recovery: new ResponseRecoveryService(settlementDeps),
+		changeBus: deps.changeBus,
 	};
 }

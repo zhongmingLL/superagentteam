@@ -92,7 +92,8 @@ JSONL logs、redaction、`/ready`、`/metrics`），但契约是 task-first 的
   首跑在既有 F044 `multi_mention` 用例的 callback 终态断言上 flake
   （`expected 'running' to be 'completed'`）——该 wait 条件只等消息可见、不等
   callback 落终态；重跑 5/5、本地 f044 套件与 daemon full 复跑仍绿，判定为测试
-  等待条件不敏感，非 F055 引入（后续可把 wait 扩到 callback=completed）。
+  等待条件不敏感，非 F055 引入（F056 PR 已把 wait 扩到 callback=completed，
+  并连续复跑验证）。
 - 部署：`/home/ming/agent/superagentteam-runtime` checkout 并重启到 `ec986b786`；
   `/health.runningRevision` 逐字一致（bootSequence 77）。
 - 部署核验（真实 runtime 3005/3014）：

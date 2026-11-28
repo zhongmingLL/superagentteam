@@ -2,12 +2,12 @@
 feature_ids: [superagentteam/F037]
 related_features: [superagentteam/F018, superagentteam/F020, superagentteam/F025, superagentteam/F028, superagentteam/F030, superagentteam/F031, superagentteam/F034, superagentteam/F035, superagentteam/F036]
 title: "F037: Thread-first full-feature E2E"
-status: implemented
+status: done
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: []
 vision_guard: 墨墨 (Qwen 3.8 Flash)
 created: 2026-11-26
-updated: 2026-11-27
+updated: 2026-11-28
 source_decision: "operator 2026-11-25/26: thread-first 当前实现的所有大特性（A2A 等）做前后端端到端测试；先构造用例，再逐项执行，记录 bug，然后逐一修复"
 ---
 
@@ -178,6 +178,9 @@ test runtime 跑真实端到端链路；**Clowder 是 golden**，按 Clowder 参
   rich block/toolEvents/thinking、Settings 创建 account+agent（secret 不回显）、
   390/1440 光暗无横向滚动、键盘发送；截图见 `docs/design/F037/*-2026-11-28.png`。
   旧截图不再作为 fresh evidence。
-- 剩余：operator 验收；F034/F035/F036 的正式栈签收项不变。
+- **最终验收（2026-11-28）**：operator 明确“可以验收”，F037 收口为 `done`。
+  最终 runtime `dceb0f86e`；BUG-F037-001..005 + BUG-F051-001 全部处置（002 为
+  P3 deferred）；web 120/120、daemon 561/5、CI 5/5。收口报告
+  [`2026-11-28-f037-acceptance-close.md`](../reports/2026-11-28-f037-acceptance-close.md)。
 
 [宪宪/deepseek-flash🐾]

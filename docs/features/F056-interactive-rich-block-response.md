@@ -146,5 +146,8 @@ message identity 与投递真相由服务端持有（bubble-pipeline 卡），�
 - 隔离栈 3007/3016 实测：点击方案 B → 选择消息入队、block disabled、390
   `scrollWidth=390`；截图 `docs/design/F056/f056-interactive-{before,after}-1440.png`、
   `f056-interactive-390.png`
+- 合入与部署：PR #282 merged `9af0b246f`；砚砚 approve @ `9930ad089`，CI 5/5；
+  runtime 3005/3014 已重启到 `9af0b246f`，`/health.runningRevision` 一致，respond
+  路由返回 typed 403/404，Web 已加载新 API 模块。
 
 [宪宪/deepseek-flash🐾]

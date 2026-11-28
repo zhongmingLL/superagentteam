@@ -72,9 +72,27 @@ export interface SendMessageReceipt {
 	targetAgentIds?: string[];
 }
 
+export interface RespondToRichBlockInput {
+	messageId: string;
+	blockId: string;
+	selectedIds: string[];
+	customInput?: string;
+}
+
+export interface RespondToRichBlockReceipt {
+	status: "queued";
+	userMessageId: string;
+	entryId?: string;
+	queuePosition?: number;
+	targetAgentIds?: string[];
+	block: { id: string; disabled: true; selectedIds: string[] };
+	blockState: "persisted" | "stale";
+}
+
 export interface MessageApi {
 	list(threadId: string, options?: ListMessagesOptions): Promise<MessageWindow>;
 	send(input: SendMessageInput): Promise<SendMessageReceipt>;
+	respondToRichBlock(input: RespondToRichBlockInput): Promise<RespondToRichBlockReceipt>;
 }
 
 export function createMessageApi(client: Pick<ApiClient, "get" | "post">): MessageApi {
@@ -87,6 +105,13 @@ export function createMessageApi(client: Pick<ApiClient, "get" | "post">): Messa
 		},
 		send(input) {
 			return client.post<SendMessageReceipt>("/api/messages", input);
+		},
+		respondToRichBlock(input) {
+			const { messageId, blockId, ...body } = input;
+			return client.post<RespondToRichBlockReceipt>(
+				`/api/messages/${encodeURIComponent(messageId)}/rich-blocks/${encodeURIComponent(blockId)}/respond`,
+				body,
+			);
 		},
 	};
 }

@@ -1,6 +1,12 @@
 import { create } from "zustand";
 
-import { type MessageApi, type MessageView, messageApi, type SendMessageReceipt } from "./api.ts";
+import {
+	type MessageApi,
+	type MessageView,
+	messageApi,
+	type RespondToRichBlockReceipt,
+	type SendMessageReceipt,
+} from "./api.ts";
 
 export type ChatStatus = "idle" | "loading" | "ready" | "error";
 
@@ -24,11 +30,17 @@ export interface ChatState {
 	loadOlder(): Promise<boolean>;
 	resumeLatest(): Promise<boolean>;
 	send(content: string, idempotencyKey: string, targetAgentIds?: string[]): Promise<SendMessageReceipt>;
+	respondToRichBlock(
+		messageId: string,
+		blockId: string,
+		selectedIds: string[],
+		customInput?: string,
+	): Promise<RespondToRichBlockReceipt>;
 	reset(): void;
 }
 
 export interface ChatStoreDeps {
-	api: Pick<MessageApi, "list" | "send">;
+	api: Pick<MessageApi, "list" | "send" | "respondToRichBlock">;
 }
 
 const MESSAGE_WINDOW_LIMIT = 50;
@@ -163,6 +175,38 @@ export function createChatStore(deps: ChatStoreDeps) {
 					set({ sending: false });
 					throw error;
 				}
+			},
+
+			async respondToRichBlock(messageId, blockId, selectedIds, customInput) {
+				const receipt = await deps.api.respondToRichBlock({
+					messageId,
+					blockId,
+					selectedIds,
+					...(customInput !== undefined ? { customInput } : {}),
+				});
+				// Apply the authoritative block state locally first so a scrolled-up
+				// window still reflects the response, then refresh following-latest.
+				set((state) => ({
+					messages: state.messages.map((message) => {
+						if (message.id !== messageId) return message;
+						const rich = message.extra?.rich;
+						if (!rich) return message;
+						return {
+							...message,
+							extra: {
+								...(message.extra ?? {}),
+								rich: {
+									...rich,
+									blocks: rich.blocks.map((block) =>
+										block.id === blockId ? { ...block, disabled: true, selectedIds } : block,
+									),
+								},
+							},
+						};
+					}),
+				}));
+				await get().refresh();
+				return receipt;
 			},
 
 			reset() {

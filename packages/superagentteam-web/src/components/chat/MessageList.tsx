@@ -8,7 +8,7 @@ import { initialForName, toneFor } from "@/lib/identity";
 import { formatElapsed, formatRelative } from "@/lib/time";
 import { MessageExecutionRecord } from "./MessageExecutionRecord";
 import { MessageContent } from "./MessageContent";
-import { RichBlocks } from "./RichBlocks";
+import { RichBlocks, type RichBlockRespondHandler } from "./RichBlocks";
 
 export interface PendingUserMessageView {
 	messageId: string;
@@ -33,6 +33,7 @@ export interface MessageListProps {
 	onRetry: () => void;
 	onRetryInvocation?: (invocationId: string) => Promise<void>;
 	onResumeLatest: () => void;
+	onRichBlockRespond?: RichBlockRespondHandler;
 }
 
 function senderLabel(message: MessageView, agentLabel?: (agentId: string) => string): string {
@@ -242,6 +243,7 @@ function MessageRow({
 	threadLabel,
 	onOpenThread,
 	live,
+	onRichBlockRespond,
 }: {
 	message: MessageView;
 	messagesById: ReadonlyMap<string, MessageView>;
@@ -251,6 +253,7 @@ function MessageRow({
 	threadLabel?: (threadId: string) => string;
 	onOpenThread?: (threadId: string) => void;
 	live?: LiveExecutionState;
+	onRichBlockRespond?: RichBlockRespondHandler;
 }) {
 	const sender = message.from.kind;
 	const processing = isProcessing(message);
@@ -397,7 +400,7 @@ function MessageRow({
 				) : liveText ? (
 					<MessageContent content={liveText} />
 				) : null}
-				<RichBlocks extra={message.extra?.rich} />
+				<RichBlocks extra={message.extra?.rich} messageId={message.id} onRespond={onRichBlockRespond} />
 				{processing ? <p className="st-message-processing">正在回复…</p> : null}
 				{terminal ? <p className={`st-message-terminal is-${terminal.status}`}>{terminal.label}</p> : null}
 				{terminal && invocationId && onRetryInvocation && !liveParentIds.has(invocationId) ? (
@@ -461,6 +464,7 @@ export function MessageList({
 	onRetry,
 	onRetryInvocation,
 	onResumeLatest,
+	onRichBlockRespond,
 }: MessageListProps) {
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const positionedThread = useRef<string | null>(null);
@@ -591,6 +595,7 @@ export function MessageList({
 					agentLabel={agentLabel}
 					threadLabel={threadLabel}
 					onOpenThread={onOpenThread}
+					onRichBlockRespond={onRichBlockRespond}
 					live={
 						message.lifecycle?.kind === "response" && message.lifecycle.status === "processing"
 							? liveExecutions[message.lifecycle.turnExecutionId]

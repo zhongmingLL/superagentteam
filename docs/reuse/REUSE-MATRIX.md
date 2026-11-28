@@ -105,7 +105,7 @@ owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 |---|---|---|---|---|---|
 | `code-intelligence` | convention graph / repo-specific extractor / freshness | F242 | W3/W4 | **R1** | 代码影响面/约定图；不是 dogfood 阻塞 |
 | `github-signals` | GitHub PR/issue/check signals / wait predicate | F133, F140, F280 | W8 | **R1** | 只读 evidence + 对账 |
-| `hub-action-surface` | Hub rich blocks / actions / board / artifact surface | F022, F063, F096, F120, F131, F223, F232, F284, F290, F299, F307, F310, F322 | W7 | **R1** | Mission Hub/Approval Hub 只读投影；SOP 数据契约见 `sop-bulletin` P0 slice |
+| `hub-action-surface` | Hub rich blocks / actions / board / artifact surface | F022, F063, F096, F120, F131, F223, F232, F284, F290, F299, F307, F310, F322 | W7 | **R1** | Mission Hub/Approval Hub 只读投影；F056 interactive 选择返回已落地（`POST /api/messages/:id/rich-blocks/:blockId/respond` → F018 ingress + block state），OptionAction callback 后续；SOP 数据契约见 `sop-bulletin` P0 slice |
 | `human-disposition-feedback` | structured human why / feedback receipts | F281 | W4/W7 | **R1** | 审批/反馈证据 |
 | `mcp-surface-governance` | MCP identity / exposure / resource lifecycle | F286 | W2/W5 | **R1** | codeteam MCP tools 的边界 |
 | `memory` | evidence index / recall / session digest / cue | F102, F152, F209, F221, F227, F231, F255, F260, F263, F271, F276, F282, F287, F321 | W6 | **R1** | 只取代码证据相关；个人记忆 drop |

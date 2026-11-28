@@ -1,4 +1,10 @@
-import { MAX_RICH_BLOCKS, type RichMessageExtra } from "@superagentteam/shared/types";
+import { useState } from "react";
+
+import {
+	MAX_INTERACTIVE_OPTIONS,
+	MAX_RICH_BLOCKS,
+	type RichMessageExtra,
+} from "@superagentteam/shared/types";
 
 import { MessageContent } from "./MessageContent";
 
@@ -224,27 +230,208 @@ function BlockHtmlWidget({ block }: { block: Record<string, unknown> }) {
 	);
 }
 
-function BlockInteractive({ block }: { block: Record<string, unknown> }) {
-	const title = text(block.title) ?? "交互选项";
-	const description = text(block.description);
-	const options = list(block.options)
+type InteractiveType = "select" | "multi-select" | "card-grid" | "confirm";
+
+interface InteractiveOptionView {
+	id: string;
+	label: string;
+	emoji?: string;
+	description?: string;
+	customInput: boolean;
+	customInputPlaceholder?: string;
+}
+
+export interface RichBlockResponseInput {
+	selectedIds: string[];
+	customInput?: string;
+}
+
+export type RichBlockRespondHandler = (
+	messageId: string,
+	blockId: string,
+	input: RichBlockResponseInput,
+) => Promise<void> | void;
+
+function interactiveOptions(block: Record<string, unknown>): InteractiveOptionView[] {
+	return list(block.options)
 		.map((option) => record(option))
 		.filter((option): option is Record<string, unknown> => option !== undefined)
-		.slice(0, 12);
-	if (options.length === 0) return <RichFallback kind="interactive" reason="没有可展示的选项" />;
+		.map((option) => ({
+			id: text(option.id) ?? "",
+			label: text(option.label) ?? "",
+			emoji: text(option.emoji),
+			description: text(option.description),
+			customInput: option.customInput === true,
+			customInputPlaceholder: text(option.customInputPlaceholder),
+		}))
+		.filter((option) => option.id !== "" && option.label !== "")
+		.slice(0, MAX_INTERACTIVE_OPTIONS);
+}
+
+function BlockInteractive({
+	block,
+	messageId,
+	onRespond,
+}: {
+	block: Record<string, unknown>;
+	messageId?: string;
+	onRespond?: RichBlockRespondHandler;
+}) {
+	const title = text(block.title);
+	const description = text(block.description);
+	const rawType = text(block.interactiveType) ?? "select";
+	const interactiveType: InteractiveType | null =
+		rawType === "select" || rawType === "multi-select" || rawType === "card-grid" || rawType === "confirm"
+			? rawType
+			: null;
+	const options = interactiveOptions(block);
+	const persistedSelected = list(block.selectedIds).filter(
+		(id): id is string => typeof id === "string" && options.some((option) => option.id === id),
+	);
+	const maxSelect =
+		typeof block.maxSelect === "number" && Number.isInteger(block.maxSelect) && block.maxSelect > 0
+			? block.maxSelect
+			: undefined;
+	const [selected, setSelected] = useState<string[]>(persistedSelected);
+	const [customInput, setCustomInput] = useState("");
+	const [submitting, setSubmitting] = useState(false);
+	const [answered, setAnswered] = useState(false);
+	const [error, setError] = useState<string>();
+	const disabled = block.disabled === true;
+	const interactiveEnabled = messageId !== undefined && onRespond !== undefined;
+	const locked = disabled || answered || submitting || !interactiveEnabled;
+	const selectedForDisplay = persistedSelected.length > 0 ? persistedSelected : selected;
+	const activeOption = options.find((option) => selectedForDisplay.includes(option.id));
+	const showCustomInput = !locked && activeOption?.customInput === true;
+	const customReady = !showCustomInput || customInput.trim() !== "";
+
+	if (list(block.options).length > MAX_INTERACTIVE_OPTIONS) {
+		return <RichFallback kind="interactive" reason={`选项超过 ${MAX_INTERACTIVE_OPTIONS} 个`} />;
+	}
+	if (!interactiveType || options.length === 0) {
+		return <RichFallback kind="interactive" reason={options.length === 0 ? "没有可展示的选项" : "未知交互类型"} />;
+	}
+
+	const submit = async (ids: string[]) => {
+		if (!messageId || !onRespond || ids.length === 0 || locked) return;
+		const chosen = options.find((option) => ids.includes(option.id));
+		const trimmed = chosen?.customInput ? customInput.trim() : "";
+		if (chosen?.customInput && trimmed === "") {
+			setError("请输入内容后再提交");
+			return;
+		}
+		setSubmitting(true);
+		setError(undefined);
+		try {
+			await onRespond(messageId, block.id as string, {
+				selectedIds: ids,
+				...(trimmed !== "" ? { customInput: trimmed } : {}),
+			});
+			setSelected(ids);
+			setAnswered(true);
+		} catch (submitError) {
+			setError(submitError instanceof Error ? submitError.message : "提交失败，请重试");
+		} finally {
+			setSubmitting(false);
+		}
+	};
+
+	const toggle = (id: string) => {
+		if (locked) return;
+		if (interactiveType === "multi-select") {
+			setSelected((current) => {
+				if (current.includes(id)) return current.filter((item) => item !== id);
+				if (maxSelect !== undefined && current.length >= maxSelect) return current;
+				return [...current, id];
+			});
+			return;
+		}
+		setSelected([id]);
+		setCustomInput("");
+		setError(undefined);
+	};
+
+	const renderOption = (option: InteractiveOptionView, index: number) => {
+		const isSelected = selectedForDisplay.includes(option.id);
+		return (
+			<button
+				key={option.id || `option-${index}`}
+				type="button"
+				className={`st-rich-option${isSelected ? " is-selected" : ""}`}
+				aria-pressed={isSelected}
+				disabled={locked}
+				onClick={() => (interactiveType === "confirm" ? void submit([option.id]) : toggle(option.id))}
+			>
+				<span className="st-rich-option-label">
+					{option.emoji ? <span aria-hidden="true">{option.emoji} </span> : null}
+					{option.label}
+				</span>
+				{option.description ? <small>{option.description}</small> : null}
+			</button>
+		);
+	};
+
+	const submitButton = (ids: string[], label: string) => (
+		<button
+			type="button"
+			className="st-rich-confirm"
+			disabled={!onRespond || messageId === undefined || locked || !customReady || ids.length === 0}
+			onClick={() => void submit(ids)}
+		>
+			{submitting ? "提交中…" : label}
+		</button>
+	);
+
 	return (
-		<section className="st-rich-interactive">
-			<h4 className="st-rich-card-title">{title}</h4>
+		<section className="st-rich-interactive" aria-label={title ?? "交互选项"}>
+			{title ? <h4 className="st-rich-card-title">{title}</h4> : null}
 			{description ? <p className="st-rich-interactive-description">{description}</p> : null}
-			<div className="st-rich-options">
-				{options.map((option, index) => (
-					<span className="st-rich-option" key={text(option.id) ?? `option-${index}`}>
-						<span>{text(option.label) ?? "选项"}</span>
-						{text(option.description) ? <small>{text(option.description)}</small> : null}
-					</span>
-				))}
-			</div>
-			<p className="st-rich-note">交互动作将在后续阶段接入</p>
+			{interactiveType === "confirm" ? (
+				<div className="st-rich-confirm-row">
+					{(() => {
+						const confirmOption = options.find((option) => option.id === "__confirm__") ?? options[0]!;
+						const cancelOption =
+							options.find((option) => option.id === "__cancel__") ??
+							options.find((option) => option.id !== confirmOption.id);
+						return (
+							<>
+								{cancelOption ? renderOption(cancelOption, options.indexOf(cancelOption)) : null}
+								{renderOption(confirmOption, options.indexOf(confirmOption))}
+							</>
+						);
+					})()}
+				</div>
+			) : (
+				<div className={`st-rich-options${interactiveType === "card-grid" ? " is-grid" : ""}`}>
+					{options.map(renderOption)}
+				</div>
+			)}
+			{showCustomInput ? (
+				<input
+					type="text"
+					className="st-rich-custom-input"
+					value={customInput}
+					onChange={(event) => setCustomInput(event.target.value)}
+					placeholder={activeOption?.customInputPlaceholder ?? "输入你的想法…"}
+					aria-label="自定义输入"
+					disabled={locked}
+				/>
+			) : null}
+			{interactiveType !== "confirm" && !locked && selected.length > 0 ? (
+				<div className="st-rich-submit-row">
+					{submitButton(
+						selected,
+						interactiveType === "multi-select" ? `确认选择 (${selected.length})` : "确认选择",
+					)}
+				</div>
+			) : null}
+			{!onRespond || !messageId ? <p className="st-rich-note">当前上下文不支持交互提交</p> : null}
+			{locked && disabled && persistedSelected.length > 0 ? <p className="st-rich-note">已提交选择</p> : null}
+			{error ? (
+				<p className="st-rich-error" role="alert">
+					{error}
+				</p>
+			) : null}
 		</section>
 	);
 }
@@ -258,7 +445,15 @@ function RichFallback({ kind, reason }: { kind: string; reason: string }) {
 	);
 }
 
-function RichBlockView({ block }: { block: RichBlock }) {
+function RichBlockView({
+	block,
+	messageId,
+	onRespond,
+}: {
+	block: RichBlock;
+	messageId?: string;
+	onRespond?: RichBlockRespondHandler;
+}) {
 	const data = block as Record<string, unknown>;
 	switch (block.kind) {
 		case "card":
@@ -276,20 +471,28 @@ function RichBlockView({ block }: { block: RichBlock }) {
 		case "html_widget":
 			return <BlockHtmlWidget block={data} />;
 		case "interactive":
-			return <BlockInteractive block={data} />;
+			return <BlockInteractive block={data} messageId={messageId} onRespond={onRespond} />;
 		default:
 			return <RichFallback kind={String(block.kind)} reason="未知富块类型" />;
 	}
 }
 
-export function RichBlocks({ extra }: { extra?: RichMessageExtra }) {
+export function RichBlocks({
+	extra,
+	messageId,
+	onRespond,
+}: {
+	extra?: RichMessageExtra;
+	messageId?: string;
+	onRespond?: RichBlockRespondHandler;
+}) {
 	const blocks = Array.isArray(extra?.blocks) ? extra.blocks.slice(0, MAX_BLOCKS) : [];
 	if (blocks.length === 0) return null;
 	const hidden = (extra?.blocks.length ?? 0) - blocks.length;
 	return (
 		<div className="st-rich-blocks">
 			{blocks.map((block, index) => (
-				<RichBlockView key={block.id || `block-${index}`} block={block} />
+				<RichBlockView key={block.id || `block-${index}`} block={block} messageId={messageId} onRespond={onRespond} />
 			))}
 			{hidden > 0 ? <p className="st-rich-note">还有 {hidden} 个富块未展示</p> : null}
 		</div>

@@ -40,6 +40,7 @@ export function ThreadPage() {
 	const resumeLatest = useChatStore((state) => state.resumeLatest);
 	const refresh = useChatStore((state) => state.refresh);
 	const send = useChatStore((state) => state.send);
+	const respondToRichBlock = useChatStore((state) => state.respondToRichBlock);
 	const reset = useChatStore((state) => state.reset);
 	const a2aThreadId = useA2AStore((state) => state.threadId);
 	const a2aQueue = useA2AStore((state) => state.queue);
@@ -247,6 +248,14 @@ export function ThreadPage() {
 					threadList.find((item) => item.id === sourceThreadId)?.title ?? sourceThreadId
 				}
 				onOpenThread={(sourceThreadId) => navigate(`/thread/${encodeURIComponent(sourceThreadId)}`)}
+				onRichBlockRespond={
+					deleted
+						? undefined
+						: async (messageId, blockId, input) => {
+								await respondToRichBlock(messageId, blockId, input.selectedIds, input.customInput);
+								await refreshA2A();
+							}
+				}
 			/>
 			{a2aMatches && (a2aStatus === "error" || a2aError !== undefined) ? (
 				<p className="st-a2a-degraded" role="status">

@@ -112,6 +112,7 @@ updated: 2026-11-24
 | [`features/F053-queue-steer.md`](features/F053-queue-steer.md) | F053：Queue steer（queued 消息「接进当前回复」/「停下并处理这条」，单目标 claim、sibling 保留） |
 | [`features/F054-session-chain-full-seal.md`](features/F054-session-chain-full-seal.md) | F054：Session chain & full seal（chain 读模型、手动封存 transcript/确定性 digest、Sessions 面板） |
 | [`features/F055-runtime-observability.md`](features/F055-runtime-observability.md) | F055：Thread-first runtime observability（trace/metrics/logs 重基、A2A 主链埋点、telemetry API + Hub 面板） |
+| [`features/F056-interactive-rich-block-response.md`](features/F056-interactive-rich-block-response.md) | F056：Interactive rich-block responses（选项点击后作为用户消息返回给 agent，block 状态持久化） |
 | [`plans/0015-w6c-observability-trajectory.md`](plans/0015-w6c-observability-trajectory.md) | W6c observability/trajectory 实施计划与 AC 映射 |
 | [`plans/0018-f016a-a2a-ingress-e2e.md`](plans/0018-f016a-a2a-ingress-e2e.md) | F016a：8 类 ingress × scenario real RPC E2E、P0 工具面、withdraw/parallel/loop guard |
 | [`plans/0020-f018-thread-first-runtime.md`](plans/0020-f018-thread-first-runtime.md) | F018：A2A runtime v1 R0-R5、AgentConfig/Registry、schema/migration、same/cross-thread post、multi_mention fan-out、验收与回滚 |

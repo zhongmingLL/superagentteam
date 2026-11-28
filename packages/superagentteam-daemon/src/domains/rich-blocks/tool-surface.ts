@@ -19,7 +19,7 @@ export const RICH_BLOCK_KINDS: readonly RichBlockKind[] = [
 export const RICH_BLOCK_TOOL_SPEC = {
 	name: RICH_BLOCK_TOOL_NAME,
 	description:
-		"Attach one rich block to the current response. Use only when structure helps the reader; max 20 blocks per response, 64 KiB each. interactive is display-only in v1. Never create approval or permission cards.",
+		"Attach one rich block to the current response. Use only when structure helps the reader; max 20 blocks per response, 64 KiB each. interactive options are selectable; a selection returns as a user message. Never create approval or permission cards.",
 	inputSchema: {
 		type: "object",
 		additionalProperties: false,

@@ -120,10 +120,6 @@ function privateA2ADeliveryState(message: MessageView, recipients: readonly stri
 	return settled > 0 ? "部分已回复" : "已送达";
 }
 
-function messageIsLong(content: string): boolean {
-	return content.length > 180 || content.split("\n").length > 4;
-}
-
 interface MultiMentionRowView {
 	targetAgentId: string;
 	status: string;
@@ -263,7 +259,6 @@ function MessageRow({
 	const [retrying, setRetrying] = useState(false);
 	const [retryState, setRetryState] = useState<"idle" | "queued" | "error">("idle");
 	const [retryError, setRetryError] = useState<string | undefined>();
-	const [expanded, setExpanded] = useState(false);
 	const crossPost = message.extra?.crossPost;
 	const multiMention = message.extra?.multiMention;
 	const senderName = senderLabel(message, agentLabel);
@@ -339,7 +334,7 @@ function MessageRow({
 						<div className="st-cross-post-kind">cross_post_message</div>
 						<DispatchTargets message={message} agentLabel={agentLabel} />
 						<div className="st-cross-post-divider" role="separator" />
-						<MessageContent content={message.content} />
+						<MessageContent content={message.content} collapsible />
 					</div>
 				</div>
 			</article>
@@ -348,7 +343,6 @@ function MessageRow({
 	if (privateRecipients.length > 0) {
 		const recipientLabel = privateRecipients.map((targetId) => agentLabel?.(targetId) ?? targetId).join("、");
 		const deliveryState = privateA2ADeliveryState(message, privateRecipients);
-		const long = messageIsLong(message.content);
 		return (
 			<article
 				className="st-message is-agent is-agent-column is-a2a-private"
@@ -368,14 +362,7 @@ function MessageRow({
 					<div className="st-a2a-private-body">
 						<div className="st-a2a-private-kind">post_message</div>
 						<div className="st-a2a-private-divider" role="separator" />
-						<div className={`st-a2a-private-content${expanded ? "" : " is-clamped"}`}>
-							<MessageContent content={message.content} />
-						</div>
-						{long ? (
-							<button type="button" className="st-link-button" onClick={() => setExpanded((value) => !value)}>
-								{expanded ? "收起" : "展开全文 ↗"}
-							</button>
-						) : null}
+						<MessageContent content={message.content} collapsible />
 					</div>
 					<div className="st-a2a-private-footer">私人消息 · {deliveryState} {recipientLabel}</div>
 				</div>
@@ -406,7 +393,7 @@ function MessageRow({
 					/>
 				) : null}
 				{message.content !== "" ? (
-					<MessageContent content={message.content} />
+					<MessageContent content={message.content} collapsible />
 				) : liveText ? (
 					<MessageContent content={liveText} />
 				) : null}

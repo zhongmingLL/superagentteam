@@ -102,6 +102,8 @@ SAT 的 pi worker 已原生支持 `steer` RPC（`coding-agent` rpc-mode），dae
   `f053-steer-guided-1440.png`。
 - daemon 569 passed / 5 skipped；web 26 files / 129 tests + tsc/vite build。
 - fullstack guide/interrupt 2/2（真实 pi worker + mock Anthropic）。
+- 合入与部署：PR #276 merged `a8f9aefa2`；砚砚 approve @ `d5876c62a`，CI 5/5；
+  runtime 3005/3014 已重启到 `a8f9aefa2`，health `ready`。
 
 ## 分阶段
 
@@ -122,6 +124,14 @@ SAT 的 pi worker 已原生支持 `steer` RPC（`coding-agent` rpc-mode），dae
   不伪造已注入。durable truth 仍是 TurnExecution。
 - **多目标非原子**：v1 顺序提交；某目标失败不回滚已成功的 sibling（与 Clowder
   per-target 独立终局一致）。
+
+## P3 已知窄窗口（review 记录）
+
+guide 的 claim TTL 为 15s；若 `steer` RPC 挂起超过 TTL，claim 过期后
+`retireTargets` 返回 `state_changed`，服务返回 typed `steer_failed`，但消息内容
+可能已经注入活 turn，Queue target 仍 pending → 理论双投窗口。本地 RPC 正常远低于
+15s；失败会诚实浮出，operator 可改走 interrupt。当前不作为阻塞项，记录待后续
+引入可撤销的 steer ACK 或更长 claim fence。
 
 ## 证据
 

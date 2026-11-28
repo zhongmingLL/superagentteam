@@ -2,7 +2,7 @@
 feature_ids: [superagentteam/F050]
 related_features: [superagentteam/F018, superagentteam/F043, superagentteam/F044, superagentteam/F045, superagentteam/F046, superagentteam/F047, superagentteam/F048]
 title: "F050: A2A parity guard & live acceptance"
-status: implemented
+status: done
 owner: "宪宪 (Ragdoll/DeepSeek Flash)"
 reviewers: [砚砚 (GLM 5.3 Flash)]
 vision_guard: 墨墨 (Qwen 3.8 Flash)
@@ -76,9 +76,10 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
 - [x] AC-4：隔离 test runtime 跑通 F043 四场景 + 单 target serial + multi-mention
   callback；记录 revision/URL/结果。
 - [x] AC-4b：F043 AC-4 实机截图（1440/390、光暗、真实 Hub 框架）齐备，证据见下；
-  operator 视觉签收仍属 F050 最终验收。
-- [ ] AC-5：runtime 部署需 operator 授权；0019 更新为最终 as-built；F043 标 superseded；
-  operator 验收。
+  operator 已于 2026-11-28 完成视觉签收。
+- [x] AC-5：runtime 部署需 operator 授权；0019 更新为最终 as-built；F043 标 superseded；
+  operator 验收。2026-11-28 operator 明确授权部署，runtime 3005/3014 已运行
+  `df2f1b978`；operator 视觉签收 AC-4b；0019 final-as-built；F043 superseded。
 - 注意（P3-b，#240 review）：`workspace_unavailable` 当前是 target-contract 预留名，
   daemon src 无抛出点、测试零覆盖；F050 只能标 “contract-reserved, no runtime path”，
   不能标成 “verified”。
@@ -111,10 +112,10 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
 - **架构 guard**：`.github/pull_request_template.md` 强制 Architecture delta（0007/0019/
   audit）与 E2E evidence（0021）两段。
 - **0019/F043**：0019 标 final-as-built；F043 标 superseded（前端 AC-4 已交付）。
-- **AC-4b 证据已齐备 / AC-5 未关闭**：F043 AC-4 的 A2A 私有气泡/汇总卡实机
-  1440/390 光暗截图已补（见下节），operator 视觉签收仍待；runtime 3005/3014 部署需
-  operator 显式授权。F037 U5–U7 的 fresh Hub 截图覆盖 rich block/Settings/responsive，
-  不与本组 AC-4b 证据混用。
+- **AC-4b / AC-5 已关闭**：F043 AC-4 的 A2A 私有气泡/汇总卡实机 1440/390 光暗截图
+  已补并由 operator 视觉签收；runtime 3005/3014 已按 operator 显式授权部署
+  `df2f1b978`（见下节）。F037 U5–U7 的 fresh Hub 截图覆盖
+  rich block/Settings/responsive，不与本组 AC-4b 证据混用。
 
 ### AC-4b 实机视觉证据（2026-11-28 @ `a392c174d`）
 
@@ -138,7 +139,17 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
   `scrollWidth=390=innerWidth`，card `343px`；两端 `multi-mention-card=1`、
   rows=`2`；console errors `0`。
 - 限制：本轮只做 current HEAD 的视觉验收，未触发新的 provider 回合；数据来自真实
-  Kimi 历史 thread。operator 视觉签收仍是 F050 最终验收项。
+  Kimi 历史 thread。operator 已于 2026-11-28 完成视觉签收。
+
+### Runtime 部署验收（2026-11-28）
+
+- operator 明确授权部署；runtime worktree `/home/ming/agent/superagentteam-runtime`
+  从 `f51d9f3c7` fast-forward 到 `df2f1b978`。
+- `npm run build:offline` 通过；`runtime restart` → `running`。
+- `/health`：`runningRevision=df2f1b97866bd9b5618d8b617ff27aa3c7b12e95`，
+  daemon/web alive + verified，`write path: ok`；web `/` 与 `/api/session` 均 200。
+- UI smoke：3 threads / 4 agents 正常加载，浏览器 console errors 0。
+- 未手工改 runtime data dir；部署只消费已合入代码。
 
 - **Clowder 参考测试路径**（相对参考仓根目录）：
   - `packages/api/test/route-parallel-*.test.js` / `route-serial-*.test.js`

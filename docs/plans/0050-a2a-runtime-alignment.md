@@ -259,12 +259,15 @@ review 与 CI 5/5：
 | F050 | #258 `b453703ee` | 砚砚 approve @ `6e3a3ec48` |
 | F051 | #259 `fcbe0ac37` / #260 `87a9f7a2d` | 砚砚 approve @ `ec74c33d3` |
 
-剩余 operator gate：
+已关闭（2026-11-28）：
 
-- F050 AC-4b：真实 Hub 的 A2A 私有气泡/汇总卡 1440/390、光暗截图与 operator 视觉验收。
-- F050 AC-5：runtime 3005/3014 部署需要 operator 显式授权；本轮证据均来自隔离 test runtime。
+- F050 AC-4b：真实 Hub 的 A2A 私有气泡/汇总卡 1440/390、光暗截图已补齐，operator 视觉签收。
+- F050 AC-5：operator 明确授权部署；runtime 3005/3014 已运行 `df2f1b978`，健康与写路径验证通过。
+- F044 runtime cut：随本次部署完成，不再另开切换决策。
+
+剩余非目标限制：
+
 - F037 P3：real provider 长尾/限流只覆盖单次成功回合，不外推为全矩阵稳定性。
-- F044 完成后是否直接切 runtime，仍按原计划由 operator 决定。
 
 ## 11. Clowder 参考实现索引
 

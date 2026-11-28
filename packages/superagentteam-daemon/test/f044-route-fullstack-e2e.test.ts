@@ -577,6 +577,13 @@ describe("F044 route ownership full-stack E2E v2", () => {
 		const source = all.find((message) => message.content.startsWith("[Multi-Mention from"));
 		expect(source).toBeTruthy();
 		const request = runtime.multiMention.getBySourceRecordId(source!.id)!;
+		// Messages become visible at T2, but the callback record is finalized by
+		// the QueueProcessor after dispatch; wait for the terminal state asserted
+		// below instead of racing it (observed CI flake: running vs completed).
+		await waitFor(() => {
+			const callback = runtime.multiMention.statusView(request.requestId)?.callback;
+			return callback?.status === "completed" ? callback : null;
+		}, 15_000);
 		expect(request.status).toBe("done");
 		expect(request.targetAgentIds.sort()).toEqual(["b1", "c1"]);
 		expect(request.callbackToAgentId).toBe("a1");

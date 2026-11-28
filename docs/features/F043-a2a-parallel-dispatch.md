@@ -21,8 +21,8 @@ source_decision: "operator 2026-11-27: a2a-测试 暴露 multi-mention 串行/�
 > 不在后端补丁上继续扩展。
 >
 > **F050 status（2026-11-28）**：F043 后端设计 **superseded**；F044–F048 + F046b 已
-> 承接其行为。前端 AC-4（私有气泡 + 汇总卡）已交付；真实 Hub 1440/390 光暗视觉验收
-> 仍归 F050 AC-4b，不把 AC-4 标成 live complete。
+> 承接其行为。前端 AC-4（私有气泡 + 汇总卡）已交付，真实 Hub 1440/390 光暗视觉证据
+> 由 F050 AC-4b 补齐并由 operator 签收；runtime 已部署 `df2f1b978`，AC-4 为 live complete。
 
 ## Why
 
@@ -81,12 +81,12 @@ operator 在 `a2a-测试` thread 做 multi-mention / post_message / 排队测试
   其他 target 的 response（按触发 seq 快照）。
 - [x] AC-2：agent A 长跑期间 @agent B，B 在 A 结束前开始执行；队列面板只在 B 真正等待时显示。
 - [x] AC-3：post_message 唤醒的目标能在 prompt 中读到源消息；不再出现"无新消息"的空转回复。
-- [ ] AC-4（code implemented; **live visual proof pending F050**）：A2A 私有消息按选定设计渲染（A：无头像私有气泡 + recipient pill + A2A 标记）；
-  multi-mention burst 收进 C 汇总卡，不再散落成多个气泡。实现于
+- [x] AC-4：A2A 私有消息按选定设计渲染（A：无头像私有气泡 + recipient pill + A2A
+  标记）；multi-mention burst 收进 C 汇总卡，不再散落成多个气泡。实现于
   `packages/superagentteam-web/src/components/chat/MessageList.tsx`；web 120 tests + build 绿。
-  **live 视觉完成待 F050**：需带 topbar/sidebar/composer 的真实 Hub 截图（1440/390、光暗），
-  当前不把 AC-4 标成 live complete。
-  （设计已选定 A + C；前端实现待做。）
+  live 视觉证据：F050 AC-4b 四张真实 Hub 截图（1440/390、光暗，
+  `docs/design/F050/ac4b-multi-mention-*.png`），operator 2026-11-28 签收；
+  runtime 3005/3014 已部署 `df2f1b978`。
 - [x] AC-5：daemon/web tests、typecheck、doc-index 绿；非作者 review。
 
 ## 风险

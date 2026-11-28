@@ -13,7 +13,8 @@ source_decision: "operator 2026-11-28: F037 相关测试已 pass，可以验收"
 
 - operator 2026-11-28 明确验收通过（“可以验收”）。
 - F037 feature / BACKLOG / plan 0046 收口为 `done`；F037 v2 任务同步完成。
-- 最终 runtime：`dceb0f86e`（web 3005 / daemon 3014，health/write path 正常）。
+- F037 验收时 runtime：`dceb0f86e`（web 3005 / daemon 3014，health/write path 正常）；
+  后续 F052 部署已升级到 `af82e157`。
 - 最终 docs main 收口前的 F037 相关 merge：`4ddcebdfa`；本报告随收口 PR 合入。
 
 ## 交付证据

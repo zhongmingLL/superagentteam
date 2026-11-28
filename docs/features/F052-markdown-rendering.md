@@ -45,7 +45,7 @@ Clowder 参考：`packages/web/src/components/MarkdownContent.tsx` 使用
 - [x] AC-4：正文 `@handle` 显示高亮 pill，原文本不变；句末标点不吞进 pill；
   汉字紧邻（如“你好@a1”）也高亮，邮箱不误伤。
 - [x] AC-5：web 26 files / 125 tests + build 绿；真实 Hub 1440/390 预览通过；
-  非作者 review 待 PR。
+  非作者 review 通过（砚砚 approve @ `a6eced447`，delta @ `b0195b60a`）。
 
 ## 实现
 
@@ -66,7 +66,10 @@ Clowder 参考：`packages/web/src/components/MarkdownContent.tsx` 使用
   - `docs/design/F052/f052-markdown-top-1440.png`
   - `docs/design/F052/f052-markdown-collapsed-1440.png`
   - `docs/design/F052/f052-markdown-390.png`
+  - `docs/design/F052/f052-runtime-markdown-1440.png`（runtime `af82e157`）
 - 报告：[`2026-11-28-f052-markdown-rendering.md`](../reports/2026-11-28-f052-markdown-rendering.md)。
+- 合入/部署：PR #271 merged `af82e157`；runtime 3005/3014 已运行该修订；
+  web 26 files / 126 tests。
 
 ## 风险 / 回滚
 

@@ -46,6 +46,15 @@ describe("markdown message content", () => {
 		expect(container).toHaveTextContent("hello @agentA, and @agentB.");
 	});
 
+	it("highlights mentions adjacent to CJK text without breaking emails", () => {
+		const { container } = render(
+			<MessageContent content="你好@agentA，邮箱 user@example.com 不应高亮" />,
+		);
+		const mentions = [...container.querySelectorAll(".st-mention")].map((node) => node.textContent);
+		expect(mentions).toEqual(["@agentA"]);
+		expect(container).toHaveTextContent("user@example.com");
+	});
+
 	it("skips raw HTML and does not keep javascript links", () => {
 		const { container } = render(
 			<MessageContent content={'<script>alert("x")</script>\n\n[bad](javascript:alert(1))'} />,

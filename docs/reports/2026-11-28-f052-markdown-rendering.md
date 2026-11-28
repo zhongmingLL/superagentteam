@@ -31,7 +31,8 @@ SuperAgentTeam 原 `MessageContent` 只用正则拆 fenced code，其余文本�
   - GFM 表格、任务列表、删除线；
   - fenced code 保持等宽、横向滚动；inline code 独立样式；
   - 链接 http(s) 新窗口 + `noreferrer noopener`；raw HTML 不执行；
-  - `@handle` 文本高亮 `.st-mention`，不进入 code/pre。
+- `@handle` 文本高亮 `.st-mention`，不进入 code/pre；边界类含汉字区段，
+  “你好@a1”可高亮，邮箱 `user@example.com` 不误伤。
 - `CollapsibleMarkdown.tsx`：20 行阈值；折叠 max-height 320px；展开/收起按钮。
 - `MessageContent` 增加 `collapsible`；主消息、private A2A、cross_post 使用；
   thinking/rich block 保持不折叠。

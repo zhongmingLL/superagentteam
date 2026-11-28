@@ -3,7 +3,8 @@ import ReactMarkdown, { type Components } from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 
-const MENTION_RE = /(^|[\s([{（「『【《，。；：、])(@[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)*)/g;
+const MENTION_RE =
+	/(^|[\s([{（「『【《，。；：、\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff])(@[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)*)/g;
 
 function highlightMentions(children: ReactNode): ReactNode {
 	return Children.map(children, (child) => {

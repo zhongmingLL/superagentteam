@@ -42,7 +42,8 @@ Clowder 参考：`packages/web/src/components/MarkdownContent.tsx` 使用
 - [x] AC-1：标题、列表、表格、粗体/斜体、链接、inline code、fenced code 正确渲染。
 - [x] AC-2：raw HTML 不执行（按文本显示）；`javascript:` 链接被过滤。
 - [x] AC-3：超过 20 行的消息默认折叠，显示“展开”；展开后“收起”。
-- [x] AC-4：正文 `@handle` 显示高亮 pill，原文本不变；句末标点不吞进 pill。
+- [x] AC-4：正文 `@handle` 显示高亮 pill，原文本不变；句末标点不吞进 pill；
+  汉字紧邻（如“你好@a1”）也高亮，邮箱不误伤。
 - [x] AC-5：web 26 files / 125 tests + build 绿；真实 Hub 1440/390 预览通过；
   非作者 review 待 PR。
 

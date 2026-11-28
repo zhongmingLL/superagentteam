@@ -75,8 +75,8 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
 - [x] AC-3：audit A–F 每行有 fixed / doc-aligned / no-action 证据。
 - [x] AC-4：隔离 test runtime 跑通 F043 四场景 + 单 target serial + multi-mention
   callback；记录 revision/URL/结果。
-- [ ] AC-4b：F043 AC-4 实机截图（1440/390、光暗、真实 Hub 框架）齐备；否则 AC-4
-  只算 implemented，不算 live complete。
+- [x] AC-4b：F043 AC-4 实机截图（1440/390、光暗、真实 Hub 框架）齐备，证据见下；
+  operator 视觉签收仍属 F050 最终验收。
 - [ ] AC-5：runtime 部署需 operator 授权；0019 更新为最终 as-built；F043 标 superseded；
   operator 验收。
 - 注意（P3-b，#240 review）：`workspace_unavailable` 当前是 target-contract 预留名，
@@ -111,9 +111,34 @@ PR/quality-gate 检查，并在隔离环境跑完整 live 验收。
 - **架构 guard**：`.github/pull_request_template.md` 强制 Architecture delta（0007/0019/
   audit）与 E2E evidence（0021）两段。
 - **0019/F043**：0019 标 final-as-built；F043 标 superseded（前端 AC-4 已交付）。
-- **AC-4b / AC-5 未关闭**：F043 AC-4 的 A2A 私有气泡/汇总卡实机 1440/390 光暗截图与
-  operator 视觉验收仍待；runtime 3005/3014 部署需 operator 显式授权。F037 U5–U7 的
-  fresh Hub 截图覆盖 rich block/Settings/responsive，但不冒充 F043 AC-4b。
+- **AC-4b 证据已齐备 / AC-5 未关闭**：F043 AC-4 的 A2A 私有气泡/汇总卡实机
+  1440/390 光暗截图已补（见下节），operator 视觉签收仍待；runtime 3005/3014 部署需
+  operator 显式授权。F037 U5–U7 的 fresh Hub 截图覆盖 rich block/Settings/responsive，
+  不与本组 AC-4b 证据混用。
+
+### AC-4b 实机视觉证据（2026-11-28 @ `a392c174d`）
+
+- 栈：worktree `/home/ming/agent/codeteam-f037` @ `a392c174d`；隔离 data dir
+  `/home/ming/.superagentteam-f037-e2e/data`；web `3007` / daemon `3016`；未读写
+  runtime `3005/3014`。截图后 `runtime end`，3007/3016 已释放。
+- Thread：`thread:eca3fa2572a1a3817b41eb33013f53ff`（F037 Hub E2E Renamed），
+  真实 Kimi 历史数据（2026-11-25 生成）。
+- 私有气泡：`msg:thread:eca3fa...:1795665971152:9d3b0f72`，targets `f037b,f037c`；
+  页面显示 `发送给 F037 Agent B/C` + `已回复`。
+- 汇总卡：multi_mention request `mm:64e55512-ce1a-4820-89e3-63d5952a1fe8`，
+  aggregate message `msg:thread:eca3fa...:1795665983858:agg:81b4ded2`；页面显示
+  `Multi-Mention 2/2 已回复`、两行 target 状态、`自动汇总 → F037 Agent A`、
+  `汇总已交给 F037 Agent A`、`查看汇总`。
+- 截图（1440/390 × light/dark）：
+  - `docs/design/F050/ac4b-multi-mention-1440-light.png`
+  - `docs/design/F050/ac4b-multi-mention-1440-dark.png`
+  - `docs/design/F050/ac4b-multi-mention-390-light.png`
+  - `docs/design/F050/ac4b-multi-mention-390-dark.png`
+- 量化：1440 `scrollWidth=1440=innerWidth`，card `900px`；390
+  `scrollWidth=390=innerWidth`，card `343px`；两端 `multi-mention-card=1`、
+  rows=`2`；console errors `0`。
+- 限制：本轮只做 current HEAD 的视觉验收，未触发新的 provider 回合；数据来自真实
+  Kimi 历史 thread。operator 视觉签收仍是 F050 最终验收项。
 
 - **Clowder 参考测试路径**（相对参考仓根目录）：
   - `packages/api/test/route-parallel-*.test.js` / `route-serial-*.test.js`

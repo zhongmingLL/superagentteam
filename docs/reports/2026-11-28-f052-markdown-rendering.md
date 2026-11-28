@@ -71,6 +71,11 @@ operator 反馈 Markdown 正文的数字/字母不好看，并问 Clowder 使用
   （runtime 3005 同一 thread，只读注入对比，不改运行时数据）。
 - 验证：web 26 files / 126 tests passed；tsc + vite build passed；字体产物
   `Inter-Variable-latin` 48KB + `-latin-ext` 85KB。
+- 合入与部署：PR #274 merged `5c6db6a5e`；砚砚 approve @ `a3a52bce1`，CI 5/5。
+  runtime 3005/3014 已重启到 `5c6db6a5e`，health `ready`。
+- 部署后实测（同一 thread，无注入）：`document.fonts` = `Inter:loaded`；
+  正文 14px / line-height 22.4px；1440 与 390 均无横向滚动。
+  截图：`f052-font-deployed-1440.png` / `f052-font-deployed-390.png`。
 
 ## 限制
 

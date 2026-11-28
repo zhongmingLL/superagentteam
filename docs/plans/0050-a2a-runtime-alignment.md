@@ -262,7 +262,7 @@ review 与 CI 5/5：
 已关闭（2026-11-28）：
 
 - F050 AC-4b：真实 Hub 的 A2A 私有气泡/汇总卡 1440/390、光暗截图已补齐，operator 视觉签收。
-- F050 AC-5：operator 明确授权部署；runtime 3005/3014 已运行 `7fe438118`（含 F051c hotfix + F037 A2A bubble fix），健康与写路径验证通过。
+- F050 AC-5：operator 明确授权部署；runtime 3005/3014 已运行 `dceb0f86e`（含 F051c hotfix + F037 A2A bubble/cross_post fixes），健康与写路径验证通过。
 - F044 runtime cut：随本次部署完成，不再另开切换决策。
 
 剩余非目标限制：

@@ -163,3 +163,6 @@ operator 在 `a2a-测试` thread 做 multi-mention / post_message / 排队测试
 - `post_message` 保留原头部/气泡/footer，仅在 body 内加 `post_message` 标签 + 横线。
 - PR #266 merged `7fe438118`；墨墨 approve；报告
   [`2026-11-28-f037-acceptance-a2a-bubbles.md`](../reports/2026-11-28-f037-acceptance-a2a-bubbles.md)。
+- cross_post 消息独立呈现：去头像；`[sender ｜ 跨线程来自 <source>] → [recipient]`；
+  气泡内 `cross_post_message` + 发送目标 + 横线 + 内容。PR #268 merged `dceb0f86e`；
+  报道 [`2026-11-28-f037-cross-post-bubble.md`](../reports/2026-11-28-f037-cross-post-bubble.md)。

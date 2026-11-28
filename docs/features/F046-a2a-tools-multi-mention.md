@@ -125,6 +125,9 @@ F043 又加了 auto-delivery 拒绝和 prompt 提示。F046 把这些工具面/�
   内加 `post_message` 标签 + 横线，保留原 sender/recipient 头部与 footer。
 - PR #266 merged `7fe438118`；墨墨 approve；报告
   [`2026-11-28-f037-acceptance-a2a-bubbles.md`](../reports/2026-11-28-f037-acceptance-a2a-bubbles.md)。
+- cross_post 投递消息独立呈现（无头像、来源收进 sender 圆框、气泡内
+  `cross_post_message` + 发送目标 + 横线）；PR #268 merged `dceb0f86e`；
+  报道 [`2026-11-28-f037-cross-post-bubble.md`](../reports/2026-11-28-f037-cross-post-bubble.md)。
 
 - **Clowder 参考路径**（相对参考仓根目录）：
   - `packages/mcp-server/src/tools/callback-tools.ts`（post/cross_post/multi_mention tool schemas/handlers）

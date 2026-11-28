@@ -108,6 +108,17 @@ operator 2026-11-27：当前 `packages/superagentteam-daemon/src` 目录设计�
 - **合入**：PR #260 merged `87a9f7a2d`；reviewed HEAD `ec74c33d3`；砚砚 approve
   （P2 三段解除：multi-mention 在 a2a 下、旧路径消失、AC-2 措辞转真）；CI 5/5。
 
+### F051c 运行时路径 hotfix（2026-11-28）
+
+- 生产回归 BUG-F051-001：F051a move 后 `resolvePiCliPath` / `resolveWebDistPath`
+  的相对深度少一层；worker spawn 指向不存在的
+  `packages/superagentteam-daemon/coding-agent/dist/cli.js`，所有 agent 回合 5 次重试后失败。
+- 修复：PR #264 `46f936e4b`，merge `e1d1dd38b`；砚砚 approve；回归
+  `f051c-runtime-paths.test.ts` 2/2 RED→GREEN；daemon 561 passed / 5 skipped。
+- 部署与关闭：runtime 3005/3014 已运行 `e1d1dd38b`；`a2a-测试2` 手动 retry 后
+  deepseek + A/B/C 均真实 spawn，multi_mention 并行完成，console errors 0。
+- 事故报告：[`2026-11-28-f051c-runtime-path-hotfix.md`](../reports/2026-11-28-f051c-runtime-path-hotfix.md)。
+
 - **Clowder 参考目录/文件**（相对参考仓根目录）：
   - `packages/api/src/domains/cats/services/agents/{routing,invocation,registry}`（domain-first）
   - `packages/api/src/domains/cats/services/{context,stores/{ports,redis}}`
@@ -123,6 +134,9 @@ operator 2026-11-27：当前 `packages/superagentteam-daemon/src` 目录设计�
 
 - 大 diff/merge 冲突：排在 F044–F048 之后，单分支完成；冻结其他 daemon 改动。
 - import 循环：barrel + guard；拆分时逐步跑 typecheck。
+- **`import.meta` fs 锚点**：任何 move 后必须逐一重推相对深度，并用 path-anchor 测试锁
+  canonical monorepo 路径；`PI_CLI` / `SUPERAGENTTEAM_STATIC_DIR` 等 env 覆盖会掩盖
+  错误路径，不能作为验证。
 - 回滚：纯 move/rename，可 revert；无数据/schema 变更。
 
 [宪宪/deepseek-flash🐾]

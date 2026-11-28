@@ -189,6 +189,9 @@ packages/superagentteam-daemon/src/
    - 禁止 `domains/*` import `app/`；
    - 禁止 `api/`/`cli/` 直接 import `domains/*/store`（只走 public API）。
 6. **Verify**：daemon full tests、typecheck、doc-index、layout guard；CI 绿。
+7. **Path anchors**：move 后逐一重推 `import.meta` / `__dirname` fs 锚点深度，并用
+   path-anchor 测试锁 canonical monorepo 路径；`PI_CLI` / `SUPERAGENTTEAM_STATIC_DIR`
+   等 env 覆盖会掩盖错误路径，不能作为验证。
 
 ## 6. 非目标
 
@@ -202,6 +205,8 @@ packages/superagentteam-daemon/src/
 - **大 diff/merge 冲突**：排在语义整改之后，单分支完成；期间冻结其他 daemon 改动。
 - **import 循环**：barrel + layout guard；拆文件时先跑 typecheck。
 - **测试路径**：相对 import 更新后跑 daemon full suite；不做行为改动。
+- **fs 路径锚点**：入口文件移动会改变 `import.meta` 相对深度；F051c 已用
+  `f051c-runtime-paths.test.ts` 锁定 pi CLI 与 web dist 路径，后续 move 必须同步重推。
 - **回滚**：F051 是纯 move/rename，可 revert 分支；无数据/schema 变更。
 
 [宪宪/deepseek-flash🐾]

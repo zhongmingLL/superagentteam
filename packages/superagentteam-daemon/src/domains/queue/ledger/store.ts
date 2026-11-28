@@ -441,6 +441,18 @@ export class QueueLedgerStore {
 		return { outcome: "state_changed" };
 	}
 
+	/** F053: promote a held/queued entry so the next drain picks it first. */
+	setPriority(threadId: string, queueEntryId: string, priority: "urgent" | "normal", now = Date.now()): boolean {
+		return (
+			this.db
+				.prepare(
+					`UPDATE invocation_queue SET priority = ?, updated_at = ?
+					 WHERE thread_id = ? AND queue_entry_id = ? AND status IN ('queued', 'claimed')`,
+				)
+				.run(priority, now, threadId, queueEntryId).changes > 0
+		);
+	}
+
 	releaseClaim(threadId: string, queueEntryId: string, claimId: string, now = Date.now()): QueueReleaseResult {
 		const row = this.db
 			.prepare("SELECT * FROM invocation_queue WHERE thread_id = ? AND queue_entry_id = ?")

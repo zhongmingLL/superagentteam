@@ -2421,6 +2421,79 @@ svg {
 	white-space: nowrap;
 }
 
+.st-queue-steer {
+	flex: none;
+	padding: 2px 8px;
+	border: 1px solid var(--st-hairline-strong);
+	border-radius: 999px;
+	background: var(--st-surface-1);
+	color: var(--st-primary);
+	font-size: 9.5px;
+	cursor: pointer;
+}
+
+.st-queue-steer:hover {
+	border-color: var(--st-primary);
+	background: var(--st-primary-soft);
+}
+
+.st-steer-targets {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-height: min(360px, 50vh);
+	overflow-y: auto;
+}
+
+.st-steer-target {
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+	padding: 10px;
+	border: 1px solid var(--st-hairline);
+	border-radius: var(--st-radius-md);
+	background: var(--st-surface-2);
+}
+
+.st-steer-target-name {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--st-ink);
+	font-size: 12px;
+	cursor: pointer;
+}
+
+.st-steer-target-name input {
+	margin: 0;
+}
+
+.st-steer-modes {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	padding-left: 22px;
+	color: var(--st-body);
+	font-size: 11px;
+}
+
+.st-steer-modes label {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	cursor: pointer;
+}
+
+.st-steer-modes label.is-disabled {
+	color: var(--st-muted);
+	cursor: not-allowed;
+	opacity: 0.65;
+}
+
+.st-steer-modes input {
+	margin: 0;
+}
+
 .st-composer {
 	flex: none;
 	display: flex;

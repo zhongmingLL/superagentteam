@@ -23,6 +23,8 @@ import { ResponseRecoveryService, RouteResponseCommitter } from "../domains/invo
 import { AgentReadStateStore, MessageStore } from "../domains/messages/store.ts";
 import { QueueLedgerStore } from "../domains/queue/ledger/store.ts";
 import { QueueProcessor } from "../domains/queue/processor/index.ts";
+import { SteerRegistry } from "../domains/queue/steer/registry.ts";
+import { SteerService } from "../domains/queue/steer/service.ts";
 import { InvocationTracker } from "../domains/queue/tracker/index.ts";
 import { RichBlockService } from "../domains/rich-blocks/service.ts";
 import { AgentSessionStore } from "../domains/sessions/store.ts";
@@ -70,6 +72,8 @@ export interface A2ARuntime {
 	attempts: InvocationAttemptStore;
 	queue: QueueLedgerStore;
 	tracker: InvocationTracker;
+	steer: SteerService;
+	steerRegistry: SteerRegistry;
 	workerStore: WorkerStore;
 	bindings: WorkerBindingStore;
 	pool: WorkerPool;
@@ -95,6 +99,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 	const attempts = new InvocationAttemptStore(db);
 	const queue = new QueueLedgerStore(db);
 	const tracker = new InvocationTracker(clock);
+	const steerRegistry = new SteerRegistry();
 	const workerStore = new WorkerStore(db);
 	const bindingStore = new WorkerBindingStore(db);
 	const pool = new WorkerPool({ workers: workerStore, bindings: bindingStore, spawn: deps.spawn, clock });
@@ -174,6 +179,7 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		messages,
 		invokeSingleAgent,
 		onStreamEvent: deps.onStreamEvent,
+		steerRegistry,
 		...(deps.log ? { log: deps.log } : {}),
 		clock,
 		promptTimeoutMs: deps.promptTimeoutMs,
@@ -224,6 +230,15 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		capacity: { check: (threadId, targets) => pool.checkCapacityFor(threadId, targets) },
 		clock,
 	});
+	const steer = new SteerService({
+		threads,
+		queue,
+		messages,
+		tracker,
+		registry: steerRegistry,
+		processor,
+		clock,
+	});
 	const recoveryDeps: RecoveryDeps = {
 		...settlementDeps,
 		queue,
@@ -271,6 +286,8 @@ export function buildA2ARuntime(deps: A2ARuntimeDeps): A2ARuntime {
 		attempts,
 		queue,
 		tracker,
+		steer,
+		steerRegistry,
 		workerStore,
 		bindings: bindingStore,
 		pool,

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { ApiError } from "@/lib/api/client";
 
-import { type A2AApi, a2aApi, type LiveInvocationView, type QueueEntryView } from "./api.ts";
+import { type A2AApi, a2aApi, type LiveInvocationView, type QueueEntryView, type SteerMode } from "./api.ts";
 
 export type A2AStatus = "idle" | "loading" | "ready" | "error";
 
@@ -16,11 +16,12 @@ export interface A2AState {
 	refresh(): Promise<boolean>;
 	retryInvocation(invocationId: string): Promise<void>;
 	cancelAgent(agentId: string): Promise<void>;
+	steerQueue(queueEntryId: string, targetAgentId: string, mode: SteerMode): Promise<void>;
 	reset(): void;
 }
 
 export interface A2AStoreDeps {
-	api: Pick<A2AApi, "queue" | "live" | "retryInvocation" | "cancelAgent">;
+	api: Pick<A2AApi, "queue" | "live" | "retryInvocation" | "cancelAgent" | "steerQueue">;
 }
 
 function messageOf(error: unknown, fallback: string): string {
@@ -100,6 +101,26 @@ export function createA2AStore(deps: A2AStoreDeps) {
 					if (error instanceof ApiError && error.code === "not_running") {
 						await fetchSnapshot(threadId);
 						return;
+					}
+					throw error;
+				}
+				await fetchSnapshot(threadId);
+			},
+
+			async steerQueue(queueEntryId, targetAgentId, mode) {
+				const threadId = get().threadId;
+				if (!threadId) throw new Error("没有打开的对话");
+				try {
+					await deps.api.steerQueue(threadId, queueEntryId, targetAgentId, mode);
+				} catch (error) {
+					if (error instanceof ApiError) {
+						if (error.code === "entry_processing" || error.code === "target_not_pending") {
+							await fetchSnapshot(threadId);
+							throw new Error("队列状态已变化，请按最新队列重试");
+						}
+						if (error.code === "no_active_turn") throw new Error("这个 agent 当前没有可引导的回复");
+						if (error.code === "steer_unavailable") throw new Error("当前 agent 不支持接进回复");
+						if (error.code === "steer_failed") throw new Error("引导未送达，请刷新后重试");
 					}
 					throw error;
 				}

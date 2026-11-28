@@ -234,6 +234,48 @@ describe("F016c-M1 S4 queue and live API", () => {
 		expect(((await queueWithLive.json()) as { activeInvocations: unknown[] }).activeInvocations).toHaveLength(1);
 	});
 
+	it("steer route enforces CSRF, body shape and exact active turn", async () => {
+		const base = await start();
+		const auth = await login(base);
+		const threadId = await createThread(base, auth);
+		await postMessage(base, auth, threadId, "steer-route-1");
+		const queue = await fetch(`${base}/api/threads/${encodeURIComponent(threadId)}/queue`, {
+			headers: { cookie: auth.cookie },
+		});
+		const queueBody = (await queue.json()) as { queue: Array<{ queueEntryId: string }> };
+		const entryId = queueBody.queue[0]!.queueEntryId;
+		const steerUrl = `${base}/api/threads/${encodeURIComponent(threadId)}/queue/${encodeURIComponent(entryId)}/steer`;
+
+		const noCsrf = await fetch(steerUrl, {
+			method: "POST",
+			headers: { cookie: auth.cookie, origin: HUB_ORIGIN, "content-type": "application/json" },
+			body: JSON.stringify({ targetAgentId: "a1", mode: "guide" }),
+		});
+		expect(noCsrf.status).toBe(403);
+
+		const invalid = await fetch(steerUrl, {
+			method: "POST",
+			headers: writeHeaders(auth),
+			body: JSON.stringify({ targetAgentId: "a1", mode: "promote" }),
+		});
+		expect(invalid.status).toBe(400);
+
+		const idle = await fetch(steerUrl, {
+			method: "POST",
+			headers: writeHeaders(auth),
+			body: JSON.stringify({ targetAgentId: "a1", mode: "guide" }),
+		});
+		expect(idle.status).toBe(409);
+		expect(((await idle.json()) as { error: string }).error).toBe("no_active_turn");
+
+		const missing = await fetch(`${base}/api/threads/${encodeURIComponent(threadId)}/queue/queue%3Amissing/steer`, {
+			method: "POST",
+			headers: writeHeaders(auth),
+			body: JSON.stringify({ targetAgentId: "a1", mode: "guide" }),
+		});
+		expect(missing.status).toBe(404);
+	});
+
 	it("drops tracker evidence and filters terminal responses", async () => {
 		const base = await start();
 		const auth = await login(base);

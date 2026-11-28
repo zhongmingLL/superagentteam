@@ -49,11 +49,29 @@ export interface CancelAgentReceipt {
 	agentId: string;
 }
 
+export type SteerMode = "guide" | "interrupt";
+
+export interface SteerQueueReceipt {
+	status: "guided" | "started" | "queued";
+	mode: SteerMode;
+	targetAgentId: string;
+	disposition?: string;
+	parentInvocationId?: string;
+	dispatched?: string[];
+	reason?: string;
+}
+
 export interface A2AApi {
 	queue(threadId: string): Promise<QueueSnapshot>;
 	live(threadId: string): Promise<LiveSnapshot>;
 	retryInvocation(threadId: string, invocationId: string): Promise<RetryInvocationReceipt>;
 	cancelAgent(threadId: string, agentId: string): Promise<CancelAgentReceipt>;
+	steerQueue(
+		threadId: string,
+		queueEntryId: string,
+		targetAgentId: string,
+		mode: SteerMode,
+	): Promise<SteerQueueReceipt>;
 }
 
 export function createA2AApi(client: Pick<ApiClient, "get" | "post">): A2AApi {
@@ -69,6 +87,11 @@ export function createA2AApi(client: Pick<ApiClient, "get" | "post">): A2AApi {
 			client.post<CancelAgentReceipt>(
 				`/api/threads/${encodeURIComponent(threadId)}/agents/${encodeURIComponent(agentId)}/cancel`,
 				{},
+			),
+		steerQueue: (threadId, queueEntryId, targetAgentId, mode) =>
+			client.post<SteerQueueReceipt>(
+				`/api/threads/${encodeURIComponent(threadId)}/queue/${encodeURIComponent(queueEntryId)}/steer`,
+				{ targetAgentId, mode },
 			),
 	};
 }

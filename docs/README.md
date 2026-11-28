@@ -109,6 +109,7 @@ updated: 2026-11-24
 | [`features/F050-a2a-parity-guard.md`](features/F050-a2a-parity-guard.md) | F050：A2A parity guard & live acceptance（parity suite、architecture delta guard、audit A–F 收口、隔离 live） |
 | [`features/F051-daemon-module-layout.md`](features/F051-daemon-module-layout.md) | F051：Daemon module layout refactor（按 0020 移动/拆分目录、composition root 外置、layout guard） |
 | [`features/F052-markdown-rendering.md`](features/F052-markdown-rendering.md) | F052：Markdown-rendered agent messages（react-markdown/GFM、长消息折叠、@mention 高亮） |
+| [`features/F053-queue-steer.md`](features/F053-queue-steer.md) | F053：Queue steer（queued 消息「接进当前回复」/「停下并处理这条」，单目标 claim、sibling 保留） |
 | [`plans/0015-w6c-observability-trajectory.md`](plans/0015-w6c-observability-trajectory.md) | W6c observability/trajectory 实施计划与 AC 映射 |
 | [`plans/0018-f016a-a2a-ingress-e2e.md`](plans/0018-f016a-a2a-ingress-e2e.md) | F016a：8 类 ingress × scenario real RPC E2E、P0 工具面、withdraw/parallel/loop guard |
 | [`plans/0020-f018-thread-first-runtime.md`](plans/0020-f018-thread-first-runtime.md) | F018：A2A runtime v1 R0-R5、AgentConfig/Registry、schema/migration、same/cross-thread post、multi_mention fan-out、验收与回滚 |

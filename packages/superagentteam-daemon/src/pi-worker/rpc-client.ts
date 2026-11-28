@@ -247,6 +247,24 @@ export class RpcConnection {
 		await this.request({ type: "abort" }, 5_000).catch(() => {});
 	}
 
+	/**
+	 * F053: inject a steering message into the running agent turn. The pi
+	 * worker delivers it after the current assistant turn's tool calls and
+	 * before the next provider request; it does not stop the in-flight call.
+	 */
+	async steer(message: string): Promise<{ disposition: string }> {
+		const response = await this.request({ type: "steer", message }, 10_000);
+		if (!response.success) {
+			throw new RpcRequestError("steer", response.error ?? "steer rejected");
+		}
+		const data = response.data;
+		const disposition =
+			data && typeof data === "object" && "disposition" in data && typeof data.disposition === "string"
+				? data.disposition
+				: "queued";
+		return { disposition };
+	}
+
 	async request(command: Record<string, unknown>, timeoutMs: number): Promise<RpcResponse> {
 		if (!this.process || !this.process.stdin || this.process.stdin.destroyed) {
 			throw new RpcProcessExitError(

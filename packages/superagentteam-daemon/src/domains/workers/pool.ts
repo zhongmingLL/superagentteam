@@ -14,6 +14,8 @@ export interface WorkerRpcConnection {
 		message: string,
 		options: { timeoutMs: number; signal?: AbortSignal; onAccepted?: () => void },
 	): Promise<{ aborted: boolean }>;
+	/** F053: optional live-turn steering; absent connections cannot guide. */
+	steer?(message: string): Promise<{ disposition: string }>;
 	finish(reason?: string): Promise<void>;
 }
 
